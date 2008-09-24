@@ -154,19 +154,22 @@ namespace MYPWorker
             }
 
             string extraction_filename = "";
+            string lPath = path;
+            // so that we have a default path and an extraction path.
+            if (extractionPath != "") lPath = extractionPath;
 
             if (!trueFileName)
             {
-                if (!Directory.Exists(path + "\\" + currentFileName)) Directory.CreateDirectory(path + "\\" + currentFileName);
-                if (!Directory.Exists(path + "\\" + currentFileName + "\\" + ext)) Directory.CreateDirectory(path + "\\" + currentFileName + "\\" + ext);
+                if (!Directory.Exists(lPath + "\\" + currentFileName)) Directory.CreateDirectory(path + "\\" + currentFileName);
+                if (!Directory.Exists(lPath + "\\" + currentFileName + "\\" + ext)) Directory.CreateDirectory(path + "\\" + currentFileName + "\\" + ext);
 
-                extraction_filename = path + "\\" + currentFileName + "\\" + ext + "\\" + filename + "." + ext;
+                extraction_filename = lPath + "\\" + currentFileName + "\\" + ext + "\\" + filename + "." + ext;
             }
             else
             {
                 filename = filename.Replace('\\', '/');
                 string[] folders = filename.Split('/');
-                string tmpPath = folders[0];
+                string tmpPath = extractionPath + '/' + folders[0];
                 if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
 
                 for (int i = 1; i < folders.Length - 1; i++)
@@ -175,7 +178,7 @@ namespace MYPWorker
                     if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
                 }
 
-                extraction_filename = filename;
+                extraction_filename = extractionPath + '/' + filename;
             }
 
             if (File.Exists(extraction_filename)) File.Delete(extraction_filename);

@@ -101,6 +101,7 @@ namespace EasyMYP
             this.label_UncompressedSize_Value = new System.Windows.Forms.Label();
             this.label_ReadingErrors_Value = new System.Windows.Forms.Label();
             this.replaceFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.mainMenu.SuspendLayout();
             this.panel_output.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -900,6 +901,7 @@ namespace EasyMYP
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TreeView treeView_Archive;
         private System.Windows.Forms.TreeView treeView_FileSystem;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
     }
 }
 

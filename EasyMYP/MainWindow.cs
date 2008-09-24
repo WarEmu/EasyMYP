@@ -179,16 +179,20 @@ namespace EasyMYP
 
         private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (worker != null)
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                t_worker = new Thread(new ThreadStart(worker.ExtractAll));
-                t_worker.Start();
+                worker.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                if (worker != null)
+                {
+                    t_worker = new Thread(new ThreadStart(worker.ExtractAll));
+                    t_worker.Start();
 
-                //Show a progress bar
-                avBar = new AvancementBar();
-                avBar.Text = "Extracting";
-                avBar.ShowDialog();
-                avBar.Dispose();
+                    //Show a progress bar
+                    avBar = new AvancementBar();
+                    avBar.Text = "Extracting";
+                    avBar.ShowDialog();
+                    avBar.Dispose();
+                }
             }
         }
 

@@ -166,9 +166,12 @@ namespace MYPWorker
         long totalNumberOfFiles = 0; //total number of files in the archive
         long numberOfFilesFound = 0; //total number of files found in the archive
         long error_FileEntryNumber = 0; //number of errors in the file table entry
+        string extractionPath = "";
         #endregion
 
         #region Properties
+        public string ExtractionPath { set { extractionPath = value; } }
+
         public string Pattern { get { return pattern; } set { pattern = value; } }
         /// <summary>
         /// Uncompressed size of the archive
