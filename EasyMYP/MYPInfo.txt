@@ -1,0 +1,52 @@
+#########################
+MYP File Header:
+-------------------------
+40 Bytes: header info
+0->3:	MYP, file extension...the usual header
+4->7:	???
+8->11:	???
+12->15:	address of the first filetable in the file
+16->19:	0, might be the position (32 high bits) of the first filetable in the file
+20->23:	Number of file in the first file table ?
+24->27:	Number of files in the whole archive, might be, might not be, path.myp is an exception it seems
+28->31:	Number of filetable ???
+32->36:	???
+
+
+Other Info: There is some CRC check somewhere
+
+
+-------------------------
+MYP filetable format:
+-------------------------
+12 Bytes: filetable info
+0->3:	Number of files that can be contained in the filetable
+4->7:	The address at which we can find the following filetable
+8->11:	???? (separator char) (might be the 32 high bits of the address of the following table hihihi)
+followed by the file entries
+
+
+-------------------------
+filetable file entry format:
+-------------------------
+34 Bytes: entry info
+0->3:	starting position , 32 low bits
+4->7:	starting position , ??? 32 high bits, usefull for 4GB + files
+8->11:	file header size, usually 136 or 137
+12->15:	compressed size
+16->19: uncompressed size
+20->27:	full filename + path hash, made by warpatch.004215A0
+28->31: CRC32 of the metadata
+32->33:	compression method?
+
+
+-------------------------
+filetable file header
+-------------------------
+136/137 Bytes: header info:
+0->1:	???
+2->3: 	Size of the header from this point on
+4->5:	???
+6->7:	Size of the header from this point on
+8 : present or not present, depends, but value is either 1 or 2 (absent when value is 0)
+9->136  data...
