@@ -160,8 +160,9 @@ namespace MYPWorker
 
             if (!trueFileName)
             {
-                if (!Directory.Exists(lPath + "\\" + currentFileName)) Directory.CreateDirectory(path + "\\" + currentFileName);
-                if (!Directory.Exists(lPath + "\\" + currentFileName + "\\" + ext)) Directory.CreateDirectory(path + "\\" + currentFileName + "\\" + ext);
+                
+                if (!Directory.Exists(lPath + "\\" + currentFileName)) Directory.CreateDirectory(lPath + "\\" + currentFileName);
+                if (!Directory.Exists(lPath + "\\" + currentFileName + "\\" + ext)) Directory.CreateDirectory(lPath + "\\" + currentFileName + "\\" + ext);
 
                 extraction_filename = lPath + "\\" + currentFileName + "\\" + ext + "\\" + filename + "." + ext;
             }
@@ -169,7 +170,7 @@ namespace MYPWorker
             {
                 filename = filename.Replace('\\', '/');
                 string[] folders = filename.Split('/');
-                string tmpPath = extractionPath + '/' + folders[0];
+                string tmpPath = lPath + '/' + folders[0];
                 if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
 
                 for (int i = 1; i < folders.Length - 1; i++)
