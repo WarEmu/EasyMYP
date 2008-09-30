@@ -179,7 +179,7 @@ namespace MYPWorker
                     if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
                 }
 
-                extraction_filename = extractionPath + '/' + filename;
+                extraction_filename = lPath + '/' + filename;
             }
 
             if (File.Exists(extraction_filename)) File.Delete(extraction_filename);
