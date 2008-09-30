@@ -47,6 +47,7 @@ namespace EasyMYP
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.createDirectoryStructureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recalculateHashesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testFilenameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tryAgainToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openArchiveDialog = new System.Windows.Forms.OpenFileDialog();
@@ -55,6 +56,7 @@ namespace EasyMYP
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.fileInArchiveBindingNavigator = new System.Windows.Forms.BindingNavigator(this.components);
             this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
+            this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.bindingNavigatorCountItem = new System.Windows.Forms.ToolStripLabel();
             this.bindingNavigatorDeleteItem = new System.Windows.Forms.ToolStripButton();
             this.bindingNavigatorMoveFirstItem = new System.Windows.Forms.ToolStripButton();
@@ -69,6 +71,12 @@ namespace EasyMYP
             this.Pattern = new System.Windows.Forms.TextBox();
             this.LabelFilter = new System.Windows.Forms.Label();
             this.fileInArchiveDataGridView = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.treeView_Archive = new System.Windows.Forms.TreeView();
@@ -95,20 +103,14 @@ namespace EasyMYP
             this.label_ReadingErrors_Value = new System.Windows.Forms.Label();
             this.replaceFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.testFilenameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.selectExtractionFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             this.panel_output.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).BeginInit();
             this.fileInArchiveBindingNavigator.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -116,7 +118,6 @@ namespace EasyMYP
             this.splitContainer1.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.panel_information.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -176,6 +177,7 @@ namespace EasyMYP
             // fileToolStripMenuItem1
             // 
             this.fileToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectExtractionFolderToolStripMenuItem,
             this.extractSelectedToolStripMenuItem,
             this.extractAllToolStripMenuItem,
             this.replaceSelectedToolStripMenuItem});
@@ -186,21 +188,21 @@ namespace EasyMYP
             // extractSelectedToolStripMenuItem
             // 
             this.extractSelectedToolStripMenuItem.Name = "extractSelectedToolStripMenuItem";
-            this.extractSelectedToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.extractSelectedToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.extractSelectedToolStripMenuItem.Text = "Extract Selected";
             this.extractSelectedToolStripMenuItem.Click += new System.EventHandler(this.extractSelectedToolStripMenuItem_Click);
             // 
             // extractAllToolStripMenuItem
             // 
             this.extractAllToolStripMenuItem.Name = "extractAllToolStripMenuItem";
-            this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.extractAllToolStripMenuItem.Text = "Extract All";
             this.extractAllToolStripMenuItem.Click += new System.EventHandler(this.extractAllToolStripMenuItem_Click);
             // 
             // replaceSelectedToolStripMenuItem
             // 
             this.replaceSelectedToolStripMenuItem.Name = "replaceSelectedToolStripMenuItem";
-            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.replaceSelectedToolStripMenuItem.Text = "Replace Selected";
             this.replaceSelectedToolStripMenuItem.Click += new System.EventHandler(this.replaceSelectedToolStripMenuItem_Click);
             // 
@@ -217,7 +219,7 @@ namespace EasyMYP
             // searchToolStripMenuItem
             // 
             this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            this.searchToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.searchToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.searchToolStripMenuItem.Text = "Search File";
             this.searchToolStripMenuItem.Click += new System.EventHandler(this.searchToolStripMenuItem_Click);
             // 
@@ -225,14 +227,14 @@ namespace EasyMYP
             // 
             this.writeToArchiveToolStripMenuItem.Enabled = false;
             this.writeToArchiveToolStripMenuItem.Name = "writeToArchiveToolStripMenuItem";
-            this.writeToArchiveToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.writeToArchiveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.writeToArchiveToolStripMenuItem.Text = "Add File";
             this.writeToArchiveToolStripMenuItem.Click += new System.EventHandler(this.writeToArchiveToolStripMenuItem_Click);
             // 
             // replaceToolStripMenuItem
             // 
             this.replaceToolStripMenuItem.Name = "replaceToolStripMenuItem";
-            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.replaceToolStripMenuItem.Text = "Replace File";
             this.replaceToolStripMenuItem.Click += new System.EventHandler(this.replaceToolStripMenuItem_Click);
             // 
@@ -262,6 +264,13 @@ namespace EasyMYP
             this.recalculateHashesToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
             this.recalculateHashesToolStripMenuItem.Text = "Choose Dictionary File";
             this.recalculateHashesToolStripMenuItem.Click += new System.EventHandler(this.recalculateHashesToolStripMenuItem_Click);
+            // 
+            // testFilenameToolStripMenuItem
+            // 
+            this.testFilenameToolStripMenuItem.Enabled = false;
+            this.testFilenameToolStripMenuItem.Name = "testFilenameToolStripMenuItem";
+            this.testFilenameToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
+            this.testFilenameToolStripMenuItem.Text = "Add Filename";
             // 
             // helpToolStripMenuItem
             // 
@@ -363,6 +372,10 @@ namespace EasyMYP
             this.bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
             this.bindingNavigatorAddNewItem.Size = new System.Drawing.Size(23, 22);
             this.bindingNavigatorAddNewItem.Text = "Add new";
+            // 
+            // fileInArchiveBindingSource
+            // 
+            this.fileInArchiveBindingSource.DataSource = typeof(MYPWorker.FileInArchive);
             // 
             // bindingNavigatorCountItem
             // 
@@ -492,6 +505,49 @@ namespace EasyMYP
             this.fileInArchiveDataGridView.TabIndex = 18;
             this.fileInArchiveDataGridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.fileInArchiveDataGridView_ColumnHeaderMouseClick);
             this.fileInArchiveDataGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.fileInArchiveDataGridView_CellContentClick);
+            // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "Filename";
+            this.dataGridViewTextBoxColumn5.HeaderText = "Filename";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            this.dataGridViewTextBoxColumn5.ReadOnly = true;
+            this.dataGridViewTextBoxColumn5.Width = 300;
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            this.dataGridViewTextBoxColumn6.DataPropertyName = "Extension";
+            this.dataGridViewTextBoxColumn6.HeaderText = "Extension";
+            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            this.dataGridViewTextBoxColumn6.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "Offset";
+            this.dataGridViewTextBoxColumn1.HeaderText = "Offset";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "Size";
+            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "CompressedSize";
+            this.dataGridViewTextBoxColumn3.HeaderText = "CompressedSize";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            this.dataGridViewTextBoxColumn3.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "CompressionMethod";
+            this.dataGridViewTextBoxColumn4.HeaderText = "CompressionMethod";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            this.dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // tabPage2
             // 
@@ -747,59 +803,12 @@ namespace EasyMYP
             // 
             this.replaceFileDialog.FileName = "replaceFileDialog";
             // 
-            // testFilenameToolStripMenuItem
+            // selectExtractionFolderToolStripMenuItem
             // 
-            this.testFilenameToolStripMenuItem.Enabled = false;
-            this.testFilenameToolStripMenuItem.Name = "testFilenameToolStripMenuItem";
-            this.testFilenameToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
-            this.testFilenameToolStripMenuItem.Text = "Add Filename";
-            // 
-            // fileInArchiveBindingSource
-            // 
-            this.fileInArchiveBindingSource.DataSource = typeof(MYPWorker.FileInArchive);
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "Filename";
-            this.dataGridViewTextBoxColumn5.HeaderText = "Filename";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.ReadOnly = true;
-            this.dataGridViewTextBoxColumn5.Width = 300;
-            // 
-            // dataGridViewTextBoxColumn6
-            // 
-            this.dataGridViewTextBoxColumn6.DataPropertyName = "Extension";
-            this.dataGridViewTextBoxColumn6.HeaderText = "Extension";
-            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-            this.dataGridViewTextBoxColumn6.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.DataPropertyName = "Offset";
-            this.dataGridViewTextBoxColumn1.HeaderText = "Offset";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.DataPropertyName = "Size";
-            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            this.dataGridViewTextBoxColumn2.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "CompressedSize";
-            this.dataGridViewTextBoxColumn3.HeaderText = "CompressedSize";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            this.dataGridViewTextBoxColumn3.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.DataPropertyName = "CompressionMethod";
-            this.dataGridViewTextBoxColumn4.HeaderText = "CompressionMethod";
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            this.dataGridViewTextBoxColumn4.ReadOnly = true;
+            this.selectExtractionFolderToolStripMenuItem.Name = "selectExtractionFolderToolStripMenuItem";
+            this.selectExtractionFolderToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.selectExtractionFolderToolStripMenuItem.Text = "Select Extraction Folder";
+            this.selectExtractionFolderToolStripMenuItem.Click += new System.EventHandler(this.selectExtractionFolderToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -822,6 +831,7 @@ namespace EasyMYP
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).EndInit();
             this.fileInArchiveBindingNavigator.ResumeLayout(false);
             this.fileInArchiveBindingNavigator.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -831,7 +841,6 @@ namespace EasyMYP
             this.panel_status.PerformLayout();
             this.panel_information.ResumeLayout(false);
             this.panel_information.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -912,6 +921,7 @@ namespace EasyMYP
         private System.Windows.Forms.TreeView treeView_FileSystem;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.ToolStripMenuItem testFilenameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectExtractionFolderToolStripMenuItem;
     }
 }
 

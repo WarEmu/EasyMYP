@@ -170,7 +170,7 @@ namespace MYPWorker
         #endregion
 
         #region Properties
-        public string ExtractionPath { set { extractionPath = value; } }
+        public string ExtractionPath { get { return extractionPath; } set { extractionPath = value; } }
 
         public string Pattern { get { return pattern; } set { pattern = value; } }
         /// <summary>
@@ -334,10 +334,10 @@ namespace MYPWorker
                     myArchFile.descriptor = new FileInArchiveDescriptor(buffer);
 
                     myArchFile.descriptor.fileTableEntryPosition = currentReadingPosition;
-//                            ffn = hasherBuilder.SearchHashTree(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
+                    //                            ffn = hasherBuilder.SearchHashTree(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
 
                     OnFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.NewFile, myArchFile));
-                   
+
                     currentReadingPosition += FileInArchiveDescriptor.fileDescriptorSize;
                 }
                 #endregion
@@ -412,7 +412,7 @@ namespace MYPWorker
                                 myArchFile.descriptor.foundFileName = true;
                                 myArchFile.descriptor.filename = ffn;
                                 numberOfFileNamesFound++;
-                                int dotpos =  myArchFile.descriptor.filename.LastIndexOf('.');
+                                int dotpos = myArchFile.descriptor.filename.LastIndexOf('.');
                                 myArchFile.descriptor.extension = myArchFile.descriptor.filename.Substring(dotpos + 1);
                             }
                             else
@@ -826,39 +826,39 @@ namespace MYPWorker
         bool WildcardMatch(string pattern, string path)
         {
             if (pattern == "")
-                return true; 
-            
+                return true;
+
             int s, p;
             int str = 0;
             int pat = 0;
             char[] patternTbl = pattern.ToCharArray();
             char[] pathTbl = path.ToCharArray();
             bool star = false;
-            
-            loopStart:
-                for (s = str, p = pat; s < pathTbl.Length; ++s, ++p)
-                {
-                    if (patternTbl[p] == '*')
-                    {   
-                        star = true;
-                        str = s;
-                        pat = p;
-                        if (++pat >= patternTbl.Length)
-                            return true;
-                        goto loopStart;
-                    }
-                    if (pathTbl[s] != patternTbl[p])
-                        goto starCheck;
-                }
+
+        loopStart:
+            for (s = str, p = pat; s < pathTbl.Length; ++s, ++p)
+            {
                 if (patternTbl[p] == '*')
-                    ++p;
-                return (p >= patternTbl.Length);
-            
-            starCheck:
-                if (!star)
-                    return false;
-                str++;
-                goto loopStart;
+                {
+                    star = true;
+                    str = s;
+                    pat = p;
+                    if (++pat >= patternTbl.Length)
+                        return true;
+                    goto loopStart;
+                }
+                if (pathTbl[s] != patternTbl[p])
+                    goto starCheck;
+            }
+            if (patternTbl[p] == '*')
+                ++p;
+            return (p >= patternTbl.Length);
+
+        starCheck:
+            if (!star)
+                return false;
+            str++;
+            goto loopStart;
         }
 
 

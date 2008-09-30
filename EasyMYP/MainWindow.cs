@@ -169,6 +169,15 @@ namespace EasyMYP
         #endregion
 
         #region File Menu
+        private void selectExtractionFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                worker.ExtractionPath = folderBrowserDialog1.SelectedPath;
+
+            }
+        }
+
         private void extractSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (fileInArchiveBindingSource.Current != null)
@@ -179,20 +188,17 @@ namespace EasyMYP
 
         private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            //TODO: if extraction path is not set put an alert up ?
+            if (worker != null)
             {
-                worker.ExtractionPath = folderBrowserDialog1.SelectedPath;
-                if (worker != null)
-                {
-                    t_worker = new Thread(new ThreadStart(worker.ExtractAll));
-                    t_worker.Start();
+                t_worker = new Thread(new ThreadStart(worker.ExtractAll));
+                t_worker.Start();
 
-                    //Show a progress bar
-                    avBar = new AvancementBar();
-                    avBar.Text = "Extracting";
-                    avBar.ShowDialog();
-                    avBar.Dispose();
-                }
+                //Show a progress bar
+                avBar = new AvancementBar();
+                avBar.Text = "Extracting";
+                avBar.ShowDialog();
+                avBar.Dispose();
             }
         }
 
@@ -421,7 +427,6 @@ namespace EasyMYP
             t_worker.Abort();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
-
 
     }
 }
