@@ -234,7 +234,7 @@ namespace MYPWorker
             error_ExtractionNumber = 0;
 
             //open the archive file
-            archiveStream = new FileStream(filename, FileMode.Open);
+            archiveStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
 
             //read the position of the starting file table
             archiveStream.Seek(0x0C, SeekOrigin.Begin);
@@ -860,7 +860,6 @@ namespace MYPWorker
             str++;
             goto loopStart;
         }
-
 
     }
 }
