@@ -19,6 +19,12 @@ using WarhammerOnlineHashBuilder;
 namespace MYPWorker
 {
     #region MYP File Format Helpers
+    public enum FileInArchiveState
+    {
+        NEW,
+        MODIFIED,
+        UNCHANGED
+    }
     /// <summary>
     /// An object that represents a file in the archive
     /// </summary>
@@ -28,6 +34,7 @@ namespace MYPWorker
         public byte[] metadata;
         public byte[] data;
         public byte[] data_start_200 = new byte[200];
+        private FileInArchiveState state = FileInArchiveState.UNCHANGED;
 
         //public FileTableEntryDescriptor Descriptor { get { return descriptor; } }
 
@@ -38,6 +45,7 @@ namespace MYPWorker
         public int CompressionMethod { get { return descriptor.compressionMethod; } }
         public string Filename { get { return descriptor.filename; } }
         public string Extension { get { return descriptor.extension; } }
+        public FileInArchiveState State { get { return state; } set { state = value; } }
         #endregion
     }
 
@@ -71,7 +79,7 @@ namespace MYPWorker
         public long compressedSize;
         public long uncompressedSize;
         public int compressionMethod;
-        public byte[] crc = new byte[4];
+        public int crc = 0;
         public byte[] file_hash = new byte[8];
         public uint ph, sh;
 
@@ -107,14 +115,16 @@ namespace MYPWorker
             sh = (uint)convertLittleEndianBufferToInt(buffer, 20);
             ph = (uint)convertLittleEndianBufferToInt(buffer, 24);
 
-            for (int i = 0; i < 4; i++)
-            {
-                crc[i] = buffer[28 + i];
-            }
+            crc = BitConverter.ToInt32(buffer, 28);
+
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    crc = (int)buffer[28 + i]*(int)Math.Pow(8,i);
+            //}
 
             for (int i = 0; i < 4; i++)
             {
-                filename += string.Format("{0:X2}", crc[i]);
+                filename += string.Format("{0:X8}", crc);
             }
             filename += "_";
             for (int i = 0; i < 8; i++)
@@ -159,6 +169,8 @@ namespace MYPWorker
         string currentFileName; //the current filename of the file being read
         string path; //the path of the filename
         public List<FileInArchive> archiveFileList = new List<FileInArchive>(); //contains all the files information, but not the data because of memory limitation on a 32Bits system
+        public List<FileInArchive> archiveNewFileList = new List<FileInArchive>();
+        public List<FileInArchive> archiveModifiedFileList = new List<FileInArchive>();
         long tableStart; //start of the file table entry
         string pattern = "*";
         long unCompressedSize = 0; //uncompressed size
@@ -294,6 +306,7 @@ namespace MYPWorker
         /// Parse the source file and reads the file table entries
         /// Raises according event depending on result
         /// (lots of deprecated and debugg stuff)
+        /// USES REDBLACK TREE (me thinks)
         /// </summary>
         public void ListFiles()
         {
@@ -401,22 +414,39 @@ namespace MYPWorker
                     {
                         //Search for the filename
 
-                        string ffn = "";
+                        HashData ffn = null;
                         if (hasherBuilder != null)
                         {
-                            ffn = hasherBuilder.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
-
-
-                            if (ffn != "")
+                            ffn = hasherBuilder.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh, myArchFile.descriptor.crc);
+                            if (ffn != null && ffn.filename != "")
                             {
                                 myArchFile.descriptor.foundFileName = true;
-                                myArchFile.descriptor.filename = ffn;
+                                myArchFile.descriptor.filename = ffn.filename;
+                                if (myArchFile.descriptor.crc != ffn.crc)
+                                {
+                                    myArchFile.State = FileInArchiveState.MODIFIED;
+                                    hasherBuilder.UpdateHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh, ffn.filename, myArchFile.descriptor.crc);
+                                    archiveModifiedFileList.Add(myArchFile);
+                                }
                                 numberOfFileNamesFound++;
                                 int dotpos = myArchFile.descriptor.filename.LastIndexOf('.');
                                 myArchFile.descriptor.extension = myArchFile.descriptor.filename.Substring(dotpos + 1);
                             }
                             else
                             {
+                                if (ffn == null)
+                                {
+                                    myArchFile.State = FileInArchiveState.NEW;
+                                    hasherBuilder.AddHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
+                                    hasherBuilder.UpdateHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh, "", myArchFile.descriptor.crc);
+                                    archiveNewFileList.Add(myArchFile);
+                                }
+                                else if (myArchFile.descriptor.crc != ffn.crc)
+                                {
+                                    myArchFile.State = FileInArchiveState.MODIFIED;
+                                    hasherBuilder.UpdateHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh, ffn.filename, myArchFile.descriptor.crc);
+                                    archiveModifiedFileList.Add(myArchFile);
+                                }
                                 //Retrieve header
                                 myArchFile.metadata = new byte[myArchFile.descriptor.fileHeaderSize];
 
@@ -473,6 +503,7 @@ namespace MYPWorker
                 #endregion
             }
 
+            OnFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.Finished, null));
         }
 
         #endregion
@@ -861,5 +892,10 @@ namespace MYPWorker
             goto loopStart;
         }
 
+
+        public void SaveHashList()
+        {
+            hasherBuilder.SaveHashList();
+        }
     }
 }

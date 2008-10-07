@@ -59,6 +59,7 @@ namespace EasyMYP
             avBar.ShowDialog();
             hasher.HashEvent -= avBar.UpdateHashEventHandler;
             avBar.Dispose();
+            //hasher.SaveHashList();
         }
 
         #region Menu
@@ -74,6 +75,9 @@ namespace EasyMYP
             if (worker != null)
                 worker.Dispose();
             label_File_Value.Text = "";
+
+            label_NewFiles_Value.Text = "0";
+            label_ModifiedFiles_Value.Text = "0";
             label_EstimatedNumOfFiles_Value.Text = "0";
             label_NumOfFiles_Value.Text = "0";
             label_NumOfNamedFiles_Value.Text = "0";
@@ -91,7 +95,6 @@ namespace EasyMYP
             {
                 resetOverall();
                 fileInArchiveBindingSource.Clear(); //Clean the filelisting
-                label_ExtractedFiles_Value.Text = "0";
 
                 string filename = openArchiveDialog.FileName; //get filename selected
                 int filenameStartPosition = filename.LastIndexOf('\\');
@@ -106,7 +109,6 @@ namespace EasyMYP
                 Loading.Value = 0;
                 Loading.Visible = true;
                 label_EstimatedNumOfFiles_Value.Text = worker.TotalNumberOfFiles.ToString();
-
 
                 worker.Pattern = Pattern.Text;
                 t_worker = new Thread(new ThreadStart(worker.GetFileTable));
@@ -272,6 +274,13 @@ namespace EasyMYP
             {
                 Update_OnFileTableEvent();
             }
+            else if (e.Type == Event_FileTableType.Finished)
+            {
+                if (worker.archiveModifiedFileList.Count > 0 || worker.archiveNewFileList.Count > 0)
+                {
+                    worker.SaveHashList();
+                }
+            }
         }
 
         /// <summary>
@@ -284,6 +293,9 @@ namespace EasyMYP
             label_NumOfFiles_Value.Text = worker.NumberOfFilesFound.ToString();
             label_NumOfNamedFiles_Value.Text = worker.NumberOfFileNamesFound.ToString();
             label_UncompressedSize_Value.Text = worker.UnCompressedSize.ToString();
+            label_ModifiedFiles_Value.Text = worker.archiveModifiedFileList.Count.ToString();
+            label_NewFiles_Value.Text = worker.archiveNewFileList.Count.ToString();
+
             if (worker.NumberOfFilesFound == worker.TotalNumberOfFiles)
             {
                 Loading.Visible = false;

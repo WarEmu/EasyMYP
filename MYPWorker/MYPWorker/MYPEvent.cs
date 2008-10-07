@@ -62,7 +62,8 @@ namespace MYPWorker
     {
         NewFile,
         UpdateFile,
-        FileError
+        FileError,
+        Finished
     }
 
     /// <summary>

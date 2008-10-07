@@ -68,9 +68,27 @@ namespace WarhammerOnlineHashBuilder
         }
     }
 
+    public class HashData
+    {
+        public string filename;
+        public int crc;
+        public uint ph;
+        public uint sh;
+
+        public HashData(uint ph, uint sh, string filename, int crc)
+        {
+            this.ph = ph;
+            this.sh = sh;
+            this.filename = filename;
+            this.crc = crc;
+        }
+
+        //(uint)Convert.ToUInt32(strsplt[0], 16);
+    }
+
     public class Hasher
     {
-        SortedList<long, string> hashList = new SortedList<long, string>();
+        SortedList<long, HashData> hashList = new SortedList<long, HashData>();
         RedBlack hashtree = new RedBlack();
         List<string> dirListing = new List<string>();
         List<string> fileListing = new List<string>();
@@ -78,7 +96,7 @@ namespace WarhammerOnlineHashBuilder
 
         bool dev = false;
 
-        public SortedList<long, string> HashList { get { return hashList; } }
+        public SortedList<long, HashData> HashList { get { return hashList; } }
         public List<string> DirListing { get { return dirListing; } }
 
         string dictionaryFile = "Hash/hashes_filename.txt";
@@ -132,10 +150,10 @@ namespace WarhammerOnlineHashBuilder
             hashtree.Add(new HashTreeKey(sig), new HashTreeObject(sig, name));
         }
 
-        void AddHash(uint ph, uint sh, string name)
+        void AddHash(uint ph, uint sh, string name, int crc)
         {
             long sig = (((long)ph) << 32) + sh;
-            hashList.Add(sig, name);
+            hashList.Add(sig, new HashData(ph, sh, name, crc));
         }
 
         #region Generation Helpers
@@ -151,7 +169,7 @@ namespace WarhammerOnlineHashBuilder
             //if the list contains the sig, then we update
             if (!hashList.ContainsKey(sig))
             {
-                hashList.Add(sig, "");
+                hashList.Add(sig, new HashData(ph, sh, "", 0));
             }
         }
 
@@ -162,15 +180,16 @@ namespace WarhammerOnlineHashBuilder
         /// <param name="ph">ph value</param>
         /// <param name="sh">sh value</param>
         /// <param name="name">equivalent of the hash as a string</param>
-        public void UpdateHash(uint ph, uint sh, string name)
+        public void UpdateHash(uint ph, uint sh, string name, int crc)
         {
             long sig = (((long)ph) << 32) + sh;
             //if the list contains the sig, then we update
             if (hashList.ContainsKey(sig))
             {
-                if (hashList[sig] != name && name != "")
+                if (hashList[sig].filename != name && name != "")
                 {
-                    hashList[sig] = name;
+                    hashList[sig].filename = name;
+                    hashList[sig].crc = crc;
                 }
 
                 AddDirectory(name);
@@ -280,8 +299,17 @@ namespace WarhammerOnlineHashBuilder
                     uint ph = (uint)Convert.ToUInt32(strsplt[0], 16);
                     uint sh = (uint)Convert.ToUInt32(strsplt[1], 16);
                     string filename = strsplt[2];
+                    int crc;
+                    if (strsplt.Length > 3)
+                    {
+                        crc = (int)Convert.ToUInt32(strsplt[3], 16);
+                    }
+                    else
+                    {
+                        crc = 0;
+                    }
 
-                    AddHash(ph, sh, filename);
+                    AddHash(ph, sh, filename, crc);
                     OnHashEvent(new HashEventArgs(HashState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
                 }
 
@@ -346,10 +374,19 @@ namespace WarhammerOnlineHashBuilder
                     uint ph = (uint)Convert.ToUInt32(strsplt[0], 16);
                     uint sh = (uint)Convert.ToUInt32(strsplt[1], 16);
                     string filename = strsplt[2];
+                    int crc;
+                    if (strsplt.Length > 3)
+                    {
+                        crc = (int)Convert.ToUInt32(strsplt[3], 16);
+                    }
+                    else
+                    {
+                        crc = 0;
+                    }
 
                     warhash.Hash(filename, 0xDEADBEEF);
 
-                    UpdateHash(ph, sh, filename);
+                    UpdateHash(ph, sh, filename, crc);
                     UpdateTreeHash(ph, sh, filename);
                     //OnHashEvent(new HashEventArgs(HashState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
                 }
@@ -389,14 +426,24 @@ namespace WarhammerOnlineHashBuilder
         /// </summary>
         public void SaveHashList()
         {
-            if (File.Exists(dictionaryFile)) File.Delete(dictionaryFile);
-            FileStream fs = new FileStream(dictionaryFile, FileMode.OpenOrCreate);
-            StreamWriter writer = new StreamWriter(fs);
+            string path = System.IO.Path.GetDirectoryName(
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
 
+            DateTime centuryBegin = new DateTime(2001, 1, 1);
+            DateTime currentDate = DateTime.Now;
+            long elapsedTicks = currentDate.Ticks - centuryBegin.Ticks;
+            TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+
+            path = path.Replace("file:\\", "");
+            string dicFile = path + "/" + dictionaryFile;
+
+            if (File.Exists(dicFile)) File.Move(dicFile, dicFile + "." + elapsedSpan.TotalSeconds.ToString() + ".bak");
+            FileStream fs = new FileStream(dicFile, FileMode.OpenOrCreate);
+            StreamWriter writer = new StreamWriter(fs);
 
             for (int i = 0; i < hashList.Count; i++)
             {
-                writer.WriteLine("{0:X8}#{1:X8}#{2}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i]); ;
+                writer.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc); ;
             }
 
             writer.Close();
@@ -414,9 +461,9 @@ namespace WarhammerOnlineHashBuilder
 
                 for (int i = 0; i < hashList.Count; i++)
                 {
-                    if (dev && hashList.Values[i] != "")
+                    if (dev && hashList.Values[i].filename != "")
                     {
-                        writer_hof.WriteLine("{0:X8}#{1:X8}#{2}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i]); ;
+                        writer_hof.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc); ;
                         writer_pn.WriteLine(hashList.Values[i]);
                     }
                 }
@@ -453,8 +500,8 @@ namespace WarhammerOnlineHashBuilder
                 fs.Close();
             }
 
-            if (File.Exists(directoryListingFile)) File.Delete(directoryListingFile);
-            fs = new FileStream(directoryListingFile, FileMode.OpenOrCreate);
+            if (File.Exists(path + "/" + directoryListingFile)) File.Delete(path + "/" + directoryListingFile);
+            fs = new FileStream(path + "/" + directoryListingFile, FileMode.OpenOrCreate);
             writer = new StreamWriter(fs);
 
             for (int i = 0; i < dirListing.Count; i++)
@@ -492,14 +539,18 @@ namespace WarhammerOnlineHashBuilder
         /// <param name="ph"></param>
         /// <param name="sh"></param>
         /// <returns>returns "" if filename could not be found, filename otherwise</returns> 
-        public string SearchHashList(uint ph, uint sh)
+        public HashData SearchHashList(uint ph, uint sh, int crc)
         {
             long sig = ((long)ph << 32) + sh;
             if (hashList.ContainsKey(sig))
             {
+                if (hashList[sig].crc == 0)
+                {
+                    hashList[sig].crc = crc;
+                }
                 return hashList[sig];
             }
-            return "";
+            return null;
         }
 
         #region Events
