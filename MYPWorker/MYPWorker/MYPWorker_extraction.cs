@@ -48,14 +48,23 @@ namespace MYPWorker
         /// </summary>
         public void ExtractAll()
         {
-            numExtractedFiles = 0;
+            ExtractFileList(archiveFileList);
+        }
 
-            for (int i = 0; i < archiveFileList.Count; i++)
+        /// <summary>
+        /// Extracts all file from the myp archive
+        /// </summary>
+        public void ExtractFileList(object obj)
+        {
+            numExtractedFiles = 0;
+            List<FileInArchive> fileList = (List<FileInArchive>)obj;
+
+            for (int i = 0; i < fileList.Count; i++)
             {
-                ExtractFile(archiveFileList[i]);
+                ExtractFile(fileList[i]);
             }
 
-            OnExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.ExtractionFinished, archiveFileList.Count - error_ExtractionNumber));
+            OnExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.ExtractionFinished, fileList.Count - error_ExtractionNumber));
         }
 
         /// <summary>

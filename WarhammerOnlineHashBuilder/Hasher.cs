@@ -17,7 +17,6 @@ using System.Xml.Serialization;
 using RedBlackCS;
 using WarhammerOnlineHash;
 
-
 namespace WarhammerOnlineHashBuilder
 {
     public class HashTreeObject
@@ -426,15 +425,14 @@ namespace WarhammerOnlineHashBuilder
         /// </summary>
         public void SaveHashList()
         {
-            string path = System.IO.Path.GetDirectoryName(
-                System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+            string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
 
             DateTime centuryBegin = new DateTime(2001, 1, 1);
             DateTime currentDate = DateTime.Now;
             long elapsedTicks = currentDate.Ticks - centuryBegin.Ticks;
             TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
 
-            path = path.Replace("file:\\", "");
+            //path = path.Replace("file:\\", "");
             string dicFile = path + "/" + dictionaryFile;
 
             if (File.Exists(dicFile)) File.Move(dicFile, dicFile + "." + elapsedSpan.TotalSeconds.ToString() + ".bak");

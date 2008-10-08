@@ -37,6 +37,7 @@ namespace EasyMYP
         Hasher hasher = new Hasher(false); //The class that contains the dictionnary
         //List<FileInArchive> FIAList = new List<FileInArchive>();
         AvancementBar avBar;
+        string extractionPath = null;
         #endregion
 
         public MainWindow()
@@ -105,6 +106,11 @@ namespace EasyMYP
                     , FileTableEventHandler, ExtractionEventHandler
                     , hasher);
 
+                if (extractionPath != null)
+                {
+                    worker.ExtractionPath = extractionPath;
+                }
+
                 Loading.Maximum = (int)worker.TotalNumberOfFiles;
                 Loading.Value = 0;
                 Loading.Visible = true;
@@ -119,10 +125,10 @@ namespace EasyMYP
         private void closeArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             resetOverall();
-//            if (worker != null)
-//            {
-//                worker.Dispose(); //releases the worker if set
-//            }
+            //            if (worker != null)
+            //            {
+            //                worker.Dispose(); //releases the worker if set
+            //            }
             //fileInArchiveBindingSource.Clear(); //Clean the filelisting
         }
 
@@ -175,7 +181,8 @@ namespace EasyMYP
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                worker.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                extractionPath = folderBrowserDialog1.SelectedPath;
+                worker.ExtractionPath = extractionPath;
 
             }
         }
@@ -188,19 +195,53 @@ namespace EasyMYP
             }
         }
 
-        private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExtractFiles(List<FileInArchive> fileList)
         {
-            //TODO: if extraction path is not set put an alert up ?
             if (worker != null)
             {
-                t_worker = new Thread(new ThreadStart(worker.ExtractAll));
-                t_worker.Start();
+                t_worker = new Thread(new ParameterizedThreadStart(worker.ExtractFileList));
+                t_worker.Start(fileList);
 
                 //Show a progress bar
                 avBar = new AvancementBar();
                 avBar.Text = "Extracting";
                 avBar.ShowDialog();
                 avBar.Dispose();
+            }
+        }
+
+        private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            //TODO: if extraction path is not set put an alert up ?
+            if (worker != null)
+            {
+                //t_worker = new Thread(new ThreadStart(worker.ExtractAll));
+                //t_worker.Start();
+
+                ////Show a progress bar
+                //avBar = new AvancementBar();
+                //avBar.Text = "Extracting";
+                //avBar.ShowDialog();
+                //avBar.Dispose();
+
+                ExtractFiles(worker.archiveFileList);
+            }
+        }
+
+        private void buttonExtractNewFiles_Click(object sender, EventArgs e)
+        {
+            if (worker != null)
+            {
+                ExtractFiles(worker.archiveNewFileList);
+            }
+        }
+
+        private void buttonExtractModifiedFiles_Click(object sender, EventArgs e)
+        {
+            if (worker != null)
+            {
+                ExtractFiles(worker.archiveModifiedFileList);
             }
         }
 
@@ -391,13 +432,13 @@ namespace EasyMYP
         {
             return;
             // Check which column is selected, otherwise set NewColumn to null.
-            DataGridViewColumn newColumn =                              
+            DataGridViewColumn newColumn =
                 fileInArchiveDataGridView.SelectedColumns.Count > 0 ?
                 fileInArchiveDataGridView.SelectedColumns[0] : fileInArchiveDataGridView.Columns[0];
- 
+
             DataGridViewColumn oldColumn = fileInArchiveDataGridView.SortedColumn;
             ListSortDirection direction;
- 
+
             // If oldColumn is null, then the DataGridView is not currently sorted.
             if (oldColumn != null)
             {
@@ -421,7 +462,7 @@ namespace EasyMYP
 
             fileInArchiveDataGridView.Sort(newColumn, direction);
 
-            
+
             newColumn.HeaderCell.SortGlyphDirection =
                 direction == ListSortDirection.Ascending ?
                 SortOrder.Ascending : SortOrder.Descending;

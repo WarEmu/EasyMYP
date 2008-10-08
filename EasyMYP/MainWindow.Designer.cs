@@ -75,6 +75,13 @@ namespace EasyMYP
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.treeView_Archive = new System.Windows.Forms.TreeView();
             this.treeView_FileSystem = new System.Windows.Forms.TreeView();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.buttonExtractModifiedFiles = new System.Windows.Forms.Button();
+            this.buttonExtractNewFiles = new System.Windows.Forms.Button();
+            this.label_ModifiedFiles_Value = new System.Windows.Forms.Label();
+            this.label_ModifiedFiles_Text = new System.Windows.Forms.Label();
+            this.label_NewFiles_Value = new System.Windows.Forms.Label();
+            this.label_NewFiles_Text = new System.Windows.Forms.Label();
             this.panel_status = new System.Windows.Forms.Panel();
             this.Loading = new System.Windows.Forms.ProgressBar();
             this.credits = new System.Windows.Forms.Label();
@@ -104,13 +111,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label_ModifiedFiles_Value = new System.Windows.Forms.Label();
-            this.label_ModifiedFiles_Text = new System.Windows.Forms.Label();
-            this.label_NewFiles_Value = new System.Windows.Forms.Label();
-            this.label_NewFiles_Text = new System.Windows.Forms.Label();
-            this.buttonExtractNewFiles = new System.Windows.Forms.Button();
-            this.buttonExtractModifiedFiles = new System.Windows.Forms.Button();
             this.mainMenu.SuspendLayout();
             this.panel_output.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -122,10 +122,10 @@ namespace EasyMYP
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.panel_information.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
-            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -234,7 +234,7 @@ namespace EasyMYP
             // searchToolStripMenuItem
             // 
             this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            this.searchToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.searchToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.searchToolStripMenuItem.Text = "Search File";
             this.searchToolStripMenuItem.Click += new System.EventHandler(this.searchToolStripMenuItem_Click);
             // 
@@ -242,14 +242,14 @@ namespace EasyMYP
             // 
             this.writeToArchiveToolStripMenuItem.Enabled = false;
             this.writeToArchiveToolStripMenuItem.Name = "writeToArchiveToolStripMenuItem";
-            this.writeToArchiveToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.writeToArchiveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.writeToArchiveToolStripMenuItem.Text = "Add File";
             this.writeToArchiveToolStripMenuItem.Click += new System.EventHandler(this.writeToArchiveToolStripMenuItem_Click);
             // 
             // replaceToolStripMenuItem
             // 
             this.replaceToolStripMenuItem.Name = "replaceToolStripMenuItem";
-            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.replaceToolStripMenuItem.Text = "Replace File";
             this.replaceToolStripMenuItem.Click += new System.EventHandler(this.replaceToolStripMenuItem_Click);
             // 
@@ -565,6 +565,78 @@ namespace EasyMYP
             this.treeView_FileSystem.Size = new System.Drawing.Size(409, 330);
             this.treeView_FileSystem.TabIndex = 0;
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.buttonExtractModifiedFiles);
+            this.tabPage3.Controls.Add(this.buttonExtractNewFiles);
+            this.tabPage3.Controls.Add(this.label_ModifiedFiles_Value);
+            this.tabPage3.Controls.Add(this.label_ModifiedFiles_Text);
+            this.tabPage3.Controls.Add(this.label_NewFiles_Value);
+            this.tabPage3.Controls.Add(this.label_NewFiles_Text);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(835, 348);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "File Changes";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // buttonExtractModifiedFiles
+            // 
+            this.buttonExtractModifiedFiles.Location = new System.Drawing.Point(183, 35);
+            this.buttonExtractModifiedFiles.Name = "buttonExtractModifiedFiles";
+            this.buttonExtractModifiedFiles.Size = new System.Drawing.Size(126, 23);
+            this.buttonExtractModifiedFiles.TabIndex = 26;
+            this.buttonExtractModifiedFiles.Text = "Extract Modified Files";
+            this.buttonExtractModifiedFiles.UseVisualStyleBackColor = true;
+            this.buttonExtractModifiedFiles.Click += new System.EventHandler(this.buttonExtractModifiedFiles_Click);
+            // 
+            // buttonExtractNewFiles
+            // 
+            this.buttonExtractNewFiles.Location = new System.Drawing.Point(183, 6);
+            this.buttonExtractNewFiles.Name = "buttonExtractNewFiles";
+            this.buttonExtractNewFiles.Size = new System.Drawing.Size(126, 23);
+            this.buttonExtractNewFiles.TabIndex = 25;
+            this.buttonExtractNewFiles.Text = "Extract New Files";
+            this.buttonExtractNewFiles.UseVisualStyleBackColor = true;
+            this.buttonExtractNewFiles.Click += new System.EventHandler(this.buttonExtractNewFiles_Click);
+            // 
+            // label_ModifiedFiles_Value
+            // 
+            this.label_ModifiedFiles_Value.AutoSize = true;
+            this.label_ModifiedFiles_Value.Location = new System.Drawing.Point(129, 40);
+            this.label_ModifiedFiles_Value.Name = "label_ModifiedFiles_Value";
+            this.label_ModifiedFiles_Value.Size = new System.Drawing.Size(13, 13);
+            this.label_ModifiedFiles_Value.TabIndex = 24;
+            this.label_ModifiedFiles_Value.Text = "0";
+            // 
+            // label_ModifiedFiles_Text
+            // 
+            this.label_ModifiedFiles_Text.AutoSize = true;
+            this.label_ModifiedFiles_Text.Location = new System.Drawing.Point(6, 40);
+            this.label_ModifiedFiles_Text.Name = "label_ModifiedFiles_Text";
+            this.label_ModifiedFiles_Text.Size = new System.Drawing.Size(71, 13);
+            this.label_ModifiedFiles_Text.TabIndex = 23;
+            this.label_ModifiedFiles_Text.Text = "Modified Files";
+            // 
+            // label_NewFiles_Value
+            // 
+            this.label_NewFiles_Value.AutoSize = true;
+            this.label_NewFiles_Value.Location = new System.Drawing.Point(129, 11);
+            this.label_NewFiles_Value.Name = "label_NewFiles_Value";
+            this.label_NewFiles_Value.Size = new System.Drawing.Size(13, 13);
+            this.label_NewFiles_Value.TabIndex = 22;
+            this.label_NewFiles_Value.Text = "0";
+            // 
+            // label_NewFiles_Text
+            // 
+            this.label_NewFiles_Text.AutoSize = true;
+            this.label_NewFiles_Text.Location = new System.Drawing.Point(6, 11);
+            this.label_NewFiles_Text.Name = "label_NewFiles_Text";
+            this.label_NewFiles_Text.Size = new System.Drawing.Size(53, 13);
+            this.label_NewFiles_Text.TabIndex = 21;
+            this.label_NewFiles_Text.Text = "New Files";
+            // 
             // panel_status
             // 
             this.panel_status.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -819,76 +891,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             this.dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.buttonExtractModifiedFiles);
-            this.tabPage3.Controls.Add(this.buttonExtractNewFiles);
-            this.tabPage3.Controls.Add(this.label_ModifiedFiles_Value);
-            this.tabPage3.Controls.Add(this.label_ModifiedFiles_Text);
-            this.tabPage3.Controls.Add(this.label_NewFiles_Value);
-            this.tabPage3.Controls.Add(this.label_NewFiles_Text);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(835, 348);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "File Changes";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // label_ModifiedFiles_Value
-            // 
-            this.label_ModifiedFiles_Value.AutoSize = true;
-            this.label_ModifiedFiles_Value.Location = new System.Drawing.Point(129, 40);
-            this.label_ModifiedFiles_Value.Name = "label_ModifiedFiles_Value";
-            this.label_ModifiedFiles_Value.Size = new System.Drawing.Size(13, 13);
-            this.label_ModifiedFiles_Value.TabIndex = 24;
-            this.label_ModifiedFiles_Value.Text = "0";
-            // 
-            // label_ModifiedFiles_Text
-            // 
-            this.label_ModifiedFiles_Text.AutoSize = true;
-            this.label_ModifiedFiles_Text.Location = new System.Drawing.Point(6, 40);
-            this.label_ModifiedFiles_Text.Name = "label_ModifiedFiles_Text";
-            this.label_ModifiedFiles_Text.Size = new System.Drawing.Size(71, 13);
-            this.label_ModifiedFiles_Text.TabIndex = 23;
-            this.label_ModifiedFiles_Text.Text = "Modified Files";
-            // 
-            // label_NewFiles_Value
-            // 
-            this.label_NewFiles_Value.AutoSize = true;
-            this.label_NewFiles_Value.Location = new System.Drawing.Point(129, 11);
-            this.label_NewFiles_Value.Name = "label_NewFiles_Value";
-            this.label_NewFiles_Value.Size = new System.Drawing.Size(13, 13);
-            this.label_NewFiles_Value.TabIndex = 22;
-            this.label_NewFiles_Value.Text = "0";
-            // 
-            // label_NewFiles_Text
-            // 
-            this.label_NewFiles_Text.AutoSize = true;
-            this.label_NewFiles_Text.Location = new System.Drawing.Point(6, 11);
-            this.label_NewFiles_Text.Name = "label_NewFiles_Text";
-            this.label_NewFiles_Text.Size = new System.Drawing.Size(53, 13);
-            this.label_NewFiles_Text.TabIndex = 21;
-            this.label_NewFiles_Text.Text = "New Files";
-            // 
-            // buttonExtractNewFiles
-            // 
-            this.buttonExtractNewFiles.Location = new System.Drawing.Point(183, 6);
-            this.buttonExtractNewFiles.Name = "buttonExtractNewFiles";
-            this.buttonExtractNewFiles.Size = new System.Drawing.Size(126, 23);
-            this.buttonExtractNewFiles.TabIndex = 25;
-            this.buttonExtractNewFiles.Text = "Extract New Files";
-            this.buttonExtractNewFiles.UseVisualStyleBackColor = true;
-            // 
-            // buttonExtractModifiedFiles
-            // 
-            this.buttonExtractModifiedFiles.Location = new System.Drawing.Point(183, 35);
-            this.buttonExtractModifiedFiles.Name = "buttonExtractModifiedFiles";
-            this.buttonExtractModifiedFiles.Size = new System.Drawing.Size(126, 23);
-            this.buttonExtractModifiedFiles.TabIndex = 26;
-            this.buttonExtractModifiedFiles.Text = "Extract Modified Files";
-            this.buttonExtractModifiedFiles.UseVisualStyleBackColor = true;
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -915,13 +917,13 @@ namespace EasyMYP
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.panel_status.ResumeLayout(false);
             this.panel_status.PerformLayout();
             this.panel_information.ResumeLayout(false);
             this.panel_information.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
