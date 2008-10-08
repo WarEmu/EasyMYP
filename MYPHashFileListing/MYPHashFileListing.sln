@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarhammerOnlineHash", "..\W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MYPWorker", "..\MYPWorker\MYPWorker\MYPWorker.csproj", "{9668509D-05D9-4651-8E4F-4142AF541AB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashCreator", "..\HashCreator\HashCreator.csproj", "{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{9668509D-05D9-4651-8E4F-4142AF541AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9668509D-05D9-4651-8E4F-4142AF541AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9668509D-05D9-4651-8E4F-4142AF541AB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

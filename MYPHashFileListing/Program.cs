@@ -3,17 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
-using MYPWorker;
-using WarhammerOnlineHashBuilder;
+using nsHashCreator;
 
 namespace MYPHashFileListing
 {
-    public class mypfile
-    {
-        public uint ph, sh;
-        public string filename;
-    }
-
     class Program
     {
         static List<string> dirListing = new List<string>();
@@ -42,7 +35,7 @@ namespace MYPHashFileListing
             worker.ParseDirFilenamesAndExtension();
             
             worker.ConvertToPattern();
-            worker.Patterns();
+            //worker.Patterns();
             //worker.ConvertToPattern();
             
             worker.Save();

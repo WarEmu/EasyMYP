@@ -179,22 +179,27 @@ namespace WarhammerOnlineHashBuilder
         /// <param name="ph">ph value</param>
         /// <param name="sh">sh value</param>
         /// <param name="name">equivalent of the hash as a string</param>
-        public void UpdateHash(uint ph, uint sh, string name, int crc)
+        public bool UpdateHash(uint ph, uint sh, string name, int crc)
         {
             long sig = (((long)ph) << 32) + sh;
             //if the list contains the sig, then we update
             if (hashList.ContainsKey(sig))
             {
+                // the != name shoud actually be != ""
                 if (hashList[sig].filename != name && name != "")
                 {
                     hashList[sig].filename = name;
-                    hashList[sig].crc = crc;
+                    if (crc != 0)
+                    {
+                        hashList[sig].crc = crc;
+                    }
                 }
 
                 AddDirectory(name);
                 AddFile(name);
-
+                return true;
             }
+            return false;
         }
 
         /// <summary>
@@ -355,7 +360,7 @@ namespace WarhammerOnlineHashBuilder
         /// then transfer all the values that are correct from the old list to this new list
         /// </summary>
         /// <param name="file"></param>
-        public void IntegreateOldHashList(string file)
+        public void MergeHashList(string file)
         {
             //LoadDirListing();
 
@@ -385,8 +390,13 @@ namespace WarhammerOnlineHashBuilder
 
                     warhash.Hash(filename, 0xDEADBEEF);
 
-                    UpdateHash(ph, sh, filename, crc);
-                    UpdateTreeHash(ph, sh, filename);
+                    if (UpdateHash(ph, sh, filename, crc))
+                    {
+                        // Add hashes from old files too... just because of the US and EU hash lists that are different, will also help to use this method as a merge
+                        AddHash(ph, sh, filename, crc);
+                        //UpdateHash(ph, sh, filename, crc);
+                    }
+                    //UpdateTreeHash(ph, sh, filename);
                     //OnHashEvent(new HashEventArgs(HashState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
                 }
 
@@ -434,6 +444,15 @@ namespace WarhammerOnlineHashBuilder
 
             //path = path.Replace("file:\\", "");
             string dicFile = path + "/" + dictionaryFile;
+            string[] folders = dicFile.Split('/');
+            string tmpPath = folders[0];
+            if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
+
+            for (int i = 1; i < folders.Length - 1; i++)
+            {
+                tmpPath += '/' + folders[i];
+                if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
+            }
 
             if (File.Exists(dicFile)) File.Move(dicFile, dicFile + "." + elapsedSpan.TotalSeconds.ToString() + ".bak");
             FileStream fs = new FileStream(dicFile, FileMode.OpenOrCreate);
@@ -449,6 +468,8 @@ namespace WarhammerOnlineHashBuilder
 
             if (dev)
             {
+                if (!Directory.Exists(path + "/Hash")) Directory.CreateDirectory(path + "/Hash");
+
                 if (File.Exists("Hash/hashes_only_filename.txt")) File.Delete("Hash/hashes_only_filename.txt");
                 FileStream fs_hof = new FileStream("Hash/hashes_only_filename.txt", FileMode.OpenOrCreate);
                 StreamWriter writer_hof = new StreamWriter(fs_hof);

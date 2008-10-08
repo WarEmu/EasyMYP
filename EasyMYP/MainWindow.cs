@@ -43,6 +43,12 @@ namespace EasyMYP
         public MainWindow()
         {
             InitializeComponent();
+
+            //Show a progress bar
+            avBar = new AvancementBar();
+            avBar.Text = "Loading hash list ...";
+            hasher.HashEvent += avBar.UpdateHashEventHandler;
+
             //Building the dictionnary
             t_worker = new Thread(new ThreadStart(hasher.BuildHashList));
             t_worker.Start();
@@ -53,10 +59,6 @@ namespace EasyMYP
             OnNewFileTableEvent = TreatFileTableEvent;
 
             //Wait until the dictionnary is loaded
-            //Show a progress bar
-            avBar = new AvancementBar();
-            avBar.Text = "Loading hash list ...";
-            hasher.HashEvent += avBar.UpdateHashEventHandler;
             avBar.ShowDialog();
             hasher.HashEvent -= avBar.UpdateHashEventHandler;
             avBar.Dispose();
@@ -183,17 +185,31 @@ namespace EasyMYP
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
                 worker.ExtractionPath = extractionPath;
-
             }
         }
 
         private void extractSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (fileInArchiveBindingSource.Current != null)
+            if (extractionPath == null)
             {
-                worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    extractionPath = folderBrowserDialog1.SelectedPath;
+                    worker.ExtractionPath = extractionPath;
+                    if (fileInArchiveBindingSource.Current != null)
+                    {
+                        worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
+                    }
+                }
             }
-        }
+            else
+            {
+                if (fileInArchiveBindingSource.Current != null)
+                {
+                    worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
+                }
+            }
+         }
 
         private void ExtractFiles(List<FileInArchive> fileList)
         {
@@ -212,36 +228,57 @@ namespace EasyMYP
 
         private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             //TODO: if extraction path is not set put an alert up ?
             if (worker != null)
             {
-                //t_worker = new Thread(new ThreadStart(worker.ExtractAll));
-                //t_worker.Start();
+                if (extractionPath == null)
+                {
+                    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                    {
+                        extractionPath = folderBrowserDialog1.SelectedPath;
+                        worker.ExtractionPath = extractionPath;
+                        ExtractFiles(worker.archiveFileList);
+                    }
+                }
+                else
+                {
+                    //t_worker = new Thread(new ThreadStart(worker.ExtractAll));
+                    //t_worker.Start();
 
-                ////Show a progress bar
-                //avBar = new AvancementBar();
-                //avBar.Text = "Extracting";
-                //avBar.ShowDialog();
-                //avBar.Dispose();
+                    ////Show a progress bar
+                    //avBar = new AvancementBar();
+                    //avBar.Text = "Extracting";
+                    //avBar.ShowDialog();
+                    //avBar.Dispose();
 
-                ExtractFiles(worker.archiveFileList);
+                    ExtractFiles(worker.archiveFileList);
+                }
             }
         }
 
         private void buttonExtractNewFiles_Click(object sender, EventArgs e)
         {
-            if (worker != null)
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                ExtractFiles(worker.archiveNewFileList);
+                extractionPath = folderBrowserDialog1.SelectedPath;
+                worker.ExtractionPath = extractionPath;
+                if (worker != null)
+                {
+                    ExtractFiles(worker.archiveNewFileList);
+                }
             }
         }
 
         private void buttonExtractModifiedFiles_Click(object sender, EventArgs e)
         {
-            if (worker != null)
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                ExtractFiles(worker.archiveModifiedFileList);
+                extractionPath = folderBrowserDialog1.SelectedPath;
+                worker.ExtractionPath = extractionPath;
+                if (worker != null)
+                {
+                    ExtractFiles(worker.archiveModifiedFileList);
+                }
             }
         }
 

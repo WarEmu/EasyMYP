@@ -40,11 +40,6 @@ namespace EasyMYP
             this.selectExtractionFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.writeToArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.createDirectoryStructureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recalculateHashesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -133,7 +128,6 @@ namespace EasyMYP
             this.mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.fileToolStripMenuItem1,
-            this.editToolStripMenuItem,
             this.toolsToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
@@ -187,8 +181,7 @@ namespace EasyMYP
             this.fileToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectExtractionFolderToolStripMenuItem,
             this.extractSelectedToolStripMenuItem,
-            this.extractAllToolStripMenuItem,
-            this.replaceSelectedToolStripMenuItem});
+            this.extractAllToolStripMenuItem});
             this.fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             this.fileToolStripMenuItem1.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem1.Text = "File";
@@ -213,45 +206,6 @@ namespace EasyMYP
             this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.extractAllToolStripMenuItem.Text = "Extract All";
             this.extractAllToolStripMenuItem.Click += new System.EventHandler(this.extractAllToolStripMenuItem_Click);
-            // 
-            // replaceSelectedToolStripMenuItem
-            // 
-            this.replaceSelectedToolStripMenuItem.Name = "replaceSelectedToolStripMenuItem";
-            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.replaceSelectedToolStripMenuItem.Text = "Replace Selected";
-            this.replaceSelectedToolStripMenuItem.Click += new System.EventHandler(this.replaceSelectedToolStripMenuItem_Click);
-            // 
-            // editToolStripMenuItem
-            // 
-            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.searchToolStripMenuItem,
-            this.writeToArchiveToolStripMenuItem,
-            this.replaceToolStripMenuItem});
-            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.editToolStripMenuItem.Text = "Edit";
-            // 
-            // searchToolStripMenuItem
-            // 
-            this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            this.searchToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.searchToolStripMenuItem.Text = "Search File";
-            this.searchToolStripMenuItem.Click += new System.EventHandler(this.searchToolStripMenuItem_Click);
-            // 
-            // writeToArchiveToolStripMenuItem
-            // 
-            this.writeToArchiveToolStripMenuItem.Enabled = false;
-            this.writeToArchiveToolStripMenuItem.Name = "writeToArchiveToolStripMenuItem";
-            this.writeToArchiveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.writeToArchiveToolStripMenuItem.Text = "Add File";
-            this.writeToArchiveToolStripMenuItem.Click += new System.EventHandler(this.writeToArchiveToolStripMenuItem_Click);
-            // 
-            // replaceToolStripMenuItem
-            // 
-            this.replaceToolStripMenuItem.Name = "replaceToolStripMenuItem";
-            this.replaceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.replaceToolStripMenuItem.Text = "Replace File";
-            this.replaceToolStripMenuItem.Click += new System.EventHandler(this.replaceToolStripMenuItem_Click);
             // 
             // toolsToolStripMenuItem
             // 
@@ -298,8 +252,8 @@ namespace EasyMYP
             // tryAgainToolStripMenuItem
             // 
             this.tryAgainToolStripMenuItem.Name = "tryAgainToolStripMenuItem";
-            this.tryAgainToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
-            this.tryAgainToolStripMenuItem.Text = "Try Again!";
+            this.tryAgainToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.tryAgainToolStripMenuItem.Text = "To Be Coded ...";
             // 
             // openArchiveDialog
             // 
@@ -383,6 +337,7 @@ namespace EasyMYP
             // bindingNavigatorAddNewItem
             // 
             this.bindingNavigatorAddNewItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorAddNewItem.Enabled = false;
             this.bindingNavigatorAddNewItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorAddNewItem.Image")));
             this.bindingNavigatorAddNewItem.Name = "bindingNavigatorAddNewItem";
             this.bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
@@ -399,6 +354,7 @@ namespace EasyMYP
             // bindingNavigatorDeleteItem
             // 
             this.bindingNavigatorDeleteItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorDeleteItem.Enabled = false;
             this.bindingNavigatorDeleteItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorDeleteItem.Image")));
             this.bindingNavigatorDeleteItem.Name = "bindingNavigatorDeleteItem";
             this.bindingNavigatorDeleteItem.RightToLeftAutoMirrorImage = true;
@@ -937,10 +893,6 @@ namespace EasyMYP
         private System.Windows.Forms.ToolStripMenuItem createToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeArchiveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem writeToArchiveToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem replaceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem createDirectoryStructureToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recalculateHashesToolStripMenuItem;
@@ -994,7 +946,6 @@ namespace EasyMYP
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
         private System.Windows.Forms.Label LabelFilter;
         private System.Windows.Forms.TextBox Pattern;
-        private System.Windows.Forms.ToolStripMenuItem replaceSelectedToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog replaceFileDialog;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
