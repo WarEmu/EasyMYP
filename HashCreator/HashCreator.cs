@@ -565,6 +565,12 @@ namespace nsHashCreator
 
         public void ParseDirFilenamesAndExtension()
         {
+            for (int i = 0; i < hasher.HashList.Count; i++)
+            {
+                // lets also populated this shit :)
+                hasher.AddDirectory(hasher.HashList.Values[i].filename);
+                hasher.AddFile(hasher.HashList.Values[i].filename);
+            }
             string DFEFile = "fileList.txt";
             string extFile = "extList.txt";
             if (File.Exists(DFEFile) && File.Exists(extFile))

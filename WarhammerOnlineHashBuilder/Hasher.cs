@@ -155,9 +155,6 @@ namespace WarhammerOnlineHashBuilder
         {
             long sig = (((long)ph) << 32) + sh;
             hashList.Add(sig, new HashData(ph, sh, name, crc));
-            // lets also populated this shit :)
-            AddDirectory(name);
-            AddFile(name);
         }
 
         #region Generation Helpers
