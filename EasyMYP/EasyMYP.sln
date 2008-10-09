@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MYPWorker", "..\MYPWorker\M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMYP", "EasyMYP.csproj", "{9A524C41-EA0F-4F4F-B9B5-318C6F3C2B54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashCreator", "..\HashCreator\HashCreator.csproj", "{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{9A524C41-EA0F-4F4F-B9B5-318C6F3C2B54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A524C41-EA0F-4F4F-B9B5-318C6F3C2B54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A524C41-EA0F-4F4F-B9B5-318C6F3C2B54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

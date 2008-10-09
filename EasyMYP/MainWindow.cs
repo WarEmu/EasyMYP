@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using MYPWorker;
 using WarhammerOnlineHashBuilder;
+using nsHashCreator;
 
 
 namespace EasyMYP
@@ -35,6 +36,7 @@ namespace EasyMYP
         MYPWorker.MYPWorker worker; //The class that does all the job of reading, extracting and writting to myp files
         public Thread t_worker; //worker thread because it is best that way so not to freeze the gui
         Hasher hasher = new Hasher(false); //The class that contains the dictionnary
+        HashCreator hashCreator = new HashCreator();
         //List<FileInArchive> FIAList = new List<FileInArchive>();
         AvancementBar avBar;
         string extractionPath = null;
@@ -43,15 +45,27 @@ namespace EasyMYP
         public MainWindow()
         {
             InitializeComponent();
+            LoadDictionnary(false, "");
+        }
 
+        void LoadDictionnary(bool merge, string fileToMerge)
+        {
             //Show a progress bar
             avBar = new AvancementBar();
             avBar.Text = "Loading hash list ...";
             hasher.HashEvent += avBar.UpdateHashEventHandler;
 
             //Building the dictionnary
-            t_worker = new Thread(new ThreadStart(hasher.BuildHashList));
-            t_worker.Start();
+            if (!merge)
+            {
+                t_worker = new Thread(new ThreadStart(hasher.BuildHashList));
+                t_worker.Start();
+            }
+            else
+            {
+                t_worker = new Thread(new ParameterizedThreadStart(hasher.MergeHashList));
+                t_worker.Start(fileToMerge);
+            }
 
             //Define functions that should be called to treat events
             //Needed because of cross thread calls
@@ -63,6 +77,8 @@ namespace EasyMYP
             hasher.HashEvent -= avBar.UpdateHashEventHandler;
             avBar.Dispose();
             //hasher.SaveHashList();
+
+            hashCreator.InitializeHashList(hasher);
         }
 
         #region Menu
@@ -140,41 +156,38 @@ namespace EasyMYP
         }
         #endregion
 
-        #region Edit Menu
-        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (worker != null)
-            {
-                worker.SearchForFile("");
-            }
-        }
-
-        private void writeToArchiveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (worker != null)
-            {
-
-            }
-        }
-        #endregion
-
         #region Tools Menu
-        private void createDirectoryStructureToolStripMenuItem_Click(object sender, EventArgs e)
+        private void mergeDictionaryFile_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            status = State.CreatingDirectoryStructure;
-
-            status = State.waiting;
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
+                //Show a progress bar
+                avBar = new AvancementBar();
+                avBar.Text = "Merging hash list ...";
+                hasher.HashEvent += avBar.UpdateHashEventHandler;
+                t_worker = new Thread(new ParameterizedThreadStart(hasher.MergeHashList));
+                t_worker.Start(openArchiveDialog.FileName);
+                //Wait until the dictionnary is loaded
+                avBar.ShowDialog();
+                hasher.HashEvent -= avBar.UpdateHashEventHandler;
+                avBar.Dispose();
+            }
         }
 
-        private void recalculateHashesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void testFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            status = State.RebuildingHashList;
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
 
-            status = State.waiting;
+            }
+        }
+
+        private void testFullFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
+
+            }
         }
         #endregion
 
@@ -209,7 +222,7 @@ namespace EasyMYP
                     worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
                 }
             }
-         }
+        }
 
         private void ExtractFiles(List<FileInArchive> fileList)
         {
@@ -282,16 +295,6 @@ namespace EasyMYP
             }
         }
 
-        private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (replaceFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                string filename = replaceFileDialog.FileName; //get filename selected
-
-                worker.ReplaceFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current
-                    , new FileStream(filename, FileMode.Open));
-            }
-        }
         #endregion
         #endregion
 

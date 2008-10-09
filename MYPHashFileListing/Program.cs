@@ -27,17 +27,17 @@ namespace MYPHashFileListing
 
             worker.InitializeHashList(); //add the ones already calculated and known
 
-            //worker.IntegrateOldHashList();
+            //worker.MergeHashList("Hash/OldHashList.txt");
             //worker.Save();
 
-            //worker.ParseFilenames();
-            //worker.ParseDirAndFilenames();
+            //worker.ParseFilenames("full_filename.txt");
+            //worker.ParseDirAndFilenames("filenames.txt");
             worker.ParseDirFilenamesAndExtension();
-            
+
             worker.ConvertToPattern();
             //worker.Patterns();
             //worker.ConvertToPattern();
-            
+
             worker.Save();
 
             //worker.InitializeHashList();
@@ -230,7 +230,8 @@ namespace MYPHashFileListing
                 if (line.IndexOf("%s") >= 0 && !strPatList.Contains(line))
                 {
                     strPatList.Add(line);
-                } else if ((line.IndexOf("%04d") >= 0 || line.IndexOf("%03d") >= 0 || line.IndexOf("%02d") >= 0 || line.IndexOf("%d") >= 0) && !numPatList.Contains(line))
+                }
+                else if ((line.IndexOf("%04d") >= 0 || line.IndexOf("%03d") >= 0 || line.IndexOf("%02d") >= 0 || line.IndexOf("%d") >= 0) && !numPatList.Contains(line))
                 {
                     line = line.Replace("%d", "[0-9]");
                     line = line.Replace("%02d", "[0-9][0-9]");
@@ -262,7 +263,7 @@ namespace MYPHashFileListing
             {
                 for (int j = 0; j < dirListing.Count; j++)
                 {
-                    writer.WriteLine(dirListing[j]+"/"+numPatList[i]);
+                    writer.WriteLine(dirListing[j] + "/" + numPatList[i]);
                 }
             }
 

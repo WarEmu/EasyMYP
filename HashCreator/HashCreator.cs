@@ -57,23 +57,27 @@ namespace nsHashCreator
                 rfs.Close();
                 fs.Close();
             }
-
-            FileStream stream = new FileStream("pattern_num.txt", FileMode.Open);
-            StreamReader reader = new StreamReader(stream);
-
-            Regex r = new Regex("[0-9]");
-
-            while ((line = reader.ReadLine()) != null)
+            FileStream stream;
+            if (File.Exists("pattern_num.txt"))
             {
-                if (r.IsMatch(line))
+                stream = new FileStream("pattern_num.txt", FileMode.Open);
+                StreamReader reader = new StreamReader(stream);
+
+                Regex r = new Regex("[0-9]");
+
+                while ((line = reader.ReadLine()) != null)
                 {
-                    if (!patternList.Contains(r.Replace(line, "[0-9]")))
+                    if (r.IsMatch(line))
                     {
-                        patternList.Add(r.Replace(line, "[0-9]"));
+                        if (!patternList.Contains(r.Replace(line, "[0-9]")))
+                        {
+                            patternList.Add(r.Replace(line, "[0-9]"));
+                        }
                     }
                 }
+                stream.Close();
             }
-            stream.Close();
+
             if (File.Exists("pattern_n.txt")) File.Delete("pattern_n.txt");
             stream = new FileStream("pattern_n.txt", FileMode.OpenOrCreate);
             StreamWriter writer = new StreamWriter(stream);
@@ -248,15 +252,19 @@ namespace nsHashCreator
         //    }
         //}
 
+        public void InitializeHashList(Hasher hasher)
+        {
+            this.hasher = hasher;
+        }
+
         public void InitializeHashList()
         {
             hasher = new Hasher(true);
             hasher.BuildHashList();
         }
 
-        public void IntegrateOldHashList()
+        public void MergeHashList(string file)
         {
-            string file = "Hash/OldHashList.txt";
             hasher.MergeHashList(file);
         }
 
@@ -320,47 +328,47 @@ namespace nsHashCreator
             hasher.UpdateHash(newfile.ph, newfile.sh, newfile.filename, 0);
         }
 
-        public void ParseFilenames()
+        public void ParseFilenames(string fullFileNameFile)
         {
-            if (File.Exists("full_filenames.txt"))
+            if (File.Exists(fullFileNameFile))
             {
                 WarHasher warhash = new WarHasher();
 
-                FileStream fs = new FileStream("full_filenames.txt", FileMode.Open);
+                FileStream fs = new FileStream(fullFileNameFile, FileMode.Open);
                 StreamReader reader = new StreamReader(fs);
 
-                List<string> filenameList = new List<string>();
+                List<string> fileList = new List<string>();
 
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (!filenameList.Contains(line))
+                    if (!fileList.Contains(line))
                     {
-                        filenameList.Add(line);
+                        fileList.Add(line);
                     }
                 }
 
                 reader.Close();
                 fs.Close();
 
-                File.Delete("full_filenames.txt");
-                fs = new FileStream("full_filenames.txt", FileMode.Create);
+                File.Delete(fullFileNameFile);
+                fs = new FileStream(fullFileNameFile, FileMode.Create);
                 StreamWriter writer = new StreamWriter(fs);
 
-                for (int i = 0; i < filenameList.Count; i++)
+                for (int i = 0; i < fileList.Count; i++)
                 {
-                    writer.WriteLine(filenameList[i]);
+                    writer.WriteLine(fileList[i]);
                 }
 
                 writer.Close();
                 fs.Close();
 
-                for (int i = 0; i < filenameList.Count; i++)
+                for (int i = 0; i < fileList.Count; i++)
                 {
-                    Console.WriteLine((float)i / (float)filenameList.Count * (float)100);
+                    Console.WriteLine((float)i / (float)fileList.Count * (float)100);
                     //string brute_str = "";
 
-                    string cur_str = filenameList[i];
+                    string cur_str = fileList[i];
                     //warhash.Hash(cur_str, 0xDEADBEEF);
                     //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
@@ -406,137 +414,150 @@ namespace nsHashCreator
             }
         }
 
-        public void ParseDirAndFilenames()
+        public void ParseDirAndFilenames(string fileNameFile)
         {
-            if (File.Exists("filenames.txt"))
+            if (File.Exists(fileNameFile))
             {
-                WarHasher warhash = new WarHasher();
-
-                FileStream fs = new FileStream("filenames.txt", FileMode.Open);
+                FileStream fs = new FileStream(fileNameFile, FileMode.Open);
                 StreamReader reader = new StreamReader(fs);
 
-                List<string> filenameList = new List<string>();
+                List<string> fileList = new List<string>();
 
                 string line;
+                int outint;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (!filenameList.Contains(line))
+                    if (!int.TryParse(line, out outint))
                     {
-                        filenameList.Add(line);
+                        if (!fileList.Contains(line))
+                        {
+                            fileList.Add(line);
+                        }
                     }
                 }
 
                 reader.Close();
                 fs.Close();
 
-                File.Delete("filenames.txt");
-                fs = new FileStream("filenames.txt", FileMode.Create);
+                File.Delete(fileNameFile);
+                fs = new FileStream(fileNameFile, FileMode.Create);
                 StreamWriter writer = new StreamWriter(fs);
 
-                for (int i = 0; i < filenameList.Count; i++)
+                for (int i = 0; i < fileList.Count; i++)
                 {
-                    writer.WriteLine(filenameList[i]);
+                    writer.WriteLine(fileList[i]);
                 }
 
                 writer.Close();
                 fs.Close();
 
-                for (int i = 0; i < filenameList.Count; i++)
+                ParseDirAndFilenames(fileList);
+            }
+        }
+        /// <summary>
+        /// this method should go back to what it was... concatenated with the upper one
+        /// the hasher does not save filenames with extensions at the moment!
+        /// </summary>
+        /// <param name="fileList"></param>
+        public void ParseDirAndFilenames(List<string> fileList)
+        {
+            string line;
+            WarHasher warhash = new WarHasher();
+            for (int i = 0; i < fileList.Count; i++)
+            {
+                for (int j = 0; j < hasher.DirListing.Count; j++)
                 {
-                    for (int j = 0; j < hasher.DirListing.Count; j++)
+                    Console.WriteLine("{0} {1}", j, (float)i / (float)fileList.Count * (float)100);
+                    //string brute_str = "";
+                    line = hasher.DirListing[j] + '/' + fileList[i];
+                    line = line.ToLower();
+                    line = line.Replace('\\', '/');
+
+                    if (line.IndexOf("[0-9]") >= 0)
                     {
-                        Console.WriteLine("{0} {1}", j, (float)i / (float)filenameList.Count * (float)100);
-                        //string brute_str = "";
-                        line = hasher.DirListing[j] + '/' + filenameList[i];
-                        line = line.ToLower();
-                        line = line.Replace('\\', '/');
+                        int occ = line.Replace("[0-9]", "|").Split('|').Length - 1;
+                        int max = (int)Math.Pow(10, occ);
 
-                        if (line.IndexOf("[0-9]") >= 0)
+                        string[] spl_str = line.Replace("[0-9]", "|").Split('|');
+                        string format = "";
+                        for (int l = 0; l < occ; l++)
                         {
-                            int occ = line.Replace("[0-9]", "|").Split('|').Length - 1;
-                            int max = (int)Math.Pow(10, occ);
-
-                            string[] spl_str = line.Replace("[0-9]", "|").Split('|');
-                            string format = "";
-                            for (int l = 0; l < occ; l++)
+                            format += "0";
+                        }
+                        if (max < 10000000)
+                        {
+                            if (line.IndexOf(".") >= 0)
                             {
-                                format += "0";
-                            }
-                            if (max < 10000000)
-                            {
-                                if (line.IndexOf(".") >= 0)
+                                for (int l = 0; l < max; l++)
                                 {
-                                    for (int l = 0; l < max; l++)
+                                    string cur_i = l.ToString(format);
+
+                                    string cur_str = "";
+
+
+                                    for (int m = 0; m < occ; m++)
                                     {
-                                        string cur_i = l.ToString(format);
-
-                                        string cur_str = "";
-
-
-                                        for (int m = 0; m < occ; m++)
-                                        {
-                                            cur_str += spl_str[m];
-                                            cur_str += cur_i[m];
-                                        }
-                                        cur_str += spl_str[occ];
-
-                                        warhash.Hash(cur_str, 0xDEADBEEF);
-                                        hasher.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
-
-                                        //string brute_str = "";
-                                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                                        //AddBruteLine(brute_str);
+                                        cur_str += spl_str[m];
+                                        cur_str += cur_i[m];
                                     }
+                                    cur_str += spl_str[occ];
+
+                                    warhash.Hash(cur_str, 0xDEADBEEF);
+                                    hasher.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
+
+                                    //string brute_str = "";
+                                    //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                                    //AddBruteLine(brute_str);
                                 }
                             }
                         }
-                        else
-                        {
+                    }
+                    else
+                    {
 
-                            string cur_str = hasher.DirListing[j] + '/' + filenameList[i];
-                            //warhash.Hash(cur_str, 0xDEADBEEF);
-                            //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
+                        string cur_str = hasher.DirListing[j] + '/' + fileList[i];
+                        //warhash.Hash(cur_str, 0xDEADBEEF);
+                        //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
 
-                            cur_str = cur_str.ToLower().Replace('\\', '/');
-                            warhash.Hash(cur_str, 0xDEADBEEF);
-                            hasher.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
+                        cur_str = cur_str.ToLower().Replace('\\', '/');
+                        warhash.Hash(cur_str, 0xDEADBEEF);
+                        hasher.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
 
-                            //cur_str = hasher.DirListing[j] + '\\' + filenameList[i];
-                            //cur_str = cur_str.Replace('\\', '/');
-                            //warhash.Hash(cur_str, 0xDEADBEEF);
-                            //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
+                        //cur_str = hasher.DirListing[j] + '\\' + filenameList[i];
+                        //cur_str = cur_str.Replace('\\', '/');
+                        //warhash.Hash(cur_str, 0xDEADBEEF);
+                        //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
 
-                            //cur_str = cur_str.ToLower();
-                            //warhash.Hash(cur_str, 0xDEADBEEF);
-                            //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
+                        //cur_str = cur_str.ToLower();
+                        //warhash.Hash(cur_str, 0xDEADBEEF);
+                        //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
 
-                            //cur_str = hasher.DirListing[j] + '\\' + filenameList[i];
-                            //cur_str = cur_str.Replace('/', '\\');
-                            //warhash.Hash(cur_str, 0xDEADBEEF);
-                            //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
+                        //cur_str = hasher.DirListing[j] + '\\' + filenameList[i];
+                        //cur_str = cur_str.Replace('/', '\\');
+                        //warhash.Hash(cur_str, 0xDEADBEEF);
+                        //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
 
-                            //cur_str = cur_str.ToLower();
-                            //warhash.Hash(cur_str, 0xDEADBEEF);
-                            //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
+                        //cur_str = cur_str.ToLower();
+                        //warhash.Hash(cur_str, 0xDEADBEEF);
+                        //hasher.UpdateHash(warhash.ph, warhash.sh, cur_str);
 
-                            //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                            //AddBruteLine(brute_str);
-                        }
+                        //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
+                        //AddBruteLine(brute_str);
                     }
                 }
             }
@@ -552,17 +573,13 @@ namespace nsHashCreator
                 FileStream fs = new FileStream(DFEFile, FileMode.Open);
                 StreamReader reader = new StreamReader(fs);
                 int outint;
-                List<string> filenameList = new List<string>();
 
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!int.TryParse(line, out outint))
                     {
-                        if (!filenameList.Contains(line))
-                        {
-                            filenameList.Add(line);
-                        }
+                        hasher.AddFile(line);
                     }
                 }
 
@@ -574,14 +591,9 @@ namespace nsHashCreator
                 fs = new FileStream(extFile, FileMode.Open);
                 reader = new StreamReader(fs);
 
-                List<string> extensionList = new List<string>();
-
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (!extensionList.Contains(line))
-                    {
-                        extensionList.Add(line);
-                    }
+                    hasher.AddExtension(line);
                 }
                 reader.Close();
                 fs.Close();
@@ -592,28 +604,25 @@ namespace nsHashCreator
                 fs = new FileStream(DFEFile, FileMode.Create);
                 StreamWriter writer = new StreamWriter(fs);
 
-                for (int i = 0; i < filenameList.Count; i++)
+                for (int i = 0; i < hasher.FileListing.Count; i++)
                 {
-                    //if (!int.TryParse(filenameList[i], out outint))
-                    //{
-                    writer.WriteLine(filenameList[i]);
-                    //}
+                    writer.WriteLine(hasher.FileListing[i]);
                 }
 
                 writer.Close();
                 fs.Close();
                 #endregion
+            }
 
-                Thread t1 = new Thread(new ParameterizedThreadStart(calc));
-                Thread t2 = new Thread(new ParameterizedThreadStart(calc));
+            Thread t1 = new Thread(new ParameterizedThreadStart(calc));
+            Thread t2 = new Thread(new ParameterizedThreadStart(calc));
 
-                t1.Start(new obj(filenameList, extensionList, 0, hasher.DirListing.Count / 2));
-                t2.Start(new obj(filenameList, extensionList, hasher.DirListing.Count / 2, hasher.DirListing.Count));
+            t1.Start(new obj(hasher.FileListing, hasher.ExtListing, 0, hasher.DirListing.Count / 2));
+            t2.Start(new obj(hasher.FileListing, hasher.ExtListing, hasher.DirListing.Count / 2, hasher.DirListing.Count));
 
-                while (t1.IsAlive || t2.IsAlive)
-                {
-                    Thread.Sleep(60000);
-                }
+            while (t1.IsAlive || t2.IsAlive)
+            {
+                Thread.Sleep(60000);
             }
         }
 

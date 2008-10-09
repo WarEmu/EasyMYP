@@ -97,6 +97,8 @@ namespace WarhammerOnlineHashBuilder
 
         public SortedList<long, HashData> HashList { get { return hashList; } }
         public List<string> DirListing { get { return dirListing; } }
+        public List<string> ExtListing { get { return extListing; } }
+        public List<string> FileListing { get { return fileListing; } }
 
         string dictionaryFile = "Hash/hashes_filename.txt";
         string directoryListingFile = "Hash/dirlist.txt";
@@ -153,6 +155,9 @@ namespace WarhammerOnlineHashBuilder
         {
             long sig = (((long)ph) << 32) + sh;
             hashList.Add(sig, new HashData(ph, sh, name, crc));
+            // lets also populated this shit :)
+            AddDirectory(name);
+            AddFile(name);
         }
 
         #region Generation Helpers
@@ -223,7 +228,7 @@ namespace WarhammerOnlineHashBuilder
         /// Used for generation purposes
         /// </summary>
         /// <param name="filename"></param>
-        void AddDirectory(string filename)
+        public void AddDirectory(string filename)
         {
             if (filename.Replace('\\', '/').IndexOf('/') >= 0 && filename.LastIndexOf('.') >= 0)
             {
@@ -245,13 +250,16 @@ namespace WarhammerOnlineHashBuilder
         }
 
         /// <summary>
-        /// Adds a filename to the filename list
+        /// Adds a filename to the filename list without extension, if there is an extension it is removed
         /// Used for generation purposes
         /// </summary>
         /// <param name="filename"></param>
-        void AddFile(string filename)
+        public void AddFile(string filename)
         {
-            AddExtension(filename);
+            if (filename.IndexOf(".") >= 0)
+            {
+                AddExtension(filename);
+            }
 
             string cur_fn = filename.Replace('\\', '/');
 
@@ -271,7 +279,7 @@ namespace WarhammerOnlineHashBuilder
         /// Used for generation purposes
         /// </summary>
         /// <param name="filename"></param>
-        void AddExtension(string filename)
+        public void AddExtension(string filename)
         {
             string ext = filename.Split('.')[filename.Split('.').Length - 1];
             if (!extListing.Contains(ext))
@@ -282,6 +290,11 @@ namespace WarhammerOnlineHashBuilder
         #endregion
 
         #region Hash to Filename list construction
+        public void BuildHashList(string dictionaryFile)
+        {
+            this.dictionaryFile = dictionaryFile;
+            BuildHashList();
+        }
 
         /// <summary>
         /// Creates a sorted list (hashlist) based on the dictionary file
@@ -354,6 +367,11 @@ namespace WarhammerOnlineHashBuilder
             OnHashEvent(new HashEventArgs(HashState.Finished, 100f));
         }
 
+        public void MergeHashList(object obj)
+        {
+            MergeHashList((string)obj);
+        }
+
         /// <summary>
         /// Check to see if values from an old dictionnary list can be added to the current dictionnary
         /// Used because Mythic changed 60k filenames in the beta3... so had to make a clean hash listing
@@ -390,20 +408,21 @@ namespace WarhammerOnlineHashBuilder
 
                     warhash.Hash(filename, 0xDEADBEEF);
 
-                    if (UpdateHash(ph, sh, filename, crc))
+                    if (!UpdateHash(ph, sh, filename, crc))
                     {
                         // Add hashes from old files too... just because of the US and EU hash lists that are different, will also help to use this method as a merge
                         AddHash(ph, sh, filename, crc);
                         //UpdateHash(ph, sh, filename, crc);
                     }
                     //UpdateTreeHash(ph, sh, filename);
-                    //OnHashEvent(new HashEventArgs(HashState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
+                    OnHashEvent(new HashEventArgs(HashState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
                 }
 
                 reader.Close();
                 fs.Close();
             }
-            //OnHashEvent(new HashEventArgs(HashState.Finished, 100f));
+            SaveHashList();
+            OnHashEvent(new HashEventArgs(HashState.Finished, 100f));
         }
 
         /// <summary>
@@ -442,7 +461,6 @@ namespace WarhammerOnlineHashBuilder
             long elapsedTicks = currentDate.Ticks - centuryBegin.Ticks;
             TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
 
-            //path = path.Replace("file:\\", "");
             string dicFile = path + "/" + dictionaryFile;
             string[] folders = dicFile.Split('/');
             string tmpPath = folders[0];
@@ -454,7 +472,7 @@ namespace WarhammerOnlineHashBuilder
                 if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
             }
 
-            if (File.Exists(dicFile)) File.Move(dicFile, dicFile + "." + elapsedSpan.TotalSeconds.ToString() + ".bak");
+            if (File.Exists(dicFile)) File.Move(dicFile, path + "/Hash/oldHashList_" + elapsedSpan.TotalSeconds.ToString() + ".txt");
             FileStream fs = new FileStream(dicFile, FileMode.OpenOrCreate);
             StreamWriter writer = new StreamWriter(fs);
 
@@ -466,24 +484,24 @@ namespace WarhammerOnlineHashBuilder
             writer.Close();
             fs.Close();
 
-            if (dev)
+            if (dev || true)
             {
                 if (!Directory.Exists(path + "/Hash")) Directory.CreateDirectory(path + "/Hash");
 
-                if (File.Exists("Hash/hashes_only_filename.txt")) File.Delete("Hash/hashes_only_filename.txt");
-                FileStream fs_hof = new FileStream("Hash/hashes_only_filename.txt", FileMode.OpenOrCreate);
+                if (File.Exists(path + "/Hash/hashes_only_filename.txt")) File.Delete(path + "/Hash/hashes_only_filename.txt");
+                FileStream fs_hof = new FileStream(path + "/Hash/hashes_only_filename.txt", FileMode.OpenOrCreate);
                 StreamWriter writer_hof = new StreamWriter(fs_hof);
 
-                if (File.Exists("pattern_num.txt")) File.Delete("pattern_num.txt");
-                FileStream fs_pn = new FileStream("pattern_num.txt", FileMode.OpenOrCreate);
+                if (File.Exists(path + "/pattern_num.txt")) File.Delete(path + "/pattern_num.txt");
+                FileStream fs_pn = new FileStream(path + "/pattern_num.txt", FileMode.OpenOrCreate);
                 StreamWriter writer_pn = new StreamWriter(fs_pn);
 
                 for (int i = 0; i < hashList.Count; i++)
                 {
-                    if (dev && hashList.Values[i].filename != "")
+                    if (hashList.Values[i].filename != "")
                     {
                         writer_hof.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc); ;
-                        writer_pn.WriteLine(hashList.Values[i]);
+                        writer_pn.WriteLine(hashList.Values[i].filename);
                     }
                 }
 
@@ -493,8 +511,8 @@ namespace WarhammerOnlineHashBuilder
                 writer_pn.Close();
                 fs_pn.Close();
 
-                if (File.Exists("fileList_.txt")) File.Delete("fileList_.txt");
-                fs = new FileStream("fileList_.txt", FileMode.OpenOrCreate);
+                if (File.Exists(path + "/fileList.txt")) File.Delete(path + "/fileList.txt");
+                fs = new FileStream(path + "/fileList.txt", FileMode.OpenOrCreate);
                 writer = new StreamWriter(fs);
 
                 for (int i = 0; i < fileListing.Count; i++)
@@ -506,8 +524,8 @@ namespace WarhammerOnlineHashBuilder
                 fs.Close();
 
 
-                if (File.Exists("extList_.txt")) File.Delete("extList_.txt");
-                fs = new FileStream("extList_.txt", FileMode.OpenOrCreate);
+                if (File.Exists(path + "/extList.txt")) File.Delete(path + "/extList.txt");
+                fs = new FileStream(path + "/extList.txt", FileMode.OpenOrCreate);
                 writer = new StreamWriter(fs);
 
                 for (int i = 0; i < extListing.Count; i++)
