@@ -178,7 +178,7 @@ namespace EasyMYP
         {
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
-
+                hashCreator.ParseDirAndFilenames(openArchiveDialog.FileName);
             }
         }
 
@@ -186,7 +186,7 @@ namespace EasyMYP
         {
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
-
+                hashCreator.ParseFilenames(openArchiveDialog.FileName);
             }
         }
         #endregion
