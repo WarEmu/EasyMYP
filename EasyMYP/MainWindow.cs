@@ -110,6 +110,7 @@ namespace EasyMYP
 
         private void openArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            openArchiveDialog.Filter = "MYP Archives|*.myp";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 resetOverall();
@@ -159,6 +160,7 @@ namespace EasyMYP
         #region Tools Menu
         private void mergeDictionaryFile_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            openArchiveDialog.Filter = "Dictionary File|*.txt";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 //Show a progress bar
@@ -176,6 +178,7 @@ namespace EasyMYP
 
         private void testFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            openArchiveDialog.Filter = "File containing filenames to test|*.txt";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 hashCreator.ParseDirAndFilenames(openArchiveDialog.FileName);
@@ -184,6 +187,7 @@ namespace EasyMYP
 
         private void testFullFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            openArchiveDialog.Filter = "File containing full filenames to test|*.txt";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 hashCreator.ParseFilenames(openArchiveDialog.FileName);

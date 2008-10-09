@@ -192,10 +192,10 @@ namespace WarhammerOnlineHashBuilder
                 if (hashList[sig].filename != name && name != "")
                 {
                     hashList[sig].filename = name;
-                    if (crc != 0)
-                    {
-                        hashList[sig].crc = crc;
-                    }
+                }
+                if (crc != 0)
+                {
+                    hashList[sig].crc = crc;
                 }
 
                 AddDirectory(name);
@@ -476,7 +476,10 @@ namespace WarhammerOnlineHashBuilder
 
             for (int i = 0; i < hashList.Count; i++)
             {
-                writer.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc); ;
+                if (hashList.Values[i].crc != 0)
+                {
+                }
+                writer.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc);
             }
 
             writer.Close();
@@ -579,13 +582,18 @@ namespace WarhammerOnlineHashBuilder
             long sig = ((long)ph << 32) + sh;
             if (hashList.ContainsKey(sig))
             {
-                if (hashList[sig].crc == 0)
-                {
-                    hashList[sig].crc = crc;
-                }
                 return hashList[sig];
             }
             return null;
+        }
+
+        public void UpdateCRC(uint ph, uint sh, int crc)
+        {
+            long sig = ((long)ph << 32) + sh;
+            if (hashList.ContainsKey(sig))
+            {
+                hashList[sig].crc = crc;
+            }
         }
 
         #region Events
