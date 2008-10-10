@@ -201,7 +201,10 @@ namespace EasyMYP
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
-                worker.ExtractionPath = extractionPath;
+                if (worker != null)
+                {
+                    worker.ExtractionPath = extractionPath;
+                }
             }
         }
 
@@ -474,7 +477,7 @@ namespace EasyMYP
 
         private void fileInArchiveDataGridView_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            return;
+            
             // Check which column is selected, otherwise set NewColumn to null.
             DataGridViewColumn newColumn =
                 fileInArchiveDataGridView.SelectedColumns.Count > 0 ?
