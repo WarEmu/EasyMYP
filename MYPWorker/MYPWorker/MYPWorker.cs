@@ -751,7 +751,7 @@ namespace MYPWorker
 
             byte[] output_buffer = new byte[0];
 
-            if (archFile.descriptor.compressionMethod == 1) //ZLib compression
+            if (archFile.descriptor.compressionMethod == 1 && false) //ZLib compression
             {
                 try
                 {
@@ -772,7 +772,7 @@ namespace MYPWorker
 
                 WriteFileToArchive(archFile, outputMS);
             }
-            else if (archFile.descriptor.compressionMethod == 0) //No compression
+            else if (archFile.descriptor.compressionMethod == 0 || true) //No compression
             {
                 CopyStream(inputMS, outputMS);
 
