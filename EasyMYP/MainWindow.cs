@@ -46,6 +46,7 @@ namespace EasyMYP
         {
             InitializeComponent();
             LoadDictionnary(false, "");
+            fileInArchiveBindingSource.DataSource = new SortableBindingList<FileInArchive>();
         }
 
         void LoadDictionnary(bool merge, string fileToMerge)
@@ -302,7 +303,19 @@ namespace EasyMYP
             }
         }
 
+        private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (replaceFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filename = replaceFileDialog.FileName; //get filename selected
+
+                worker.ReplaceFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current
+                    , new FileStream(filename, FileMode.Open));
+            }
+        }
+
         #endregion
+
         #endregion
 
         #region UI_FileListing
@@ -460,11 +473,6 @@ namespace EasyMYP
 
         #endregion
 
-        private void fileInArchiveDataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private void LabelFilter_Click(object sender, EventArgs e)
         {
 
@@ -475,23 +483,22 @@ namespace EasyMYP
 
         }
 
+        int oldColumn = -1;
+        SortOrder oldSortOrder = SortOrder.None;
         private void fileInArchiveDataGridView_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            
             // Check which column is selected, otherwise set NewColumn to null.
             DataGridViewColumn newColumn =
-                fileInArchiveDataGridView.SelectedColumns.Count > 0 ?
-                fileInArchiveDataGridView.SelectedColumns[0] : fileInArchiveDataGridView.Columns[0];
+                fileInArchiveDataGridView.Columns[e.ColumnIndex];
 
-            DataGridViewColumn oldColumn = fileInArchiveDataGridView.SortedColumn;
             ListSortDirection direction;
 
             // If oldColumn is null, then the DataGridView is not currently sorted.
-            if (oldColumn != null)
+            if (oldColumn != -1)
             {
                 // Sort the same column again, reversing the SortOrder.
-                if (oldColumn == newColumn &&
-                    fileInArchiveDataGridView.SortOrder == SortOrder.Ascending)
+                if (oldColumn == e.ColumnIndex &&
+                    oldSortOrder == SortOrder.Ascending)
                 {
                     direction = ListSortDirection.Descending;
                 }
@@ -499,7 +506,7 @@ namespace EasyMYP
                 {
                     // Sort a new column and remove the old SortGlyph.
                     direction = ListSortDirection.Ascending;
-                    oldColumn.HeaderCell.SortGlyphDirection = SortOrder.None;
+                    newColumn.HeaderCell.SortGlyphDirection = SortOrder.None;
                 }
             }
             else
@@ -509,6 +516,15 @@ namespace EasyMYP
 
             fileInArchiveDataGridView.Sort(newColumn, direction);
 
+            oldColumn = e.ColumnIndex;
+            if (direction == ListSortDirection.Ascending)
+            {
+                oldSortOrder = SortOrder.Ascending;
+            }
+            else
+            {
+                oldSortOrder = SortOrder.Descending;
+            }
 
             newColumn.HeaderCell.SortGlyphDirection =
                 direction == ListSortDirection.Ascending ?
@@ -527,6 +543,5 @@ namespace EasyMYP
             t_worker.Abort();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
-
     }
 }

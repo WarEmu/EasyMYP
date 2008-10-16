@@ -40,6 +40,7 @@ namespace EasyMYP
             this.selectExtractionFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mergeDictionaryFile_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,12 +68,6 @@ namespace EasyMYP
             this.Pattern = new System.Windows.Forms.TextBox();
             this.LabelFilter = new System.Windows.Forms.Label();
             this.fileInArchiveDataGridView = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.treeView_Archive = new System.Windows.Forms.TreeView();
@@ -105,6 +100,13 @@ namespace EasyMYP
             this.label_UncompressedSize_Value = new System.Windows.Forms.Label();
             this.label_ReadingErrors_Value = new System.Windows.Forms.Label();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.replaceFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mainMenu.SuspendLayout();
             this.panel_output.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -131,7 +133,7 @@ namespace EasyMYP
             this.helpToolStripMenuItem});
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
-            this.mainMenu.Size = new System.Drawing.Size(867, 24);
+            this.mainMenu.Size = new System.Drawing.Size(905, 24);
             this.mainMenu.TabIndex = 0;
             this.mainMenu.Text = "menuStrip1";
             // 
@@ -180,7 +182,8 @@ namespace EasyMYP
             this.fileToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectExtractionFolderToolStripMenuItem,
             this.extractSelectedToolStripMenuItem,
-            this.extractAllToolStripMenuItem});
+            this.extractAllToolStripMenuItem,
+            this.replaceSelectedToolStripMenuItem});
             this.fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             this.fileToolStripMenuItem1.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem1.Text = "File";
@@ -205,6 +208,13 @@ namespace EasyMYP
             this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.extractAllToolStripMenuItem.Text = "Extract All";
             this.extractAllToolStripMenuItem.Click += new System.EventHandler(this.extractAllToolStripMenuItem_Click);
+            // 
+            // replaceSelectedToolStripMenuItem
+            // 
+            this.replaceSelectedToolStripMenuItem.Name = "replaceSelectedToolStripMenuItem";
+            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.replaceSelectedToolStripMenuItem.Text = "Replace Selected";
+            this.replaceSelectedToolStripMenuItem.Click += new System.EventHandler(this.replaceSelectedToolStripMenuItem_Click);
             // 
             // toolsToolStripMenuItem
             // 
@@ -253,7 +263,7 @@ namespace EasyMYP
             // 
             // openArchiveDialog
             // 
-            this.openArchiveDialog.FileName = "openArchiveDialog";
+            this.openArchiveDialog.Filter = "(*.myp)|*.myp";
             // 
             // panel_output
             // 
@@ -267,7 +277,7 @@ namespace EasyMYP
             this.panel_output.Location = new System.Drawing.Point(0, 24);
             this.panel_output.MinimumSize = new System.Drawing.Size(600, 300);
             this.panel_output.Name = "panel_output";
-            this.panel_output.Size = new System.Drawing.Size(867, 472);
+            this.panel_output.Size = new System.Drawing.Size(905, 472);
             this.panel_output.TabIndex = 27;
             this.panel_output.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_output_Paint);
             // 
@@ -282,7 +292,7 @@ namespace EasyMYP
             this.tabControl1.Location = new System.Drawing.Point(12, 69);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(843, 374);
+            this.tabControl1.Size = new System.Drawing.Size(881, 374);
             this.tabControl1.TabIndex = 31;
             // 
             // tabPage1
@@ -294,7 +304,7 @@ namespace EasyMYP
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(835, 348);
+            this.tabPage1.Size = new System.Drawing.Size(873, 348);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Archive File List";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -433,7 +443,7 @@ namespace EasyMYP
             // Pattern
             // 
             this.Pattern.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Pattern.Location = new System.Drawing.Point(676, 6);
+            this.Pattern.Location = new System.Drawing.Point(714, 6);
             this.Pattern.Name = "Pattern";
             this.Pattern.Size = new System.Drawing.Size(153, 20);
             this.Pattern.TabIndex = 29;
@@ -443,7 +453,7 @@ namespace EasyMYP
             // 
             this.LabelFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LabelFilter.AutoSize = true;
-            this.LabelFilter.Location = new System.Drawing.Point(641, 9);
+            this.LabelFilter.Location = new System.Drawing.Point(679, 9);
             this.LabelFilter.Name = "LabelFilter";
             this.LabelFilter.Size = new System.Drawing.Size(29, 13);
             this.LabelFilter.TabIndex = 30;
@@ -469,53 +479,10 @@ namespace EasyMYP
             this.fileInArchiveDataGridView.DataSource = this.fileInArchiveBindingSource;
             this.fileInArchiveDataGridView.Location = new System.Drawing.Point(6, 32);
             this.fileInArchiveDataGridView.Name = "fileInArchiveDataGridView";
-            this.fileInArchiveDataGridView.Size = new System.Drawing.Size(1147, 388);
+            this.fileInArchiveDataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.fileInArchiveDataGridView.Size = new System.Drawing.Size(867, 316);
             this.fileInArchiveDataGridView.TabIndex = 18;
             this.fileInArchiveDataGridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.fileInArchiveDataGridView_ColumnHeaderMouseClick);
-            this.fileInArchiveDataGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.fileInArchiveDataGridView_CellContentClick);
-            // 
-            // dataGridViewTextBoxColumn5
-            // 
-            this.dataGridViewTextBoxColumn5.DataPropertyName = "Filename";
-            this.dataGridViewTextBoxColumn5.HeaderText = "Filename";
-            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
-            this.dataGridViewTextBoxColumn5.ReadOnly = true;
-            this.dataGridViewTextBoxColumn5.Width = 300;
-            // 
-            // dataGridViewTextBoxColumn6
-            // 
-            this.dataGridViewTextBoxColumn6.DataPropertyName = "Extension";
-            this.dataGridViewTextBoxColumn6.HeaderText = "Extension";
-            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
-            this.dataGridViewTextBoxColumn6.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.DataPropertyName = "Offset";
-            this.dataGridViewTextBoxColumn1.HeaderText = "Offset";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.DataPropertyName = "Size";
-            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            this.dataGridViewTextBoxColumn2.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "CompressedSize";
-            this.dataGridViewTextBoxColumn3.HeaderText = "CompressedSize";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            this.dataGridViewTextBoxColumn3.ReadOnly = true;
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.DataPropertyName = "CompressionMethod";
-            this.dataGridViewTextBoxColumn4.HeaderText = "CompressionMethod";
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            this.dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // tabPage2
             // 
@@ -644,7 +611,7 @@ namespace EasyMYP
             this.panel_status.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel_status.Location = new System.Drawing.Point(0, 449);
             this.panel_status.Name = "panel_status";
-            this.panel_status.Size = new System.Drawing.Size(867, 23);
+            this.panel_status.Size = new System.Drawing.Size(905, 23);
             this.panel_status.TabIndex = 18;
             this.panel_status.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_status_Paint);
             // 
@@ -655,7 +622,7 @@ namespace EasyMYP
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.Loading.Location = new System.Drawing.Point(0, 0);
             this.Loading.Name = "Loading";
-            this.Loading.Size = new System.Drawing.Size(777, 23);
+            this.Loading.Size = new System.Drawing.Size(815, 23);
             this.Loading.TabIndex = 28;
             this.Loading.Visible = false;
             // 
@@ -663,7 +630,7 @@ namespace EasyMYP
             // 
             this.credits.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.credits.AutoSize = true;
-            this.credits.Location = new System.Drawing.Point(783, 5);
+            this.credits.Location = new System.Drawing.Point(821, 5);
             this.credits.Name = "credits";
             this.credits.Size = new System.Drawing.Size(70, 13);
             this.credits.TabIndex = 0;
@@ -692,7 +659,7 @@ namespace EasyMYP
             this.panel_information.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel_information.Location = new System.Drawing.Point(0, 0);
             this.panel_information.Name = "panel_information";
-            this.panel_information.Size = new System.Drawing.Size(867, 63);
+            this.panel_information.Size = new System.Drawing.Size(905, 63);
             this.panel_information.TabIndex = 17;
             // 
             // label_File_Text
@@ -839,11 +806,55 @@ namespace EasyMYP
             this.label_ReadingErrors_Value.TabIndex = 6;
             this.label_ReadingErrors_Value.Text = "0";
             // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "Filename";
+            this.dataGridViewTextBoxColumn5.HeaderText = "Filename";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            this.dataGridViewTextBoxColumn5.ReadOnly = true;
+            this.dataGridViewTextBoxColumn5.Width = 300;
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            this.dataGridViewTextBoxColumn6.DataPropertyName = "Extension";
+            this.dataGridViewTextBoxColumn6.HeaderText = "Extension";
+            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            this.dataGridViewTextBoxColumn6.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "Offset";
+            this.dataGridViewTextBoxColumn1.HeaderText = "Offset";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "Size";
+            this.dataGridViewTextBoxColumn2.HeaderText = "Size";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "CompressedSize";
+            this.dataGridViewTextBoxColumn3.HeaderText = "CompressedSize";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            this.dataGridViewTextBoxColumn3.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "CompressionMethod";
+            this.dataGridViewTextBoxColumn4.HeaderText = "CompressionMethod";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            this.dataGridViewTextBoxColumn4.ReadOnly = true;
+            this.dataGridViewTextBoxColumn4.Width = 125;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(867, 496);
+            this.ClientSize = new System.Drawing.Size(905, 496);
             this.Controls.Add(this.panel_output);
             this.Controls.Add(this.mainMenu);
             this.MainMenuStrip = this.mainMenu;
@@ -929,12 +940,6 @@ namespace EasyMYP
         private System.Windows.Forms.ToolStripSeparator bindingNavigatorSeparator2;
         private System.Windows.Forms.ToolStripButton fileInArchiveBindingNavigatorSaveItem;
         private System.Windows.Forms.ProgressBar Loading;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
         private System.Windows.Forms.Label LabelFilter;
         private System.Windows.Forms.TextBox Pattern;
         private System.Windows.Forms.TabControl tabControl1;
@@ -954,6 +959,14 @@ namespace EasyMYP
         private System.Windows.Forms.Button buttonExtractNewFiles;
         private System.Windows.Forms.ToolStripMenuItem testFilenameListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testFullFilenameListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceSelectedToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog replaceFileDialog;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
     }
 }
 
