@@ -97,6 +97,86 @@ namespace EasyMYP
 
     public class SortableBindingList<T> : BindingList<T>
     {
+        int oldFoundIndex = -1;
+        protected override bool SupportsSearchingCore
+        {
+            get { return true; }
+        }
+
+        protected override int FindCore(PropertyDescriptor property, object key)
+        {
+            // Specify search columns
+            if (property == null) return -1;
+
+            // Get list to search
+            List<T> items = this.Items as List<T>;
+
+            // Traverse list for value
+            foreach (T item in items)
+            {
+                // Test column search value
+                string value = (string)property.GetValue(item);
+
+                // If value is the search value, return the 
+                // index of the data item
+                if ((string)key == value && IndexOf(item) > oldFoundIndex)
+                {
+                    oldFoundIndex = IndexOf(item);
+                    return IndexOf(item);
+                }
+                if (WildcardMatch((string)key + "*", value) && IndexOf(item) > oldFoundIndex)
+                {
+                    oldFoundIndex = IndexOf(item);
+                    return IndexOf(item);
+                }
+            }
+            oldFoundIndex = -1;
+            return -1;
+        }
+
+        /// <summary>
+        /// http://xoomer.alice.it/acantato/dev/wildcard/wildmatch.html
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        bool WildcardMatch(string pattern, string path)
+        {
+            if (pattern == "")
+                return true;
+
+            int s, p;
+            int str = 0;
+            int pat = 0;
+            char[] patternTbl = pattern.ToCharArray();
+            char[] pathTbl = path.ToCharArray();
+            bool star = false;
+
+        loopStart:
+            for (s = str, p = pat; s < pathTbl.Length; ++s, ++p)
+            {
+                if (patternTbl[p] == '*')
+                {
+                    star = true;
+                    str = s;
+                    pat = p;
+                    if (++pat >= patternTbl.Length)
+                        return true;
+                    goto loopStart;
+                }
+                if (pathTbl[s] != patternTbl[p])
+                    goto starCheck;
+            }
+            if (patternTbl[p] == '*')
+                ++p;
+            return (p >= patternTbl.Length);
+
+        starCheck:
+            if (!star)
+                return false;
+            str++;
+            goto loopStart;
+        }
 
         #region Sorting
 
@@ -109,7 +189,7 @@ namespace EasyMYP
 
         protected override void ApplySortCore(PropertyDescriptor property, ListSortDirection direction)
         {
-
+            oldFoundIndex = -1;
             // Get list to sort
             List<T> items = this.Items as List<T>;
 

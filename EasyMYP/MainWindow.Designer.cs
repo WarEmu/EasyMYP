@@ -53,7 +53,6 @@ namespace EasyMYP
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.fileInArchiveBindingNavigator = new System.Windows.Forms.BindingNavigator(this.components);
             this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
-            this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.bindingNavigatorCountItem = new System.Windows.Forms.ToolStripLabel();
             this.bindingNavigatorDeleteItem = new System.Windows.Forms.ToolStripButton();
             this.bindingNavigatorMoveFirstItem = new System.Windows.Forms.ToolStripButton();
@@ -101,6 +100,8 @@ namespace EasyMYP
             this.label_ReadingErrors_Value = new System.Windows.Forms.Label();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.replaceFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.findStrip2 = new EasyMYP.FindStrip();
+            this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -113,7 +114,6 @@ namespace EasyMYP
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).BeginInit();
             this.fileInArchiveBindingNavigator.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -122,6 +122,8 @@ namespace EasyMYP
             this.tabPage3.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.panel_information.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -279,7 +281,6 @@ namespace EasyMYP
             this.panel_output.Name = "panel_output";
             this.panel_output.Size = new System.Drawing.Size(905, 472);
             this.panel_output.TabIndex = 27;
-            this.panel_output.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_output_Paint);
             // 
             // tabControl1
             // 
@@ -297,6 +298,7 @@ namespace EasyMYP
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.findStrip2);
             this.tabPage1.Controls.Add(this.fileInArchiveBindingNavigator);
             this.tabPage1.Controls.Add(this.Pattern);
             this.tabPage1.Controls.Add(this.LabelFilter);
@@ -349,10 +351,6 @@ namespace EasyMYP
             this.bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
             this.bindingNavigatorAddNewItem.Size = new System.Drawing.Size(23, 22);
             this.bindingNavigatorAddNewItem.Text = "Add new";
-            // 
-            // fileInArchiveBindingSource
-            // 
-            this.fileInArchiveBindingSource.DataSource = typeof(MYPWorker.FileInArchive);
             // 
             // bindingNavigatorCountItem
             // 
@@ -448,6 +446,7 @@ namespace EasyMYP
             this.Pattern.Size = new System.Drawing.Size(153, 20);
             this.Pattern.TabIndex = 29;
             this.Pattern.Text = "*";
+            this.Pattern.Visible = false;
             // 
             // LabelFilter
             // 
@@ -458,7 +457,7 @@ namespace EasyMYP
             this.LabelFilter.Size = new System.Drawing.Size(29, 13);
             this.LabelFilter.TabIndex = 30;
             this.LabelFilter.Text = "Filter";
-            this.LabelFilter.Click += new System.EventHandler(this.LabelFilter_Click);
+            this.LabelFilter.Visible = false;
             // 
             // fileInArchiveDataGridView
             // 
@@ -477,10 +476,10 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn3,
             this.dataGridViewTextBoxColumn4});
             this.fileInArchiveDataGridView.DataSource = this.fileInArchiveBindingSource;
-            this.fileInArchiveDataGridView.Location = new System.Drawing.Point(6, 32);
+            this.fileInArchiveDataGridView.Location = new System.Drawing.Point(6, 60);
             this.fileInArchiveDataGridView.Name = "fileInArchiveDataGridView";
             this.fileInArchiveDataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.fileInArchiveDataGridView.Size = new System.Drawing.Size(867, 316);
+            this.fileInArchiveDataGridView.Size = new System.Drawing.Size(867, 288);
             this.fileInArchiveDataGridView.TabIndex = 18;
             this.fileInArchiveDataGridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.fileInArchiveDataGridView_ColumnHeaderMouseClick);
             // 
@@ -490,7 +489,7 @@ namespace EasyMYP
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(835, 348);
+            this.tabPage2.Size = new System.Drawing.Size(873, 348);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Archive Tree View";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -542,7 +541,7 @@ namespace EasyMYP
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(835, 348);
+            this.tabPage3.Size = new System.Drawing.Size(873, 348);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "File Changes";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -806,6 +805,21 @@ namespace EasyMYP
             this.label_ReadingErrors_Value.TabIndex = 6;
             this.label_ReadingErrors_Value.Text = "0";
             // 
+            // findStrip2
+            // 
+            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
+            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
+            this.findStrip2.Location = new System.Drawing.Point(7, 32);
+            this.findStrip2.Name = "findStrip2";
+            this.findStrip2.Size = new System.Drawing.Size(377, 25);
+            this.findStrip2.TabIndex = 31;
+            this.findStrip2.Text = "findStrip2";
+            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
+            // 
+            // fileInArchiveBindingSource
+            // 
+            this.fileInArchiveBindingSource.DataSource = typeof(MYPWorker.FileInArchive);
+            // 
             // dataGridViewTextBoxColumn5
             // 
             this.dataGridViewTextBoxColumn5.DataPropertyName = "Filename";
@@ -860,7 +874,6 @@ namespace EasyMYP
             this.MainMenuStrip = this.mainMenu;
             this.Name = "MainWindow";
             this.Text = "EasyMYP";
-            this.Load += new System.EventHandler(this.MainWindow_Load);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
@@ -871,7 +884,6 @@ namespace EasyMYP
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).EndInit();
             this.fileInArchiveBindingNavigator.ResumeLayout(false);
             this.fileInArchiveBindingNavigator.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -883,6 +895,8 @@ namespace EasyMYP
             this.panel_status.PerformLayout();
             this.panel_information.ResumeLayout(false);
             this.panel_information.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -967,6 +981,8 @@ namespace EasyMYP
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private EasyMYP.FindStrip findStrip1;
+        private FindStrip findStrip2;
     }
 }
 

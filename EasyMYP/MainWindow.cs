@@ -473,16 +473,6 @@ namespace EasyMYP
 
         #endregion
 
-        private void LabelFilter_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel_output_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         int oldColumn = -1;
         SortOrder oldSortOrder = SortOrder.None;
         private void fileInArchiveDataGridView_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -531,11 +521,6 @@ namespace EasyMYP
                 SortOrder.Ascending : SortOrder.Descending;
         }
 
-        private void MainWindow_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (worker != null)
@@ -543,5 +528,22 @@ namespace EasyMYP
             t_worker.Abort();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
+
+        private void findStrip_ItemFound(object sender, ItemFoundEventArgs e)
+        {
+            // If value found, select row
+            if (e.Index >= 0)
+            {
+                this.fileInArchiveDataGridView.ClearSelection();
+                this.fileInArchiveDataGridView.Rows[e.Index].Selected = true;
+
+                // Change current list data source item
+                // (to ensure currency across all controls
+                // bound to this BindingSource)
+                //this.fileInArchiveDataGridView.Po = e.Index;
+                this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
+            }
+        }
+
     }
 }

@@ -52,6 +52,11 @@
     <Compile Include="AvancementBar.Designer.cs">
       <DependentUpon>AvancementBar.cs</DependentUpon>
     </Compile>
+    <Compile Include="FindStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ItemFoundEventArgs.cs" />
+    <Compile Include="ItemFoundEventHandler.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -64,6 +69,10 @@
     <EmbeddedResource Include="AvancementBar.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AvancementBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FindStrip.resx">
+      <DependentUpon>FindStrip.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <SubType>Designer</SubType>
