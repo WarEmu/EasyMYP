@@ -277,6 +277,19 @@ namespace EasyMYP
             }
         }
 
+        private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (replaceFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filename = replaceFileDialog.FileName; //get filename selected
+
+                worker.ReplaceFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current
+                    , new FileStream(filename, FileMode.Open));
+            }
+        }
+
+        #endregion
+
         private void buttonExtractNewFiles_Click(object sender, EventArgs e)
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
@@ -303,18 +316,21 @@ namespace EasyMYP
             }
         }
 
-        private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void buttonGenerateFilenames_CurrentFiles_Click(object sender, EventArgs e)
         {
-            if (replaceFileDialog.ShowDialog() == DialogResult.OK)
+            if (hashCreator != null)
             {
-                string filename = replaceFileDialog.FileName; //get filename selected
-
-                worker.ReplaceFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current
-                    , new FileStream(filename, FileMode.Open));
+                hashCreator.ParseDirFilenamesAndExtension();
             }
         }
 
-        #endregion
+        private void buttonGenerateFilenames_OnPattern_Click(object sender, EventArgs e)
+        {
+            if (hashCreator != null)
+            {
+                hashCreator.Patterns();
+            }
+        }
 
         #endregion
 
@@ -544,6 +560,8 @@ namespace EasyMYP
                 this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
             }
         }
+
+
 
     }
 }

@@ -630,6 +630,8 @@ namespace nsHashCreator
             {
                 Thread.Sleep(60000);
             }
+
+            ConvertToPattern();
         }
 
         struct obj

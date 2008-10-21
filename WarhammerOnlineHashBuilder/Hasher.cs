@@ -188,8 +188,9 @@ namespace WarhammerOnlineHashBuilder
             //if the list contains the sig, then we update
             if (hashList.ContainsKey(sig))
             {
+                debug++;
                 // the != name shoud actually be != ""
-                if (hashList[sig].filename != name && name != "")
+                if (hashList[sig].filename != "" && name != "")
                 {
                     hashList[sig].filename = name;
                 }
@@ -204,6 +205,7 @@ namespace WarhammerOnlineHashBuilder
             }
             return false;
         }
+        int debug = 0;
 
         /// <summary>
         /// See UpdateHash
@@ -232,9 +234,16 @@ namespace WarhammerOnlineHashBuilder
             {
                 string dir = filename.Replace('\\', '/').Substring(0, filename.Replace('\\', '/').LastIndexOf('/'));
 
-                if (dir.IndexOf(' ') < 0 && !dirListing.Contains(dir))
+                if (dir.IndexOf(' ') < 0)
                 {
-                    dirListing.Add(dir);
+                    while (dir.IndexOf('/') >= 0)
+                    {
+                        if (!dirListing.Contains(dir))
+                        {
+                            dirListing.Add(dir);
+                        }
+                        dir = dir.Substring(0, dir.LastIndexOf('/'));
+                    }
                 }
             }
             else
@@ -496,11 +505,12 @@ namespace WarhammerOnlineHashBuilder
                 if (File.Exists(path + "/pattern_num.txt")) File.Delete(path + "/pattern_num.txt");
                 FileStream fs_pn = new FileStream(path + "/pattern_num.txt", FileMode.OpenOrCreate);
                 StreamWriter writer_pn = new StreamWriter(fs_pn);
-
+                debug = 0;
                 for (int i = 0; i < hashList.Count; i++)
                 {
                     if (hashList.Values[i].filename != "")
                     {
+                        debug++;
                         writer_hof.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc); ;
                         writer_pn.WriteLine(hashList.Values[i].filename);
                     }
