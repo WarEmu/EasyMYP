@@ -482,11 +482,6 @@ namespace EasyMYP
 
         #endregion
 
-        private void panel_status_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         #endregion
 
         int oldColumn = -1;

@@ -31,8 +31,8 @@ namespace MYPHashFileListing
             //worker.Save();
 
             //worker.ParseFilenames("full_filename.txt");
-            //worker.ParseDirAndFilenames("filenames.txt");
-            worker.ParseDirFilenamesAndExtension();
+            worker.ParseDirAndFilenames("partialfilenames.txt");
+            //worker.ParseDirFilenamesAndExtension();
 
             worker.ConvertToPattern();
             //worker.Patterns();

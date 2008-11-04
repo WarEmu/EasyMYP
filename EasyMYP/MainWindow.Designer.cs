@@ -695,7 +695,6 @@ namespace EasyMYP
             this.panel_status.Name = "panel_status";
             this.panel_status.Size = new System.Drawing.Size(905, 23);
             this.panel_status.TabIndex = 18;
-            this.panel_status.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_status_Paint);
             // 
             // Loading
             // 

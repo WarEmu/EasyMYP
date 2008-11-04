@@ -167,6 +167,7 @@ namespace MYPWorker
         Hasher hasherBuilder; //the dictionnary
         public FileStream archiveStream; //the stream to read data from
         string currentFileName; //the current filename of the file being read
+        string fullFileName;
         string path; //the path of the filename
         public List<FileInArchive> archiveFileList = new List<FileInArchive>(); //contains all the files information, but not the data because of memory limitation on a 32Bits system
         public List<FileInArchive> archiveNewFileList = new List<FileInArchive>();
@@ -227,6 +228,7 @@ namespace MYPWorker
             //parse the filename to get the path
             this.currentFileName = filename.Substring(filename.LastIndexOf('\\') + 1, filename.Length - filename.LastIndexOf('\\') - 1);
             this.currentFileName = currentFileName.Split('.')[0];
+            this.fullFileName = filename;
             if (filename.LastIndexOf('\\') >= 0)
             {
                 this.path = filename.Substring(0, filename.LastIndexOf('\\'));
@@ -789,6 +791,17 @@ namespace MYPWorker
         /// <param name="MS">memory stream containing the data</param>
         private void WriteFileToArchive(FileInArchive archFile, MemoryStream MS)
         {
+            archiveStream.Close();
+            try
+            {
+                archiveStream = new FileStream(fullFileName, FileMode.Open, FileAccess.ReadWrite);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("You need to stop application currently using the following file: " + fullFileName);
+            }
+            #region Writting
+
             archiveStream.Seek((long)archFile.descriptor.fileTableEntryPosition + 12, SeekOrigin.Begin);
             int lowMSLength;
             lowMSLength = (int)(MS.Length & 0xFFFFFFFF);
@@ -829,6 +842,11 @@ namespace MYPWorker
 
             archFile.descriptor.compressedSize = MS.Length;
             tmp_bytearray = null;
+            #endregion
+
+            archiveStream.Close();
+            archiveStream = new FileStream(fullFileName, FileMode.Open, FileAccess.Read);
+
         }
 
         /// <summary>
