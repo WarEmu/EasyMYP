@@ -160,7 +160,7 @@ namespace EasyMYP
             // 
             this.findNowToolStripButton.Name = "findNowToolStripButton";
             //this.findNowToolStripButton.SettingsKey = "MainForm.findNowToolStripButton";
-            this.findNowToolStripButton.Text = "Find Now";
+            this.findNowToolStripButton.Text = "Find Next";
             this.findNowToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
             this.findNowToolStripButton.Click += new System.EventHandler(this.findNowToolStripButton_Click);
 

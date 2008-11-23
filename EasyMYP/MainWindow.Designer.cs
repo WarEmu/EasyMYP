@@ -1038,7 +1038,7 @@ namespace EasyMYP
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
-        private EasyMYP.FindStrip findStrip1;
+
         private FindStrip findStrip2;
         private System.Windows.Forms.Button buttonGenerateFilenames_OnPattern;
         private System.Windows.Forms.Button buttonGenerateFilenames_CurrentFiles;
