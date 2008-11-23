@@ -80,6 +80,7 @@ namespace EasyMYP
             this.treeView_Archive = new System.Windows.Forms.TreeView();
             this.treeView_FileSystem = new System.Windows.Forms.TreeView();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
             this.buttonGenerateFilenames_OnPattern = new System.Windows.Forms.Button();
             this.buttonGenerateFilenames_CurrentFiles = new System.Windows.Forms.Button();
             this.buttonExtractModifiedFiles = new System.Windows.Forms.Button();
@@ -110,6 +111,8 @@ namespace EasyMYP
             this.label_ReadingErrors_Value = new System.Windows.Forms.Label();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.replaceFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.lblGeneratePat = new System.Windows.Forms.Label();
+            this.lblGenerateFNE = new System.Windows.Forms.Label();
             this.mainMenu.SuspendLayout();
             this.panel_output.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -593,6 +596,9 @@ namespace EasyMYP
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.lblGenerateFNE);
+            this.tabPage3.Controls.Add(this.lblGeneratePat);
+            this.tabPage3.Controls.Add(this.label1);
             this.tabPage3.Controls.Add(this.buttonGenerateFilenames_OnPattern);
             this.tabPage3.Controls.Add(this.buttonGenerateFilenames_CurrentFiles);
             this.tabPage3.Controls.Add(this.buttonExtractModifiedFiles);
@@ -608,6 +614,16 @@ namespace EasyMYP
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "File Changes";
             this.tabPage3.UseVisualStyleBackColor = true;
+            this.tabPage3.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPage3_Paint);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(52, 69);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(213, 13);
+            this.label1.TabIndex = 29;
+            this.label1.Text = "Quitting Easymyp will also kill the generation";
             // 
             // buttonGenerateFilenames_OnPattern
             // 
@@ -621,7 +637,7 @@ namespace EasyMYP
             // 
             // buttonGenerateFilenames_CurrentFiles
             // 
-            this.buttonGenerateFilenames_CurrentFiles.Location = new System.Drawing.Point(6, 64);
+            this.buttonGenerateFilenames_CurrentFiles.Location = new System.Drawing.Point(6, 122);
             this.buttonGenerateFilenames_CurrentFiles.Name = "buttonGenerateFilenames_CurrentFiles";
             this.buttonGenerateFilenames_CurrentFiles.Size = new System.Drawing.Size(303, 23);
             this.buttonGenerateFilenames_CurrentFiles.TabIndex = 27;
@@ -887,6 +903,24 @@ namespace EasyMYP
             this.label_ReadingErrors_Value.TabIndex = 6;
             this.label_ReadingErrors_Value.Text = "0";
             // 
+            // lblGeneratePat
+            // 
+            this.lblGeneratePat.AutoSize = true;
+            this.lblGeneratePat.Location = new System.Drawing.Point(315, 98);
+            this.lblGeneratePat.Name = "lblGeneratePat";
+            this.lblGeneratePat.Size = new System.Drawing.Size(45, 13);
+            this.lblGeneratePat.TabIndex = 30;
+            this.lblGeneratePat.Text = "Inactive";
+            // 
+            // lblGenerateFNE
+            // 
+            this.lblGenerateFNE.AutoSize = true;
+            this.lblGenerateFNE.Location = new System.Drawing.Point(315, 127);
+            this.lblGenerateFNE.Name = "lblGenerateFNE";
+            this.lblGenerateFNE.Size = new System.Drawing.Size(45, 13);
+            this.lblGenerateFNE.TabIndex = 31;
+            this.lblGenerateFNE.Text = "Inactive";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1008,6 +1042,9 @@ namespace EasyMYP
         private FindStrip findStrip2;
         private System.Windows.Forms.Button buttonGenerateFilenames_OnPattern;
         private System.Windows.Forms.Button buttonGenerateFilenames_CurrentFiles;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblGenerateFNE;
+        private System.Windows.Forms.Label lblGeneratePat;
     }
 }
 

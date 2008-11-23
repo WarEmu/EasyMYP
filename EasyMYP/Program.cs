@@ -20,6 +20,14 @@ namespace EasyMYP
             {
                 mw.t_worker.Abort();
             }
+            if (mw.t_GeneratePat != null && mw.t_GeneratePat.ThreadState == System.Threading.ThreadState.Running)
+            {
+                mw.t_GeneratePat.Abort();
+            }
+            if (mw.t_GenerateFNE != null && mw.t_GenerateFNE.ThreadState == System.Threading.ThreadState.Running)
+            {
+                mw.t_GenerateFNE.Abort();
+            }
         }
     }
 }

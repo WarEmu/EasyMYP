@@ -315,20 +315,23 @@ namespace EasyMYP
                 }
             }
         }
-
+        public Thread t_GenerateFNE;
         private void buttonGenerateFilenames_CurrentFiles_Click(object sender, EventArgs e)
         {
             if (hashCreator != null)
             {
-                hashCreator.ParseDirFilenamesAndExtension();
+                t_GenerateFNE = new Thread(hashCreator.ParseDirFilenamesAndExtension);
+                t_GenerateFNE.Start();
+                //hashCreator.ParseDirFilenamesAndExtension();
             }
         }
-
+        public Thread t_GeneratePat;
         private void buttonGenerateFilenames_OnPattern_Click(object sender, EventArgs e)
         {
             if (hashCreator != null)
             {
-                hashCreator.Patterns();
+                t_GeneratePat = new Thread(hashCreator.Patterns);
+                t_GeneratePat.Start();
             }
         }
 
@@ -553,6 +556,29 @@ namespace EasyMYP
                 // bound to this BindingSource)
                 //this.fileInArchiveDataGridView.Po = e.Index;
                 this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
+            }
+        }
+
+        ThreadState oldt_GenerateFNE = ThreadState.Unstarted;
+        ThreadState oldt_GeneratePat = ThreadState.Unstarted;
+
+        private void tabPage3_Paint(object sender, PaintEventArgs e)
+        {
+            if (t_GenerateFNE.ThreadState == ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+            {
+                lblGenerateFNE.Text = "Running";
+            }
+            if (t_GenerateFNE.ThreadState != ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+            {
+                lblGenerateFNE.Text = "Inactive";
+            }
+            if (t_GeneratePat.ThreadState == ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
+            {
+                lblGeneratePat.Text = "Running";
+            }
+            if (t_GeneratePat.ThreadState != ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
+            {
+                lblGeneratePat.Text = "Inactive";
             }
         }
 

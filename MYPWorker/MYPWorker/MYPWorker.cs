@@ -776,6 +776,7 @@ namespace MYPWorker
             }
             else if (archFile.descriptor.compressionMethod == 0 || true) //No compression
             {
+                archFile.descriptor.compressionMethod = 0;
                 CopyStream(inputMS, outputMS);
 
                 archFile.descriptor.uncompressedSize = inputMS.Length;
@@ -811,6 +812,11 @@ namespace MYPWorker
             lowMSLength = (int)(archFile.descriptor.uncompressedSize & 0xFFFFFFFF);
             archiveStream.Write(ConvertLongToByteArray(lowMSLength), 0, 4);
 
+            archiveStream.Seek((long)archFile.descriptor.fileTableEntryPosition + 32, SeekOrigin.Begin);
+            byte[] bArray = new byte[1];
+            bArray[0] = (byte)archFile.CompressionMethod;
+            archiveStream.Write(bArray, 0, 1);
+
 
             byte[] tmp_bytearray = MS.GetBuffer();
             if (MS.Length <= archFile.descriptor.compressedSize)
@@ -829,8 +835,11 @@ namespace MYPWorker
                 }
                 else
                 {
+                    byte[] fakeMetadata = new byte[archFile.descriptor.fileHeaderSize];
+                    archiveStream.Write(fakeMetadata, 0, fakeMetadata.Length);
                     //Should throw an exception, but not all files have meta data so...
                 }
+                archiveStream.Seek(0, SeekOrigin.End);
                 archiveStream.Write(tmp_bytearray, 0, (int)MS.Length);
 
                 archiveStream.Seek((long)archFile.descriptor.fileTableEntryPosition, SeekOrigin.Begin);
@@ -838,6 +847,9 @@ namespace MYPWorker
 
                 archiveStream.Seek((long)archFile.descriptor.fileTableEntryPosition + 4, SeekOrigin.Begin);
                 archiveStream.Write(ConvertLongToByteArray((int)((fileSize >> 32) & 0xFFFFFFFF)), 0, 4);
+
+                archFile.descriptor.startingPosition = (int)(fileSize & 0xFFFFFFFF);
+                archFile.descriptor.startingPosition65536 = (int)((fileSize >> 32) & 0xFFFFFFFF);
             }
 
             archFile.descriptor.compressedSize = MS.Length;
