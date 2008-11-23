@@ -564,21 +564,27 @@ namespace EasyMYP
 
         private void tabPage3_Paint(object sender, PaintEventArgs e)
         {
-            if (t_GenerateFNE.ThreadState == ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+            if (t_GenerateFNE != null)
             {
-                lblGenerateFNE.Text = "Running";
+                if (t_GenerateFNE.ThreadState == ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+                {
+                    lblGenerateFNE.Text = "Running";
+                }
+                if (t_GenerateFNE.ThreadState != ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+                {
+                    lblGenerateFNE.Text = "Inactive";
+                }
             }
-            if (t_GenerateFNE.ThreadState != ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+            if (t_GeneratePat != null)
             {
-                lblGenerateFNE.Text = "Inactive";
-            }
-            if (t_GeneratePat.ThreadState == ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
-            {
-                lblGeneratePat.Text = "Running";
-            }
-            if (t_GeneratePat.ThreadState != ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
-            {
-                lblGeneratePat.Text = "Inactive";
+                if (t_GeneratePat.ThreadState == ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
+                {
+                    lblGeneratePat.Text = "Running";
+                }
+                if (t_GeneratePat.ThreadState != ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
+                {
+                    lblGeneratePat.Text = "Inactive";
+                }
             }
         }
 
