@@ -570,7 +570,9 @@ namespace EasyMYP
                 {
                     lblGenerateFNE.Text = "Running";
                 }
-                if (t_GenerateFNE.ThreadState != ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
+                if (t_GenerateFNE.ThreadState != ThreadState.Running
+                    && oldt_GenerateFNE != t_GenerateFNE.ThreadState
+                    && t_GenerateFNE.ThreadState != ThreadState.WaitSleepJoin)
                 {
                     lblGenerateFNE.Text = "Inactive";
                 }
@@ -581,7 +583,9 @@ namespace EasyMYP
                 {
                     lblGeneratePat.Text = "Running";
                 }
-                if (t_GeneratePat.ThreadState != ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
+                if (t_GeneratePat.ThreadState != ThreadState.Running 
+                    && oldt_GeneratePat != t_GeneratePat.ThreadState
+                    && t_GeneratePat.ThreadState != ThreadState.WaitSleepJoin)
                 {
                     lblGeneratePat.Text = "Inactive";
                 }
