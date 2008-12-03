@@ -315,6 +315,7 @@ namespace EasyMYP
                 }
             }
         }
+
         public Thread t_GenerateFNE;
         private void buttonGenerateFilenames_CurrentFiles_Click(object sender, EventArgs e)
         {
@@ -323,6 +324,7 @@ namespace EasyMYP
                 t_GenerateFNE = new Thread(hashCreator.ParseDirFilenamesAndExtension);
                 t_GenerateFNE.Start();
                 //hashCreator.ParseDirFilenamesAndExtension();
+                UpdateThreadStatus();
             }
         }
         public Thread t_GeneratePat;
@@ -332,7 +334,9 @@ namespace EasyMYP
             {
                 t_GeneratePat = new Thread(hashCreator.Patterns);
                 t_GeneratePat.Start();
+                UpdateThreadStatus();
             }
+
         }
 
         #endregion
@@ -562,7 +566,7 @@ namespace EasyMYP
         ThreadState oldt_GenerateFNE = ThreadState.Unstarted;
         ThreadState oldt_GeneratePat = ThreadState.Unstarted;
 
-        private void tabPage3_Paint(object sender, PaintEventArgs e)
+        private void UpdateThreadStatus()
         {
             if (t_GenerateFNE != null)
             {
@@ -583,13 +587,18 @@ namespace EasyMYP
                 {
                     lblGeneratePat.Text = "Running";
                 }
-                if (t_GeneratePat.ThreadState != ThreadState.Running 
+                if (t_GeneratePat.ThreadState != ThreadState.Running
                     && oldt_GeneratePat != t_GeneratePat.ThreadState
                     && t_GeneratePat.ThreadState != ThreadState.WaitSleepJoin)
                 {
                     lblGeneratePat.Text = "Inactive";
                 }
             }
+        }
+
+        private void tabPage3_Paint(object sender, PaintEventArgs e)
+        {
+            UpdateThreadStatus();
         }
 
 

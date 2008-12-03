@@ -101,6 +101,11 @@ namespace nsHashCreator
             #region extensions
             string extFile = "extList.txt";
             string line;
+
+            if (!File.Exists(extFile))
+            {
+                Save();
+            }
             FileStream fs = new FileStream(extFile, FileMode.Open);
             StreamReader r2 = new StreamReader(fs);
 
@@ -114,11 +119,18 @@ namespace nsHashCreator
             r2.Close();
             fs.Close();
             #endregion
+            if (!File.Exists("pattern_n.txt"))
+            {
+                if (!File.Exists("pattern_num.txt"))
+                {
+                    Save(); //creates the pattern_num necessary for ConvertToPattern() in this case
+                }
+                ConvertToPattern();
+            }
 
             FileStream stream = new FileStream("pattern_n.txt", FileMode.Open);
             StreamReader reader = new StreamReader(stream);
             WarHasher warhash = new WarHasher();
-
 
             int a_counter = 0;
             while ((line = reader.ReadLine()) != null)
@@ -134,15 +146,18 @@ namespace nsHashCreator
 
             patPlace = 0;
 
-            Thread pat1 = new Thread(new ThreadStart(TreatPattern));
-            Thread pat2 = new Thread(new ThreadStart(TreatPattern));
-
-            pat1.Start();
-            pat2.Start();
-
-            while (pat1.ThreadState == ThreadState.Running || pat2.ThreadState == ThreadState.Running)
+            if (patternList.Count > 0)
             {
-                Thread.Sleep(1);
+                Thread pat1 = new Thread(new ThreadStart(TreatPattern));
+                Thread pat2 = new Thread(new ThreadStart(TreatPattern));
+
+                pat1.Start();
+                pat2.Start();
+
+                while (pat1.ThreadState == ThreadState.Running || pat2.ThreadState == ThreadState.Running)
+                {
+                    Thread.Sleep(1);
+                }
             }
         }
 
