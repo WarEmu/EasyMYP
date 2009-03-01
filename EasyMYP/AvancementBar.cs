@@ -1,11 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using WarhammerOnlineHashBuilder;
+using nsHashDictionary;
 
 namespace EasyMYP
 {
@@ -37,16 +32,16 @@ namespace EasyMYP
         }
 
         #region Hash Event Handlers
-        public void UpdateHashEventHandler(object sender, HashEventArgs e)
+        public void UpdateDictionaryEventHandler(object sender, DictionaryEventArgs e)
         {
             if (progressBar.InvokeRequired)
             {
                 Invoke(OnUpdateHashEvent
-                    , new ProgressEventArgs(e.Value, (e.State == HashState.Finished)));
+                    , new ProgressEventArgs(e.Value, (e.State == DictionaryState.Finished)));
             }
             else
             {
-                TreatHashEvent(new ProgressEventArgs(e.Value, (e.State == HashState.Finished)));
+                TreatHashEvent(new ProgressEventArgs(e.Value, (e.State == DictionaryState.Finished)));
             }
         }
         #endregion

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30428</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9A524C41-EA0F-4F4F-B9B5-318C6F3C2B54}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -34,16 +34,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.4.369, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AvancementBar.cs">
@@ -51,6 +48,18 @@
     </Compile>
     <Compile Include="AvancementBar.Designer.cs">
       <DependentUpon>AvancementBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DictionnaryStatistics.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DictionnaryStatistics.Designer.cs">
+      <DependentUpon>DictionnaryStatistics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileTester.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FileTester.Designer.cs">
+      <DependentUpon>FileTester.cs</DependentUpon>
     </Compile>
     <Compile Include="FindStrip.cs">
       <SubType>Component</SubType>
@@ -69,6 +78,12 @@
     <EmbeddedResource Include="AvancementBar.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AvancementBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DictionnaryStatistics.resx">
+      <DependentUpon>DictionnaryStatistics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FileTester.resx">
+      <DependentUpon>FileTester.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FindStrip.resx">
       <DependentUpon>FindStrip.cs</DependentUpon>
@@ -105,17 +120,13 @@
       <Project>{136F8DE7-A1ED-4B3D-844D-A72B9D8F753D}</Project>
       <Name>HashCreator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MYPWorker\MYPWorker\MYPWorker.csproj">
-      <Project>{9668509D-05D9-4651-8E4F-4142AF541AB2}</Project>
-      <Name>MYPWorker</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WarhammerOnlineHashBuilder\WarhammerOnlineHashBuilder.csproj">
+    <ProjectReference Include="..\HashDictionary\HashDictionary.csproj">
       <Project>{7D3858A9-1902-46B0-A121-C8B2F18806ED}</Project>
-      <Name>WarhammerOnlineHashBuilder</Name>
+      <Name>HashDictionary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WarhammerOnlineHash\WarhammerOnlineHash\WarhammerOnlineHash.csproj">
-      <Project>{9DC94530-A111-4FF7-B88F-BD9A8AC3E035}</Project>
-      <Name>WarhammerOnlineHash</Name>
+    <ProjectReference Include="..\MYPHandler\MYPHandler.csproj">
+      <Project>{9668509D-05D9-4651-8E4F-4142AF541AB2}</Project>
+      <Name>MYPHandler</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

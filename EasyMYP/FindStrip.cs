@@ -119,60 +119,56 @@ namespace EasyMYP
 
         private void InitializeComponent()
         {
-
-            this.searchForToolStripLabel = new ToolStripLabel();
-            this.searchForToolStripTextBox = new ToolStripTextBox();
-            this.searchInToolStripLabel = new ToolStripLabel();
-            this.searchInToolStripComboBox = new ToolStripComboBox();
-            this.findNowToolStripButton = new ToolStripButton();
-
+            this.searchForToolStripLabel = new System.Windows.Forms.ToolStripLabel();
+            this.searchForToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
+            this.searchInToolStripLabel = new System.Windows.Forms.ToolStripLabel();
+            this.searchInToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.findNowToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SuspendLayout();
-
             // 
             // searchForToolStripLabel
             // 
-            this.searchForToolStripLabel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            this.searchForToolStripLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.searchForToolStripLabel.Name = "searchForToolStripLabel";
-            //this.searchForToolStripLabel.SettingsKey = "MainForm.searchForToolStripLabel";
+            this.searchForToolStripLabel.Size = new System.Drawing.Size(61, 22);
             this.searchForToolStripLabel.Text = "Search for:";
             // 
             // searchForToolStripTextBox
             // 
             this.searchForToolStripTextBox.Name = "searchForToolStripTextBox";
-            //this.searchForToolStripTextBox.SettingsKey = "MainForm.searchForToolStripTextBox";
-            this.searchForToolStripTextBox.Size = new System.Drawing.Size(92, 25);
+            this.searchForToolStripTextBox.Size = new System.Drawing.Size(92, 21);
             // 
             // searchInToolStripLabel
             // 
             this.searchInToolStripLabel.Name = "searchInToolStripLabel";
-            //this.searchInToolStripLabel.SettingsKey = "MainForm.searchInToolStripLabel";
+            this.searchInToolStripLabel.Size = new System.Drawing.Size(55, 13);
             this.searchInToolStripLabel.Text = "Search in:";
             // 
             // searchInToolStripComboBox
             // 
-            this.searchInToolStripComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.searchInToolStripComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.searchInToolStripComboBox.Name = "searchInToolStripComboBox";
-            //this.searchInToolStripComboBox.SettingsKey = "MainForm.searchInToolStripComboBox";
-            this.searchInToolStripComboBox.Size = new System.Drawing.Size(100, 25);
-            this.searchInToolStripComboBox.GotFocus += new EventHandler(searchInToolStripComboBox_GotFocus);
+            this.searchInToolStripComboBox.Size = new System.Drawing.Size(100, 21);
+            this.searchInToolStripComboBox.GotFocus += new System.EventHandler(this.searchInToolStripComboBox_GotFocus);
             // 
             // findNowToolStripButton
             // 
+            this.findNowToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.findNowToolStripButton.Name = "findNowToolStripButton";
-            //this.findNowToolStripButton.SettingsKey = "MainForm.findNowToolStripButton";
+            this.findNowToolStripButton.Size = new System.Drawing.Size(57, 17);
             this.findNowToolStripButton.Text = "Find Next";
-            this.findNowToolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
             this.findNowToolStripButton.Click += new System.EventHandler(this.findNowToolStripButton_Click);
-
-            this.Items.AddRange(new ToolStripItem[] {
+            // 
+            // FindStrip
+            // 
+            this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.searchForToolStripLabel,
             this.searchForToolStripTextBox,
             this.searchInToolStripLabel,
             this.searchInToolStripComboBox,
             this.findNowToolStripButton});
+            this.ResumeLayout(false);
 
-            this.ResumeLayout();
-            this.PerformLayout();
         }
     }
 }

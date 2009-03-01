@@ -1,15 +1,12 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using MYPWorker;
-using WarhammerOnlineHashBuilder;
+using MYPHandler;
 using nsHashCreator;
+using nsHashDictionary;
 
 
 namespace EasyMYP
@@ -32,70 +29,92 @@ namespace EasyMYP
     public partial class MainWindow : Form
     {
         #region Attributes
-        State status = State.waiting;
-        MYPWorker.MYPWorker worker; //The class that does all the job of reading, extracting and writting to myp files
+        MYPHandler.MYPHandler MypFileHandler; //The class that does all the job of reading, extracting and writting to myp files
         public Thread t_worker; //worker thread because it is best that way so not to freeze the gui
-        Hasher hasher = new Hasher(false); //The class that contains the dictionnary
-        HashCreator hashCreator = new HashCreator();
+        HashDictionary hashDic = new HashDictionary(); //The class that contains the dictionnary
+        HashDictionary patternDic;
+        HashCreator hashCreator;
         //List<FileInArchive> FIAList = new List<FileInArchive>();
         AvancementBar avBar;
         string extractionPath = null;
+        bool operationRunning = false;
+
+        List<String> scanFiles = new List<string>();
         #endregion
 
         public MainWindow()
         {
             InitializeComponent();
             LoadDictionnary(false, "");
+            hashCreator = new HashCreator(hashDic);
             fileInArchiveBindingSource.DataSource = new SortableBindingList<FileInArchive>();
-        }
-
-        void LoadDictionnary(bool merge, string fileToMerge)
-        {
-            //Show a progress bar
-            avBar = new AvancementBar();
-            avBar.Text = "Loading hash list ...";
-            hasher.HashEvent += avBar.UpdateHashEventHandler;
-
-            //Building the dictionnary
-            if (!merge)
-            {
-                t_worker = new Thread(new ThreadStart(hasher.BuildHashList));
-                t_worker.Start();
-            }
-            else
-            {
-                t_worker = new Thread(new ParameterizedThreadStart(hasher.MergeHashList));
-                t_worker.Start(fileToMerge);
-            }
 
             //Define functions that should be called to treat events
             //Needed because of cross thread calls
             OnNewExtractedEvent = TreatExtractionEvent;
             OnNewFileTableEvent = TreatFileTableEvent;
+            OnNewFilenameTestEvent = TreatFilenameTestEvent;
+        }
+
+        /// <summary>
+        /// Protects for concurrent operations
+        /// </summary>
+        /// <returns></returns>
+        private bool SetOperationRunning()
+        {
+            if (operationRunning)
+            {
+                MessageBox.Show("Please wait until completion of previous operation", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            operationRunning = true;
+            return true;
+        }
+
+        void LoadDictionnary(bool merge, string fileToMerge)
+        {
+            if (!SetOperationRunning()) return;
+
+            //Show a progress bar. Use it to block other operations while hashDic not initialized correctly
+            avBar = new AvancementBar();
+            avBar.Text = "Loading hash list ...";
+
+            hashDic.HashEvent += avBar.UpdateDictionaryEventHandler;
+
+            //Building the dictionnary
+            if (!merge)
+            {
+                t_worker = new Thread(new ThreadStart(hashDic.LoadHashList));
+                t_worker.Start();
+            }
+            else
+            {
+                t_worker = new Thread(new ParameterizedThreadStart(hashDic.MergeHashList));
+                t_worker.Start(fileToMerge);
+            }
 
             //Wait until the dictionnary is loaded
             avBar.ShowDialog();
-            hasher.HashEvent -= avBar.UpdateHashEventHandler;
+            hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
             avBar.Dispose();
-            //hasher.SaveHashList();
 
-            hashCreator.InitializeHashList(hasher);
+            operationRunning = false;
         }
 
         #region Menu
         #region Archive Menu
-        private void createToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-        }
 
         public void resetOverall()
         {
             if (t_worker != null)
                 t_worker.Abort();
-            if (worker != null)
-                worker.Dispose();
-            label_File_Value.Text = "";
 
+            if (MypFileHandler != null)
+                MypFileHandler.Dispose();
+
+            operationRunning = false; 
+            
+            label_File_Value.Text = "";
             label_NewFiles_Value.Text = "0";
             label_ModifiedFiles_Value.Text = "0";
             label_EstimatedNumOfFiles_Value.Text = "0";
@@ -106,50 +125,59 @@ namespace EasyMYP
             label_ExtractedFiles_Value.Text = "0";
             label_ExtractionErrors_Value.Text = "0";
             fileInArchiveBindingSource.Clear(); //Clean the filelisting
-            Loading.Visible = false;
+
+            extractAllToolStripMenuItem.Enabled = false;
+            extractFileListToolStripMenuItem.Enabled = false;
+            extractSelectedToolStripMenuItem.Enabled = false;
+            replaceSelectedToolStripMenuItem.Enabled = false;
+
+            statusPB.Visible = false;
         }
 
         private void openArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             openArchiveDialog.Filter = "MYP Archives|*.myp";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
+                if (!SetOperationRunning()) return; //reset in eventhandler
                 resetOverall();
                 fileInArchiveBindingSource.Clear(); //Clean the filelisting
+                fileInArchiveDataGridView.DataSource = null; // switched by when Event_FileTableType.Finished is received.
 
                 string filename = openArchiveDialog.FileName; //get filename selected
                 int filenameStartPosition = filename.LastIndexOf('\\');
                 label_File_Value.Text = filename.Substring(filenameStartPosition + 1, filename.Length - filenameStartPosition - 1);
 
-                if (worker != null) worker.Dispose();
-                worker = new MYPWorker.MYPWorker(filename
+                MypFileHandler = new MYPHandler.MYPHandler(filename
                     , FileTableEventHandler, ExtractionEventHandler
-                    , hasher);
+                    , hashDic);
 
                 if (extractionPath != null)
                 {
-                    worker.ExtractionPath = extractionPath;
+                    MypFileHandler.ExtractionPath = extractionPath;
                 }
 
-                Loading.Maximum = (int)worker.TotalNumberOfFiles;
-                Loading.Value = 0;
-                Loading.Visible = true;
-                label_EstimatedNumOfFiles_Value.Text = worker.TotalNumberOfFiles.ToString();
+                statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
+                statusPB.Value = 0;
+                statusPB.Visible = true;
+                label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString();
 
-                worker.Pattern = Pattern.Text;
-                t_worker = new Thread(new ThreadStart(worker.GetFileTable));
+                MypFileHandler.Pattern = Pattern.Text;
+                t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
                 t_worker.Start();
+
+                //Protected by isRunning
+                extractAllToolStripMenuItem.Enabled = true;
+                extractFileListToolStripMenuItem.Enabled = true;
+                extractSelectedToolStripMenuItem.Enabled = true;
+                replaceSelectedToolStripMenuItem.Enabled = true;
             }
         }
 
         private void closeArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             resetOverall();
-            //            if (worker != null)
-            //            {
-            //                worker.Dispose(); //releases the worker if set
-            //            }
-            //fileInArchiveBindingSource.Clear(); //Clean the filelisting
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -158,42 +186,172 @@ namespace EasyMYP
         }
         #endregion
 
-        #region Tools Menu
-        private void mergeDictionaryFile_ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            openArchiveDialog.Filter = "Dictionary File|*.txt";
-            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
-            {
-                //Show a progress bar
-                avBar = new AvancementBar();
-                avBar.Text = "Merging hash list ...";
-                hasher.HashEvent += avBar.UpdateHashEventHandler;
-                t_worker = new Thread(new ParameterizedThreadStart(hasher.MergeHashList));
-                t_worker.Start(openArchiveDialog.FileName);
-                //Wait until the dictionnary is loaded
-                avBar.ShowDialog();
-                hasher.HashEvent -= avBar.UpdateHashEventHandler;
-                avBar.Dispose();
-            }
-        }
+        #region Dictionary Menu
 
         private void testFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openArchiveDialog.Filter = "File containing filenames to test|*.txt";
-            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            FileTester tester = new FileTester();
+
+            if (tester.ShowDialog() == DialogResult.OK)
             {
-                hashCreator.ParseDirAndFilenames(openArchiveDialog.FileName);
+
+                if (!SetOperationRunning()) return; //reset in eventhandler
+
+                HashSet<String> dirs = new HashSet<string>();
+                HashSet<String> files = new HashSet<string>();
+                HashSet<String> exts = new HashSet<string>();
+                string outputFileRoot = null;
+
+                hashDic.CreateHelpers();
+
+                if (tester.knownDirBox.Checked)
+                    dirs.UnionWith(hashDic.DirListing);
+                if (tester.customDirBox.Checked)
+                    AddToHashSetFromFile(dirs, tester.customDirFile);
+
+                if (tester.knownFileBox.Checked)
+                    files.UnionWith(hashDic.FileListing);
+                if (tester.customFileBox.Checked)
+                {
+                    AddToHashSetFromFile(files, tester.customFileFile);
+                    if (!tester.knownFileBox.Checked) // special case where we only test custom files
+                    {
+                        outputFileRoot = tester.customFileFile;
+                        if (Path.HasExtension(outputFileRoot))
+                            outputFileRoot = Path.GetDirectoryName(outputFileRoot) + "\\" + Path.GetFileNameWithoutExtension(outputFileRoot);
+                    }
+                }
+
+                if (tester.knownExtBox.Checked)
+                    exts.UnionWith(hashDic.ExtListing);
+                if (tester.customExtBox.Checked)
+                    AddToHashSetFromFile(exts, tester.customExtFile);
+
+                ThreadParam threadParam= new ThreadParam(dirs, files, exts, 0, 0, outputFileRoot);
+
+                statusPB.Visible = true;
+                statusPB.Maximum = ((dirs.Count == 0) ? 1: dirs.Count) * ((exts.Count == 0) ? 1:exts.Count);
+                statusPB.Value = 0;
+                hashCreator.event_FilenameTest += FilenameTestEventHandler; //reset in eventhandler
+
+                t_worker = new Thread(new ParameterizedThreadStart(hashCreator.ParseDirFilenamesAndExtension));
+                t_worker.Start(threadParam);
+
+            }
+        }
+
+        private void AddToHashSetFromFile(HashSet<String> theHashSet, string filename)
+        {
+            if (File.Exists(filename))
+            {
+                FileStream fs = new FileStream(filename, FileMode.Open);
+                StreamReader reader = new StreamReader(fs);
+
+                string line;
+
+                // read the file and remove duplicates.
+                while ((line = reader.ReadLine()) != null)
+                {
+                    theHashSet.Add(line);
+                }
+                reader.Close();
             }
         }
 
         private void testFullFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (!SetOperationRunning()) return;
+
             openArchiveDialog.Filter = "File containing full filenames to test|*.txt";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
-                hashCreator.ParseFilenames(openArchiveDialog.FileName);
+                // supposed to be small enough to avoid threading.
+                long newlyFound = hashCreator.ParseFilenames(openArchiveDialog.FileName);
+                if (newlyFound != 0)
+                {
+                    MessageBox.Show("You just found " + newlyFound + " new filenames.", "Newly found filenames!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                else
+                {
+                    MessageBox.Show("No new filenames.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            operationRunning = false;
+        }
+
+        /// <summary>
+        /// Parses all the myp files to extract all the possible hashes.
+        /// </summary>
+        /// 
+        private void scanAllMypsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string[] mypfiles = Directory.GetFiles(folderBrowserDialog1.SelectedPath, "*.myp");
+                if (mypfiles.Length == 0)
+                {
+                    MessageBox.Show("No myp files found in folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (!SetOperationRunning()) return; //reset in event handler
+
+                resetOverall();
+                foreach (string file in mypfiles)
+                {
+                    scanFiles.Add(file);
+                }
+
+                statusPB.Maximum = (int)mypfiles.Length;
+                statusPB.Value = 0;
+                statusPB.Visible = true;
+
+                MypFileHandler = new MYPHandler.MYPHandler(scanFiles[0]
+                    , null, ExtractionEventHandler
+                    , hashDic);
+
+                scanFiles.RemoveAt(0);
+
+                MypFileHandler.Pattern = Pattern.Text;
+                t_worker = new Thread(new ThreadStart(MypFileHandler.ScanFileTable));
+                t_worker.Start();
             }
         }
+
+        private void mergeDictionaryFile_ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openArchiveDialog.Filter = "Dictionary File|*.txt";
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (!SetOperationRunning()) return;
+
+                //Show a progress bar
+                avBar = new AvancementBar();
+                avBar.Text = "Merging hash list ...";
+                hashDic.HashEvent += avBar.UpdateDictionaryEventHandler;
+                t_worker = new Thread(new ParameterizedThreadStart(hashDic.MergeHashList));
+                t_worker.Start(openArchiveDialog.FileName);
+                //Wait until the dictionnary is loaded
+                avBar.ShowDialog();
+                hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
+                avBar.Dispose();
+
+                operationRunning = false;
+            }
+        }
+
+        private void dumpDirFileExtensionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hashDic.CreateHelpers();
+            hashDic.SaveHelpers();
+        }
+        
+        private void statisticsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DictionnaryStatistics dlg = new DictionnaryStatistics(hashDic.HashList);
+            dlg.ShowDialog();
+        }
+
         #endregion
 
         #region File Menu
@@ -202,103 +360,124 @@ namespace EasyMYP
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
-                if (worker != null)
+                if (MypFileHandler != null)
                 {
-                    worker.ExtractionPath = extractionPath;
+                    MypFileHandler.ExtractionPath = extractionPath;
                 }
             }
         }
 
+        /// <summary>
+        /// Extra selected files from the archive
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void extractSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (extractionPath == null)
+            if (MypFileHandler != null)
             {
-                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                // operation lock is put by 'extract Files'
+                if (extractionPath == null)
                 {
-                    extractionPath = folderBrowserDialog1.SelectedPath;
-                    worker.ExtractionPath = extractionPath;
-                    if (fileInArchiveBindingSource.Current != null)
+                    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                     {
-                        worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
+                        extractionPath = folderBrowserDialog1.SelectedPath;
+                        MypFileHandler.ExtractionPath = extractionPath;
+
                     }
+                    else
+                        return;
                 }
-            }
-            else
-            {
-                if (fileInArchiveBindingSource.Current != null)
+
+                List<FileInArchive> fileList = new List<FileInArchive>();
+                foreach (DataGridViewRow theRow in fileInArchiveDataGridView.SelectedRows)
                 {
-                    worker.ExtractFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current);
+                    if (theRow.DataBoundItem != null)
+                        fileList.Add((MYPHandler.FileInArchive)theRow.DataBoundItem);
                 }
+                ExtractFiles(fileList);
             }
         }
 
         private void ExtractFiles(List<FileInArchive> fileList)
         {
-            if (worker != null)
+            if (MypFileHandler != null)
             {
-                t_worker = new Thread(new ParameterizedThreadStart(worker.ExtractFileList));
-                t_worker.Start(fileList);
+                if (!SetOperationRunning()) return; //reset in event
 
-                //Show a progress bar
-                avBar = new AvancementBar();
-                avBar.Text = "Extracting";
-                avBar.ShowDialog();
-                avBar.Dispose();
+                statusPB.Value = 0;
+                statusPB.Maximum = fileList.Count;
+                statusPB.Visible = true;
+
+                t_worker = new Thread(new ParameterizedThreadStart(MypFileHandler.ExtractFileList));
+                t_worker.Start(fileList);
             }
         }
 
         private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //TODO: if extraction path is not set put an alert up ?
-            if (worker != null)
+            if (MypFileHandler != null)
             {
                 if (extractionPath == null)
                 {
                     if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                     {
                         extractionPath = folderBrowserDialog1.SelectedPath;
-                        worker.ExtractionPath = extractionPath;
-                        ExtractFiles(worker.archiveFileList);
+                        MypFileHandler.ExtractionPath = extractionPath;
                     }
+                    else
+                        return;
                 }
-                else
+                ExtractFiles(MypFileHandler.archiveFileList); // set the operation flag
+            }
+        }
+
+        private void extractFileListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MypFileHandler != null)
+            {
+                if (extractionPath == null)
                 {
-                    //t_worker = new Thread(new ThreadStart(worker.ExtractAll));
-                    //t_worker.Start();
-
-                    ////Show a progress bar
-                    //avBar = new AvancementBar();
-                    //avBar.Text = "Extracting";
-                    //avBar.ShowDialog();
-                    //avBar.Dispose();
-
-                    ExtractFiles(worker.archiveFileList);
+                    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                    {
+                        extractionPath = folderBrowserDialog1.SelectedPath;
+                        MypFileHandler.ExtractionPath = extractionPath;
+                    }
+                    else
+                        return;
                 }
+                MypFileHandler.DumpFileList();
             }
         }
 
         private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (replaceFileDialog.ShowDialog() == DialogResult.OK)
+            if (MypFileHandler != null)
             {
-                string filename = replaceFileDialog.FileName; //get filename selected
+                if (replaceFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filename = replaceFileDialog.FileName; //get filename selected
 
-                worker.ReplaceFile((MYPWorker.FileInArchive)fileInArchiveBindingSource.Current
-                    , new FileStream(filename, FileMode.Open));
+                    if (!SetOperationRunning()) return;
+
+                    MypFileHandler.ReplaceFile((MYPHandler.FileInArchive)fileInArchiveBindingSource.Current
+                        , new FileStream(filename, FileMode.Open));
+
+                    operationRunning = false;
+                }
             }
         }
-
-        #endregion
 
         private void buttonExtractNewFiles_Click(object sender, EventArgs e)
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
-                worker.ExtractionPath = extractionPath;
-                if (worker != null)
+                MypFileHandler.ExtractionPath = extractionPath;
+                if (MypFileHandler != null)
                 {
-                    ExtractFiles(worker.archiveNewFileList);
+                    ExtractFiles(MypFileHandler.archiveNewFileList); //set operation flag
                 }
             }
         }
@@ -308,37 +487,57 @@ namespace EasyMYP
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
-                worker.ExtractionPath = extractionPath;
-                if (worker != null)
+                MypFileHandler.ExtractionPath = extractionPath;
+                if (MypFileHandler != null)
                 {
-                    ExtractFiles(worker.archiveModifiedFileList);
+                    ExtractFiles(MypFileHandler.archiveModifiedFileList); //set operation flag
                 }
             }
         }
 
-        public Thread t_GenerateFNE;
-        private void buttonGenerateFilenames_CurrentFiles_Click(object sender, EventArgs e)
+        private void generatePatternButton_Click(object sender, EventArgs e)
         {
-            if (hashCreator != null)
-            {
-                t_GenerateFNE = new Thread(hashCreator.ParseDirFilenamesAndExtension);
-                t_GenerateFNE.Start();
-                //hashCreator.ParseDirFilenamesAndExtension();
-                UpdateThreadStatus();
-            }
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "Pattern File|*.txt";
+
+            if (dlg.ShowDialog() != DialogResult.OK)
+                return;
+
+            if (!SetOperationRunning()) return;
+
+            hashCreator.SavePatterns(dlg.FileName);
+
+            operationRunning = false;
         }
+
         public Thread t_GeneratePat;
-        private void buttonGenerateFilenames_OnPattern_Click(object sender, EventArgs e)
+        private void testPatternButton_Click(object sender, EventArgs e)
         {
-            if (hashCreator != null)
+            if (t_GeneratePat == null) //reset in event handler
             {
-                t_GeneratePat = new Thread(hashCreator.Patterns);
-                t_GeneratePat.Start();
-                UpdateThreadStatus();
+                openArchiveDialog.Filter = "Pattern File|*.txt";
+                if (openArchiveDialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                hashCreator.loadPatterns(openArchiveDialog.FileName);
+
+                //make a copy of the dictionary to avoid conflicts, with only unknown file name to speed up.
+                patternDic = new HashDictionary("Hash/PatternDic.txt");
+                foreach (KeyValuePair<long, HashData> kvp in hashDic.HashList)
+                    if (kvp.Value.filename.CompareTo("") == 0)
+                        patternDic.LoadHash(kvp.Value.ph, kvp.Value.sh, kvp.Value.filename, kvp.Value.crc);
+
+                hashCreator.event_FilenameTest += FilenameTestEventHandler; //reset in eventhandler
+
+                t_GeneratePat = new Thread(new ParameterizedThreadStart(hashCreator.Patterns));
+                t_GeneratePat.Start(patternDic);
             }
+            else
+                MessageBox.Show("Already testing! Please wait for completion", "Please wait", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         }
 
+        #endregion
         #endregion
 
         #region UI_FileListing
@@ -348,12 +547,15 @@ namespace EasyMYP
         }
         #endregion
 
-        #region Delegates for events
-        delegate void del_NewFileTableEvent(MYPWorker.MYPFileTableEventArgs e);
+        #region Delegates for cross threading
+        delegate void del_NewFileTableEvent(MYPHandler.MYPFileTableEventArgs e);
         del_NewFileTableEvent OnNewFileTableEvent;
 
-        delegate void del_NewExtractedEvent(MYPWorker.MYPFileEventArgs e);
+        delegate void del_NewExtractedEvent(MYPHandler.MYPFileEventArgs e);
         del_NewExtractedEvent OnNewExtractedEvent;
+
+        delegate void del_NewFilenameTestEvent(nsHashCreator.MYPFilenameTestEventArgs e);
+        del_NewFilenameTestEvent OnNewFilenameTestEvent;
         #endregion
 
         #region Event Treatment
@@ -363,7 +565,7 @@ namespace EasyMYP
         /// </summary>
         /// <param name="sender">sender</param>
         /// <param name="e">event args</param>
-        private void FileTableEventHandler(object sender, MYPWorker.MYPFileTableEventArgs e)
+        private void FileTableEventHandler(object sender, MYPHandler.MYPFileTableEventArgs e)
         {
             //Check if an invoke is required by selecting a random component
             //that might be updated by this event
@@ -378,21 +580,19 @@ namespace EasyMYP
         }
 
         /// <summary>
-        /// Treats an event. It calls the method corresponding to the event type
+        /// Treats an event in the UI thread
         /// </summary>
         /// <param name="e">event arguments</param>
-        private void TreatFileTableEvent(MYPWorker.MYPFileTableEventArgs e)
+        private void TreatFileTableEvent(MYPHandler.MYPFileTableEventArgs e)
         {
             if (e.Type == Event_FileTableType.FileError)
             {
-                label_ReadingErrors_Value.Text = worker.Error_FileEntryNumber.ToString();
+                label_ReadingErrors_Value.Text = MypFileHandler.Error_FileEntryNumber.ToString();
             }
             else if (e.Type == Event_FileTableType.NewFile)
             {
                 Update_OnFileTableEvent();
                 FileListing_Add(e.ArchFile);
-                //treeView_Archive.Nodes.
-
             }
             else if (e.Type == Event_FileTableType.UpdateFile)
             {
@@ -400,40 +600,40 @@ namespace EasyMYP
             }
             else if (e.Type == Event_FileTableType.Finished)
             {
-                if (worker.archiveModifiedFileList.Count > 0 || worker.archiveNewFileList.Count > 0)
+                if (MypFileHandler.archiveModifiedFileList.Count > 0 || MypFileHandler.archiveNewFileList.Count > 0)
                 {
-                    worker.SaveHashList();
+                    hashDic.SaveHashList();
                 }
+                fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
+                operationRunning = false;
             }
         }
 
         /// <summary>
-        /// Updates all the labels regarding file table entries
-        /// Adds the file to the datagrid
+        /// Updates all the labels regarding file table entries and progress bar
         /// </summary>
-        /// <param name="file">The file to add to the datagrid</param>
         private void Update_OnFileTableEvent()
         {
-            label_NumOfFiles_Value.Text = worker.NumberOfFilesFound.ToString();
-            label_NumOfNamedFiles_Value.Text = worker.NumberOfFileNamesFound.ToString();
-            label_UncompressedSize_Value.Text = worker.UnCompressedSize.ToString();
-            label_ModifiedFiles_Value.Text = worker.archiveModifiedFileList.Count.ToString();
-            label_NewFiles_Value.Text = worker.archiveNewFileList.Count.ToString();
+            label_NumOfFiles_Value.Text = MypFileHandler.NumberOfFilesFound.ToString();
+            label_NumOfNamedFiles_Value.Text = MypFileHandler.NumberOfFileNamesFound.ToString();
+            label_UncompressedSize_Value.Text = MypFileHandler.UnCompressedSize.ToString();
+            label_ModifiedFiles_Value.Text = MypFileHandler.archiveModifiedFileList.Count.ToString();
+            label_NewFiles_Value.Text = MypFileHandler.archiveNewFileList.Count.ToString();
 
-            if (worker.NumberOfFilesFound == worker.TotalNumberOfFiles)
+            if (MypFileHandler.NumberOfFilesFound == MypFileHandler.TotalNumberOfFiles)
             {
-                Loading.Visible = false;
+                statusPB.Visible = false;
             }
             else
             {
-                Loading.Value = (int)worker.NumberOfFilesFound;
+                statusPB.Value = (int)MypFileHandler.NumberOfFilesFound;
             }
         }
 
         #endregion
 
         #region Extraction Event Treatment
-        private void ExtractionEventHandler(object sender, MYPWorker.MYPFileEventArgs e)
+        private void ExtractionEventHandler(object sender, MYPHandler.MYPFileEventArgs e)
         {
             if (label_ExtractionErrors_Text.InvokeRequired)
             {
@@ -445,42 +645,142 @@ namespace EasyMYP
             }
         }
 
-        private void TreatExtractionEvent(MYPWorker.MYPFileEventArgs e)
+        /// <summary>
+        /// Treat file extraction events in the UI thread
+        /// </summary>
+        /// <param name="e"></param>
+        private void TreatExtractionEvent(MYPHandler.MYPFileEventArgs e)
         {
-            if (e.State == Event_ExtractionType.ExtractionFinished)
+            switch (e.State)
             {
-                if (avBar != null) avBar.UpdateOnEvent(new ProgressEventArgs(100f, true));
-                Update_OnExtraction(e.Value);
-            }
-            else if (e.State == Event_ExtractionType.FileExtractionError)
-            {
-                Update_OnExtractionError(e.Value);
-            }
-            else if (e.State == Event_ExtractionType.FileExtracted)
-            {
-                if (avBar != null)
-                    avBar.UpdateOnEvent(new ProgressEventArgs((float)e.Value / (float)worker.TotalNumberOfFiles, false));
-                Update_OnExtraction(e.Value);
-            }
-            else if (e.State == Event_ExtractionType.UnknownCompressionMethod)
-            {
-            }
-            else if (e.State == Event_ExtractionType.UnknownError)
-            {
+                case Event_ExtractionType.ExtractionFinished:
+                    {
+                        statusPB.Visible = false;
+                        operationRunning = false;
+                        UpdateLabel_OnExtraction(e.Value);
+                        break;
+                    }
+                case Event_ExtractionType.FileExtractionError:
+                    {
+                        statusPB.Value = (int)e.Value;
+                        UpdateLabel_OnExtractionError(e.Value);
+                        break;
+                    }
+                case Event_ExtractionType.FileExtracted:
+                    {
+                        statusPB.Value = (int)e.Value;
+                        UpdateLabel_OnExtraction(e.Value);
+                        break;
+                    }
+                case Event_ExtractionType.Scanning:
+                    {
+                        statusPB.Value += 1;                        
+                        if (scanFiles.Count != 0)
+                        {
+                            MypFileHandler = new MYPHandler.MYPHandler(scanFiles[0]
+                                , null, ExtractionEventHandler
+                                , hashDic);
+
+                            scanFiles.RemoveAt(0);
+
+                            MypFileHandler.Pattern = Pattern.Text;
+                            t_worker = new Thread(new ThreadStart(MypFileHandler.ScanFileTable));
+                            t_worker.Start();
+                        }
+                        else
+                        {
+                            resetOverall();
+                            statusPB.Visible = false;
+                            operationRunning = false;
+                        }
+                        break;
+                    }
             }
         }
 
-        private void Update_OnExtraction(long numExtracted)
+        private void UpdateLabel_OnExtraction(long numExtracted)
         {
             label_ExtractedFiles_Value.Text = numExtracted.ToString();
         }
 
-        private void Update_OnExtractionError(long numError)
+        private void UpdateLabel_OnExtractionError(long numError)
         {
             label_ExtractionErrors_Value.Text = numError.ToString();
         }
 
         #endregion
+
+        #region Filename Tests
+        /// <summary>
+        /// Receive all events related to the file table entries
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">event args</param>
+        private void FilenameTestEventHandler(object sender, nsHashCreator.MYPFilenameTestEventArgs e)
+        {
+            //Check if an invoke is required by selecting a random component
+            //that might be updated by this event
+            if (label_NumOfFiles_Value.InvokeRequired)
+            {
+                Invoke(OnNewFilenameTestEvent, e);
+            }
+            else
+            {
+                TreatFilenameTestEvent(e);
+            }
+        }
+
+        /// <summary>
+        /// Treats an event in the UI Thread. It calls the method corresponding to the event type
+        /// </summary>
+        /// <param name="e">event arguments</param>
+        private void TreatFilenameTestEvent(nsHashCreator.MYPFilenameTestEventArgs e)
+        {
+            switch (e.State)
+            {
+                case Event_FilenameTestType.TestFinished:
+                    {
+                        hashCreator.event_FilenameTest -= FilenameTestEventHandler;
+                        operationRunning = false;
+                        statusPB.Visible = false;
+                        if (e.Value != 0)
+                            MessageBox.Show("You just found " + e.Value + " new filenames.", "Newly found filenames!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        else
+                            MessageBox.Show("No new filenames.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        break;
+                    }
+                case Event_FilenameTestType.TestRunning:
+                    {
+                        statusPB.Value += (int)e.Value;
+                        break;
+                    }
+                case Event_FilenameTestType.PatternRunning:
+                    {
+                        lblGeneratePat.Text = e.Value.ToString() + " %";
+                        break;
+                    }
+                case Event_FilenameTestType.PatternFinished:
+                    {
+                        lblGeneratePat.Text = "Done";
+                        if (e.Value != 0)
+                        {
+                            patternDic.SaveHashList("Hash/PatternDic.txt");
+                            hashDic.MergeHashList("Hash/PatternDic.txt");
+                            MessageBox.Show("Pattern Matching just found " + e.Value + " new filenames.", "Newly found filenames!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        }
+                        else
+                            MessageBox.Show("No new filenames through Pattern matching.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        hashCreator.event_FilenameTest -= FilenameTestEventHandler;
+                        t_GeneratePat = null;
+                        break;
+                    }
+            }
+        }
+        #endregion
+
+
         #region Error Table Entry
         private void Error_TableEntry(FileInArchive file)
         {
@@ -541,10 +841,23 @@ namespace EasyMYP
 
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (worker != null)
-                worker.Dispose();
+            if (MypFileHandler != null)
+                MypFileHandler.Dispose();
             t_worker.Abort();
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+
+            if (hashDic.needsSave == true)
+            {
+                avBar = new AvancementBar();
+                avBar.Text = "Saving hash list ...";
+                hashDic.HashEvent += avBar.UpdateDictionaryEventHandler;
+                t_worker = new Thread(new ThreadStart(hashDic.SaveHashList));
+                t_worker.Start();
+
+                avBar.ShowDialog();
+                hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
+                avBar.Dispose();
+            }
+            Application.Exit();
         }
 
         private void findStrip_ItemFound(object sender, ItemFoundEventArgs e)
@@ -562,46 +875,5 @@ namespace EasyMYP
                 this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
             }
         }
-
-        ThreadState oldt_GenerateFNE = ThreadState.Unstarted;
-        ThreadState oldt_GeneratePat = ThreadState.Unstarted;
-
-        private void UpdateThreadStatus()
-        {
-            if (t_GenerateFNE != null)
-            {
-                if (t_GenerateFNE.ThreadState == ThreadState.Running && oldt_GenerateFNE != t_GenerateFNE.ThreadState)
-                {
-                    lblGenerateFNE.Text = "Running";
-                }
-                if (t_GenerateFNE.ThreadState != ThreadState.Running
-                    && oldt_GenerateFNE != t_GenerateFNE.ThreadState
-                    && t_GenerateFNE.ThreadState != ThreadState.WaitSleepJoin)
-                {
-                    lblGenerateFNE.Text = "Inactive";
-                }
-            }
-            if (t_GeneratePat != null)
-            {
-                if (t_GeneratePat.ThreadState == ThreadState.Running && oldt_GeneratePat != t_GeneratePat.ThreadState)
-                {
-                    lblGeneratePat.Text = "Running";
-                }
-                if (t_GeneratePat.ThreadState != ThreadState.Running
-                    && oldt_GeneratePat != t_GeneratePat.ThreadState
-                    && t_GeneratePat.ThreadState != ThreadState.WaitSleepJoin)
-                {
-                    lblGeneratePat.Text = "Inactive";
-                }
-            }
-        }
-
-        private void tabPage3_Paint(object sender, PaintEventArgs e)
-        {
-            UpdateThreadStatus();
-        }
-
-
-
     }
 }

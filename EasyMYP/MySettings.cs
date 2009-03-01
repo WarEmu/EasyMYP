@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EasyMYP
 {
-    using System;
     using System.Configuration;
     using System.Drawing;
 
