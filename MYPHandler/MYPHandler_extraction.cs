@@ -173,15 +173,18 @@ namespace MYPHandler
             {
                 filename = filename.Replace('\\', '/');
                 string[] folders = filename.Split('/');
-                string tmpPath = lPath + '/' + folders[0];
-                if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
 
-                for (int i = 1; i < folders.Length - 1; i++)
+                if (folders.Length > 1)
                 {
-                    tmpPath += '/' + folders[i];
+                    string tmpPath = lPath + '/' + folders[0];
                     if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
-                }
 
+                    for (int i = 1; i < folders.Length - 1; i++)
+                    {
+                        tmpPath += '/' + folders[i];
+                        if (!Directory.Exists(tmpPath)) Directory.CreateDirectory(tmpPath);
+                    }
+                }
                 extraction_filename = lPath + '/' + filename;
             }
 
