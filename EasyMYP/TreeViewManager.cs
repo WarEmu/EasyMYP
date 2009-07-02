@@ -105,6 +105,11 @@ namespace EasyMYP
 
         public static void PopulateArchiveTreeNode(SortableBindingList<FileInArchive> FIAList, TreeView tv)
         {
+            tv.Nodes.Clear(); // By changing the FileInArchive format, we would not need to clear this anymore
+            // since we could actually store the source filename of the fileinarchive
+            // thus allowing extraction even though we opened another file.
+
+
             for (int i = 0; i < FIAList.Count; i++)
             {
                 FileInArchive fia = FIAList[i];

@@ -899,7 +899,6 @@ namespace EasyMYP
 
 
         #region Drag & Drop region
-        List<FileInArchive> dragFIAList;
         private void treeView_Archive_ItemDrag(object sender, ItemDragEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -913,7 +912,15 @@ namespace EasyMYP
         {
             if (!e.Data.GetDataPresent(typeof(List<FileInArchive>))) return;
         }
+
         #endregion
 
+        private void treeView_Archive_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Node).fiaList, DragDropEffects.Copy);
+            }            
+        }
     }
 }
