@@ -106,6 +106,7 @@ namespace EasyMYP
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.treeView_Archive = new System.Windows.Forms.TreeView();
             this.treeView_FileSystem = new System.Windows.Forms.TreeView();
+            this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label_ModifiedFiles_Text = new System.Windows.Forms.Label();
@@ -120,7 +121,6 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
-            this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             this.panel_information.SuspendLayout();
@@ -825,8 +825,11 @@ namespace EasyMYP
             this.treeView_Archive.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_Archive.ImageIndex = 0;
+            this.treeView_Archive.ImageList = this.treeViewIconList;
             this.treeView_Archive.Location = new System.Drawing.Point(3, 3);
             this.treeView_Archive.Name = "treeView_Archive";
+            this.treeView_Archive.SelectedImageIndex = 0;
             this.treeView_Archive.Size = new System.Drawing.Size(428, 333);
             this.treeView_Archive.TabIndex = 0;
             // 
@@ -843,6 +846,17 @@ namespace EasyMYP
             this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
             this.treeView_FileSystem.TabIndex = 0;
             this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
+            // 
+            // treeViewIconList
+            // 
+            this.treeViewIconList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewIconList.ImageStream")));
+            this.treeViewIconList.TransparentColor = System.Drawing.Color.Transparent;
+            this.treeViewIconList.Images.SetKeyName(0, "hdisk.ico");
+            this.treeViewIconList.Images.SetKeyName(1, "Folder.ico");
+            this.treeViewIconList.Images.SetKeyName(2, "avi.ico");
+            this.treeViewIconList.Images.SetKeyName(3, "PDFFile_8.ico");
+            this.treeViewIconList.Images.SetKeyName(4, "textdoc.ico");
+            this.treeViewIconList.Images.SetKeyName(5, "Zip File.ico");
             // 
             // tabPage3
             // 
@@ -992,17 +1006,6 @@ namespace EasyMYP
             this.panel_output.Name = "panel_output";
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
-            // 
-            // treeViewIconList
-            // 
-            this.treeViewIconList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewIconList.ImageStream")));
-            this.treeViewIconList.TransparentColor = System.Drawing.Color.Transparent;
-            this.treeViewIconList.Images.SetKeyName(0, "hdisk.ico");
-            this.treeViewIconList.Images.SetKeyName(1, "Folder.ico");
-            this.treeViewIconList.Images.SetKeyName(2, "avi.ico");
-            this.treeViewIconList.Images.SetKeyName(3, "PDFFile_8.ico");
-            this.treeViewIconList.Images.SetKeyName(4, "textdoc.ico");
-            this.treeViewIconList.Images.SetKeyName(5, "Zip File.ico");
             // 
             // MainWindow
             // 

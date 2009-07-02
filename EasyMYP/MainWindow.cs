@@ -546,6 +546,14 @@ namespace EasyMYP
         private void FileListing_Add(FileInArchive file)
         {
             fileInArchiveBindingSource.Add(file);
+
+        }
+
+        private void Update_TreeView()
+        {
+            TreeViewManager.PopulateArchiveTreeNode(
+                (SortableBindingList<FileInArchive>)fileInArchiveBindingSource.DataSource
+                , treeView_Archive);
         }
         #endregion
 
@@ -608,6 +616,7 @@ namespace EasyMYP
                 }
                 fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
                 operationRunning = false;
+                Update_TreeView();
             }
         }
 
@@ -885,7 +894,7 @@ namespace EasyMYP
 
         private void treeView_FileSystem_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            TreeViewManager.NodeMouseClick(sender, e);
+            TreeViewManager.SystemNodeMouseClick(sender, e);
         }
     }
 }
