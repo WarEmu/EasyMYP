@@ -8,7 +8,6 @@ using MYPHandler;
 using nsHashCreator;
 using nsHashDictionary;
 
-
 namespace EasyMYP
 {
     public enum State
@@ -54,6 +53,9 @@ namespace EasyMYP
             OnNewExtractedEvent = TreatExtractionEvent;
             OnNewFileTableEvent = TreatFileTableEvent;
             OnNewFilenameTestEvent = TreatFilenameTestEvent;
+
+            // Populate the system tree view
+            TreeViewManager.PopulateSystemTreeNode(treeView_FileSystem);
         }
 
         /// <summary>
@@ -112,8 +114,8 @@ namespace EasyMYP
             if (MypFileHandler != null)
                 MypFileHandler.Dispose();
 
-            operationRunning = false; 
-            
+            operationRunning = false;
+
             label_File_Value.Text = "";
             label_NewFiles_Value.Text = "0";
             label_ModifiedFiles_Value.Text = "0";
@@ -227,10 +229,10 @@ namespace EasyMYP
                 if (tester.customExtBox.Checked)
                     AddToHashSetFromFile(exts, tester.customExtFile);
 
-                ThreadParam threadParam= new ThreadParam(dirs, files, exts, 0, 0, outputFileRoot);
+                ThreadParam threadParam = new ThreadParam(dirs, files, exts, 0, 0, outputFileRoot);
 
                 statusPB.Visible = true;
-                statusPB.Maximum = ((dirs.Count == 0) ? 1: dirs.Count) * ((exts.Count == 0) ? 1:exts.Count);
+                statusPB.Maximum = ((dirs.Count == 0) ? 1 : dirs.Count) * ((exts.Count == 0) ? 1 : exts.Count);
                 statusPB.Value = 0;
                 hashCreator.event_FilenameTest += FilenameTestEventHandler; //reset in eventhandler
 
@@ -345,7 +347,7 @@ namespace EasyMYP
             hashDic.CreateHelpers();
             hashDic.SaveHelpers();
         }
-        
+
         private void statisticsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DictionnaryStatistics dlg = new DictionnaryStatistics(hashDic.HashList);
@@ -674,7 +676,7 @@ namespace EasyMYP
                     }
                 case Event_ExtractionType.Scanning:
                     {
-                        statusPB.Value += 1;                        
+                        statusPB.Value += 1;
                         if (scanFiles.Count != 0)
                         {
                             MypFileHandler = new MYPHandler.MYPHandler(scanFiles[0]
@@ -874,6 +876,16 @@ namespace EasyMYP
                 //this.fileInArchiveDataGridView.Po = e.Index;
                 this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
             }
+        }
+
+        private void fileInArchiveDataGridView_DragDrop(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void treeView_FileSystem_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            TreeViewManager.NodeMouseClick(sender, e);
         }
     }
 }

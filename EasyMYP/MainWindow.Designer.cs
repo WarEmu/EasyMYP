@@ -79,6 +79,7 @@ namespace EasyMYP
             this.statusPB = new System.Windows.Forms.ProgressBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.findStrip2 = new EasyMYP.FindStrip();
             this.fileInArchiveBindingNavigator = new System.Windows.Forms.BindingNavigator(this.components);
             this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
             this.bindingNavigatorCountItem = new System.Windows.Forms.ToolStripLabel();
@@ -119,13 +120,14 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
-            this.findStrip2 = new EasyMYP.FindStrip();
+            this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
             this.mainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             this.panel_information.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).BeginInit();
             this.fileInArchiveBindingNavigator.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).BeginInit();
@@ -137,7 +139,6 @@ namespace EasyMYP
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel_output.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -561,6 +562,17 @@ namespace EasyMYP
             this.tabPage1.Text = "Archive File List";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // findStrip2
+            // 
+            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
+            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
+            this.findStrip2.Location = new System.Drawing.Point(7, 32);
+            this.findStrip2.Name = "findStrip2";
+            this.findStrip2.Size = new System.Drawing.Size(379, 25);
+            this.findStrip2.TabIndex = 31;
+            this.findStrip2.Text = "findStrip2";
+            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
+            // 
             // fileInArchiveBindingNavigator
             // 
             this.fileInArchiveBindingNavigator.AddNewItem = this.bindingNavigatorAddNewItem;
@@ -711,6 +723,7 @@ namespace EasyMYP
             // 
             // fileInArchiveDataGridView
             // 
+            this.fileInArchiveDataGridView.AllowDrop = true;
             this.fileInArchiveDataGridView.AllowUserToAddRows = false;
             this.fileInArchiveDataGridView.AllowUserToDeleteRows = false;
             this.fileInArchiveDataGridView.AllowUserToResizeRows = false;
@@ -733,6 +746,7 @@ namespace EasyMYP
             this.fileInArchiveDataGridView.Size = new System.Drawing.Size(888, 288);
             this.fileInArchiveDataGridView.TabIndex = 18;
             this.fileInArchiveDataGridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.fileInArchiveDataGridView_ColumnHeaderMouseClick);
+            this.fileInArchiveDataGridView.DragDrop += new System.Windows.Forms.DragEventHandler(this.fileInArchiveDataGridView_DragDrop);
             // 
             // dataGridViewTextBoxColumn5
             // 
@@ -784,17 +798,15 @@ namespace EasyMYP
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(888, 346);
+            this.tabPage2.Size = new System.Drawing.Size(894, 348);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Archive Tree View";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(6, 6);
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(3, 3);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -804,15 +816,18 @@ namespace EasyMYP
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.treeView_FileSystem);
-            this.splitContainer1.Size = new System.Drawing.Size(826, 339);
-            this.splitContainer1.SplitterDistance = 405;
+            this.splitContainer1.Size = new System.Drawing.Size(888, 342);
+            this.splitContainer1.SplitterDistance = 435;
             this.splitContainer1.TabIndex = 0;
             // 
             // treeView_Archive
             // 
+            this.treeView_Archive.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView_Archive.Location = new System.Drawing.Point(3, 3);
             this.treeView_Archive.Name = "treeView_Archive";
-            this.treeView_Archive.Size = new System.Drawing.Size(398, 330);
+            this.treeView_Archive.Size = new System.Drawing.Size(428, 333);
             this.treeView_Archive.TabIndex = 0;
             // 
             // treeView_FileSystem
@@ -820,10 +835,14 @@ namespace EasyMYP
             this.treeView_FileSystem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_FileSystem.ImageIndex = 0;
+            this.treeView_FileSystem.ImageList = this.treeViewIconList;
             this.treeView_FileSystem.Location = new System.Drawing.Point(3, 3);
             this.treeView_FileSystem.Name = "treeView_FileSystem";
-            this.treeView_FileSystem.Size = new System.Drawing.Size(409, 330);
+            this.treeView_FileSystem.SelectedImageIndex = 0;
+            this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
             this.treeView_FileSystem.TabIndex = 0;
+            this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
             // 
             // tabPage3
             // 
@@ -832,7 +851,7 @@ namespace EasyMYP
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(888, 346);
+            this.tabPage3.Size = new System.Drawing.Size(894, 348);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "File Changes";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -974,16 +993,16 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
-            // findStrip2
+            // treeViewIconList
             // 
-            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
-            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
-            this.findStrip2.Location = new System.Drawing.Point(7, 32);
-            this.findStrip2.Name = "findStrip2";
-            this.findStrip2.Size = new System.Drawing.Size(379, 25);
-            this.findStrip2.TabIndex = 31;
-            this.findStrip2.Text = "findStrip2";
-            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
+            this.treeViewIconList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewIconList.ImageStream")));
+            this.treeViewIconList.TransparentColor = System.Drawing.Color.Transparent;
+            this.treeViewIconList.Images.SetKeyName(0, "hdisk.ico");
+            this.treeViewIconList.Images.SetKeyName(1, "Folder.ico");
+            this.treeViewIconList.Images.SetKeyName(2, "avi.ico");
+            this.treeViewIconList.Images.SetKeyName(3, "PDFFile_8.ico");
+            this.treeViewIconList.Images.SetKeyName(4, "textdoc.ico");
+            this.treeViewIconList.Images.SetKeyName(5, "Zip File.ico");
             // 
             // MainWindow
             // 
@@ -1007,6 +1026,7 @@ namespace EasyMYP
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).EndInit();
             this.fileInArchiveBindingNavigator.ResumeLayout(false);
             this.fileInArchiveBindingNavigator.PerformLayout();
@@ -1021,7 +1041,6 @@ namespace EasyMYP
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.panel_output.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1119,6 +1138,7 @@ namespace EasyMYP
         private System.Windows.Forms.Label lblGeneratePat;
         private System.Windows.Forms.Button testPatternButton;
         private System.Windows.Forms.Panel panel_output;
+        private System.Windows.Forms.ImageList treeViewIconList;
     }
 }
 
