@@ -25,12 +25,20 @@ namespace nsHashCreator
         private HashSet<string> patternList = new HashSet<string>();
         private HashSet<string>.Enumerator patPlace;
         private object lock_patternRead = new object();
+        private object lock_fileName = new object();
+        private object lock_fileExtension = new object();
         private object lock_filefound = new object();
         private object lock_patternfilefound = new object();
+        private object lock_poolManager = new object();
 
         private long filenamesFoundInTest = 0;
         private long filenamesFoundInPatternTest = 0;
         private Dictionary<string, Boolean> foundNames;
+
+        private bool active = false; // Indicates if the thread is active
+
+        public void Stop() { active = false; }
+        private void Start() { active = true; }
 
         //List<string> bruteList = new List<string>();
         //string bruteFile = "brute.txt";
@@ -143,23 +151,28 @@ namespace nsHashCreator
         /// </summary>
         public void Patterns(object obj)
         {
+            Start(); // Sets this coding section to active
+
             patternTestHashDic = (HashDictionary)obj;
 
             patPlace = patternList.GetEnumerator();
 
             if (patternList.Count > 0)
             {
-                Thread pat1 = new Thread(new ThreadStart(TreatPattern));
-                Thread pat2 = new Thread(new ThreadStart(TreatPattern));
-
+                List<Thread> threadList = new List<Thread>();
+                for (int i = 0; i < System.Environment.ProcessorCount; i++)
+                {
+                    Thread pat1 = new Thread(new ThreadStart(TreatPattern));
+                    pat1.Start();
+                    threadList.Add(pat1);
+                }
                 filenamesFoundInPatternTest = 0;
 
-                pat1.Start();
-                pat2.Start();
-
                 //Wait for threads to terminate to update 'running' status
-                pat1.Join();
-                pat2.Join();
+                for (int i = 0; i < System.Environment.ProcessorCount; i++)
+                {
+                    threadList[i].Join();
+                }
 
                 TriggerFilenameTestEvent(new MYPFilenameTestEventArgs(Event_FilenameTestType.PatternFinished, filenamesFoundInPatternTest));
             }
@@ -169,7 +182,7 @@ namespace nsHashCreator
         {
             lock (lock_patternRead)
             {
-                if (patPlace.MoveNext())
+                if (patPlace.MoveNext() && active)
                     return patPlace.Current;
                 else
                     return null;
@@ -249,6 +262,18 @@ namespace nsHashCreator
         //}
         #endregion
 
+        HashSet<string>.Enumerator parseFileList;
+        private string GetFileName_ParseFilenames()
+        {
+            lock (lock_fileName)
+            {
+                if (parseFileList.MoveNext() && active)
+                    return parseFileList.Current;
+                else
+                    return null;
+            }
+        }
+
         /// <summary>
         /// Tries all filenames (complete path) included in the fullFileNameFile file.
         /// </summary>
@@ -256,6 +281,7 @@ namespace nsHashCreator
         /// <returns> number of newly found filenames</returns>
         public long ParseFilenames(string fullFileNameFile)
         {
+            Start();
             hashDic.CreateHelpers();
             long result = 0;
             if (File.Exists(fullFileNameFile))
@@ -288,39 +314,43 @@ namespace nsHashCreator
 
                 foundNames = new Dictionary<string, bool>();
 
-                foreach (string filename in fileList)
-                    foundNames[filename] = false;
-
-
-                foreach (string file in fileList)
+                foreach (string fn in fileList)
                 {
-                    //string brute_str = "";
-                    //brute_str = string.Format("{0:X8}#{1:X8}#{2}", (uint)(warhash.ph), (uint)(warhash.sh), cur_str);
-                    //AddBruteLine(brute_str);
-                    warhash.Hash(file, 0xDEADBEEF);
-                    UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, file, 0);
+                    foundNames[fn] = false;
+                }
+
+                //Just in case someday we want to multi thread.
+                parseFileList = fileList.GetEnumerator();
+                string filename;
+                while ((filename = GetFileName_ParseFilenames()) != null)
+                {
+
+                    warhash.Hash(filename, 0xDEADBEEF);
+                    UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, filename, 0);
                     if (found == UpdateResults.NAME_UPDATED)
                         result++;
                     if (found != UpdateResults.NOT_FOUND)
-                        foundNames[file] = true;
+                        foundNames[filename] = true;
                 }
+                if (active)
+                {
+                    string outputFileRoot = Path.GetDirectoryName(fullFileNameFile) + "/" + Path.GetFileNameWithoutExtension(fullFileNameFile);
+                    FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
+                    FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
+                    StreamWriter swf = new StreamWriter(ofsFound);
+                    StreamWriter swnf = new StreamWriter(ofsNotFound);
 
-                string outputFileRoot = Path.GetDirectoryName(fullFileNameFile) + "/" + Path.GetFileNameWithoutExtension(fullFileNameFile);
-                FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
-                FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
-                StreamWriter swf = new StreamWriter(ofsFound);
-                StreamWriter swnf = new StreamWriter(ofsNotFound);
+                    foreach (KeyValuePair<string, Boolean> file in foundNames)
+                        if (file.Value == true)
+                            swf.WriteLine(file.Key);
+                        else
+                            swnf.WriteLine(file.Key);
 
-                foreach (KeyValuePair<string, Boolean> file in foundNames)
-                    if (file.Value == true)
-                        swf.WriteLine(file.Key);
-                    else
-                        swnf.WriteLine(file.Key);
-
-                swnf.Close();
-                swf.Close();
-                ofsFound.Close();
-                ofsNotFound.Close();
+                    swnf.Close();
+                    swf.Close();
+                    ofsFound.Close();
+                    ofsNotFound.Close();
+                }
             }
             return result;
         }
@@ -347,6 +377,7 @@ namespace nsHashCreator
         /// <returns></returns>
         public long ParseDirFilenamesAndExtension(HashSet<String> dirs, HashSet<String> files, HashSet<String> exts, string outputFileRoot)
         {
+            Start();
             hashDic.CreateHelpers();
             long result = 0;
 
@@ -362,27 +393,42 @@ namespace nsHashCreator
                     foundNames[filename] = false;
             }
 
-            if (dirs.Count > 10)
-            {
-                Thread t1 = new Thread(new ParameterizedThreadStart(calc));
-                Thread t2 = new Thread(new ParameterizedThreadStart(calc));
-                t1.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count / 2, outputFileRoot));
-                t2.Start(new ThreadParam(dirs, files, exts, dirs.Count / 2, dirs.Count, outputFileRoot));
+            parseDirList = dirs.GetEnumerator();
 
-                t1.Join();
-                t2.Join();
-            }
-            else
+            List<Thread> threadList = new List<Thread>();   // launches as many threads as processors
+            for (int i = 0; i < System.Environment.ProcessorCount; i++)
             {
-                Thread t1 = new Thread(new ParameterizedThreadStart(calc));
-                t1.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count, outputFileRoot));
-                t1.Join();
+                Thread t = new Thread(new ParameterizedThreadStart(calc));
+                t.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count / 2, outputFileRoot));
+                threadList.Add(t);
             }
+
+            for (int i = 0; i < threadList.Count; )
+            {
+                threadList[i].Join();
+            }
+
+            //if (dirs.Count > 10)
+            //{
+            //    Thread t1 = new Thread(new ParameterizedThreadStart(calc));
+            //    Thread t2 = new Thread(new ParameterizedThreadStart(calc));
+            //    t1.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count / 2, outputFileRoot));
+            //    t2.Start(new ThreadParam(dirs, files, exts, dirs.Count / 2, dirs.Count, outputFileRoot));
+
+            //    t1.Join();
+            //    t2.Join();
+            //}
+            //else
+            //{
+            //    Thread t1 = new Thread(new ParameterizedThreadStart(calc));
+            //    t1.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count, outputFileRoot));
+            //    t1.Join();
+            //}
 
             result = filenamesFoundInTest;
             filenamesFoundInTest = 0; // ok. The threads just exited.
 
-            if (outputFileRoot != null)
+            if (outputFileRoot != null && active)
             {
                 FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
                 FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
@@ -401,8 +447,20 @@ namespace nsHashCreator
                 ofsNotFound.Close();
             }
 
-
             return result;
+        }
+
+        HashSet<string>.Enumerator parseDirList;
+
+        private string GetDirectoryFromPoolManager()
+        {
+            lock (lock_poolManager)
+            {
+                if (parseDirList.MoveNext())
+                    return parseDirList.Current;
+                else
+                    return null;
+            }
         }
 
         private void calc(object parameter)
@@ -418,34 +476,37 @@ namespace nsHashCreator
 
             long filenamesFoundinThread = 0;
 
-            string[] dirListPart;
-            if (dirList.Count != 0)
-            {
-                dirListPart = new string[dirList.Count];
-                dirList.CopyTo(dirListPart);
-                for (int j = jstart; j < jend; j++)
-                    dirListPart[j] += '/';
-            }
-            else
-            {
-                dirListPart = new String[1];
-                dirListPart.SetValue("", 0);
-                jstart = 0;
-                jend = 1;
-            }
+            //string[] dirListPart;
+            //if (dirList.Count != 0)
+            //{
+            //    dirListPart = new string[dirList.Count];
+            //    dirList.CopyTo(dirListPart);
+            //    for (int j = jstart; j < jend; j++)
+            //        dirListPart[j] += '/';
+            //}
+            //else
+            //{
+            //    dirListPart = new String[1];
+            //    dirListPart.SetValue("", 0);
+            //    jstart = 0;
+            //    jend = 1;
+            //}
 
             if (extensionList.Count == 0)
             {
                 extensionList.Add("");
             }
 
-            for (int j = jstart; j < jend; j++)
+            string directoryName; 
+            // get the directory name from the pool
+            // Also allows for a cleaner exit if necessary through the Stop method
+            while ((directoryName = GetDirectoryFromPoolManager()) != null)
             {
                 foreach (string filename in filenameList)
                 {
                     foreach (string extension in extensionList)
                     {
-                        string cur_str = dirListPart[j] + filename;
+                        string cur_str = directoryName + filename;
                         // We may have a problem with files ending with '.' ?
                         if (extension.CompareTo("") != 0)
                             cur_str += "." + extension;
@@ -474,9 +535,6 @@ namespace nsHashCreator
                 {
                     filenamesFoundInTest += filenamesFoundinThread;
                 }
-
-
-
         }
     }
 

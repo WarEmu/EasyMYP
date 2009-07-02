@@ -1,5 +1,8 @@
 using System;
 using System.Windows.Forms;
+using System.IO;
+using System.Threading;
+using System.Diagnostics;
 
 namespace EasyMYP
 {
@@ -11,22 +14,27 @@ namespace EasyMYP
         [STAThread]
         static void Main(string[] args)
         {
+            SetupDirectories();
             MainWindow mw;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(mw = new MainWindow());
-            // In order to kill some worker threads that may have been launched
-            if (mw.t_worker != null && mw.t_worker.ThreadState == System.Threading.ThreadState.Running)
+
+            // Kills all the children threads launched.
+            // Though we whould program it a bit more nicely
+            // But at least, for the moment, it will kill children threads
+            Process.GetCurrentProcess().Kill();
+            //Process.GetCurrentProcess().Close(); 
+            
+        }
+
+        static void SetupDirectories()
+        {
+            if (!Directory.Exists(Directory.GetCurrentDirectory()+"/Hash"))
             {
-                mw.t_worker.Abort();
-            }
-            // In order to kill the pattern brute forcing threads that may have been launched
-            if (mw.t_GeneratePat != null 
-             && (mw.t_GeneratePat.ThreadState == System.Threading.ThreadState.Running
-             || mw.t_GeneratePat.ThreadState == System.Threading.ThreadState.WaitSleepJoin))
-            {
-                mw.t_GeneratePat.Abort();
+                Directory.CreateDirectory(Directory.GetCurrentDirectory()+"/Hash");
             }
         }
+
     }
 }
