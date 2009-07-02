@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using MYPHandler;
+using System.Threading;
 
 namespace EasyMYP
 {
@@ -15,6 +16,25 @@ namespace EasyMYP
         public CustomTreeNode(string name)
             : base(name)
         {
+        }
+    }
+
+    public class FiaTreeNode : TreeNode
+    {
+        public List<FileInArchive> fiaList = new List<FileInArchive>();
+
+        public FiaTreeNode(string name)
+            : base(name)
+        {
+        }
+
+        public void AddFia(FileInArchive fia)
+        {
+            fiaList.Add(fia);
+            if (Parent != null && Parent.GetType() == typeof(FiaTreeNode))
+            {
+                ((FiaTreeNode)Parent).AddFia(fia);
+            }
         }
     }
 
@@ -38,6 +58,8 @@ namespace EasyMYP
                     tv.Nodes.Add(rootNode);
                 }
             }
+
+            //tv.Sort();
         }
 
         public static void SystemNodeMouseClick(object sender,
@@ -88,10 +110,11 @@ namespace EasyMYP
                 FileInArchive fia = FIAList[i];
                 string filename = fia.Filename;
                 string[] pathes = filename.Split('/');
-                TreeNode tn = null;
+                FiaTreeNode tn = null;
 
                 for (int j = 0; j < tv.Nodes.Count && tn == null; j++)
                 {
+
                     //Check if the level 0 node already exists
                     if (tv.Nodes[j].Text == pathes[0])
                     {
@@ -99,7 +122,7 @@ namespace EasyMYP
                         {
                             //we assign the correct icon
                             //we recursively go down the pathes.
-                            tn = ArchiveNodeAdd(tv.Nodes[j], pathes, 1);
+                            tn = ArchiveNodeAdd((FiaTreeNode)tv.Nodes[j], pathes, 1, fia);
                         }
                     }
                 }
@@ -108,7 +131,7 @@ namespace EasyMYP
                 if (tn == null)
                 {
                     //We create the level 0 node
-                    tn = new TreeNode(pathes[0]);
+                    tn = new FiaTreeNode(pathes[0]);
                     tv.Nodes.Add(tn); // add it to the treview
                     if (pathes.Length > 1) //Check that this node has childs nodes
                     {
@@ -116,21 +139,26 @@ namespace EasyMYP
                         tn.ImageIndex = 1;
                         tn.SelectedImageIndex = 1;
                         //we recursively go down the pathes.
-                        ArchiveNodeAdd(tn, pathes, 1);
+                        ArchiveNodeAdd(tn, pathes, 1, fia);
                     }
                     else
                     {
                         // this means it is actually a file at level 0, we change the icon
                         tn.ImageIndex = 4;
                         tn.SelectedImageIndex = 4;
+                        tn.AddFia(fia);
                     }
                 }
             }
+
+            //tv.Sort();
+            //Thread t = new Thread(new ThreadStart(tv.Sort));
+            //t.Start();
         }
 
-        public static TreeNode ArchiveNodeAdd(TreeNode parentNode, string[] pathes, int pathDepth)
+        public static FiaTreeNode ArchiveNodeAdd(FiaTreeNode parentNode, string[] pathes, int pathDepth, FileInArchive fia)
         {
-            TreeNode childNode = null;
+            FiaTreeNode childNode = null;
 
             if (pathes.Length > pathDepth + 1) //means we are not yet at filelevel
             {
@@ -140,30 +168,31 @@ namespace EasyMYP
                     if (parentNode.Nodes[j].Text == pathes[pathDepth])
                     {
                         //If the node is found we get to the next level
-                        childNode = ArchiveNodeAdd(parentNode.Nodes[j], pathes, pathDepth + 1);
+                        childNode = ArchiveNodeAdd((FiaTreeNode)parentNode.Nodes[j], pathes, pathDepth + 1, fia);
                     }
                 }
             }
             else
             {
                 //We are at file level, we create the node
-                childNode = new TreeNode(pathes[pathDepth]);
+                childNode = new FiaTreeNode(pathes[pathDepth]);
                 parentNode.Nodes.Add(childNode);
                 childNode.ImageIndex = 4;
                 childNode.SelectedImageIndex = 4;
+                childNode.AddFia(fia);
             }
 
             if (childNode == null)
             {
                 //If we did not find a node, we create one
-                childNode = new TreeNode(pathes[pathDepth]);
+                childNode = new FiaTreeNode(pathes[pathDepth]);
                 childNode.ImageIndex = 1;
                 childNode.SelectedImageIndex = 1;
 
                 parentNode.Nodes.Add(childNode); //we add the node to the parent node
 
                 //We keep going deeper
-                childNode = ArchiveNodeAdd(childNode, pathes, pathDepth + 1);
+                childNode = ArchiveNodeAdd(childNode, pathes, pathDepth + 1, fia);
             }
 
             return childNode;

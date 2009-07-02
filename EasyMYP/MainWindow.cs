@@ -896,5 +896,24 @@ namespace EasyMYP
         {
             TreeViewManager.SystemNodeMouseClick(sender, e);
         }
+
+
+        #region Drag & Drop region
+        List<FileInArchive> dragFIAList;
+        private void treeView_Archive_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Item).fiaList, DragDropEffects.Copy);
+
+            }
+        }
+
+        private void treeView_FileSystem_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(List<FileInArchive>))) return;
+        }
+        #endregion
+
     }
 }
