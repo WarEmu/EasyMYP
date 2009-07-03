@@ -917,7 +917,7 @@ namespace EasyMYP
 
         private void treeView_Archive_MouseClick(object sender, MouseEventArgs e)
         {
-            if (treeView_Archive.SelectedNode != null)
+            if (treeView_Archive.SelectedNode != null && e.Button == MouseButtons.Middle)
             {
                 treeView_Archive.SelectedNode = null;
             }
@@ -931,6 +931,9 @@ namespace EasyMYP
                 {
                     ExtractFileList(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList);
                 }
+                //}
+                //else if (e.ClickedItem.Text == "Extract All")
+                //{
                 else
                 {
                     List<FileInArchive> fiaList = new List<FileInArchive>();

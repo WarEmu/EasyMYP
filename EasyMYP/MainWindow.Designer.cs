@@ -966,7 +966,7 @@ namespace EasyMYP
             this.toolStripMenuItemSort,
             this.recursiveSortToolStripMenuItem});
             this.contextMenuStripFileSystemTreeView.Name = "contextMenuStrip1";
-            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(156, 70);
+            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(156, 92);
             this.contextMenuStripFileSystemTreeView.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripFileSystemTreeView_ItemClicked);
             // 
             // toolStripMenuItemExtract

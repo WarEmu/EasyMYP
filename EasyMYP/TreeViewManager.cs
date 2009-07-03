@@ -109,7 +109,8 @@ namespace EasyMYP
             tv.Nodes.Clear(); // By changing the FileInArchive format, we would not need to clear this anymore
             // since we could actually store the source filename of the fileinarchive
             // thus allowing extraction even though we opened another file.
-
+            FiaTreeNode root = new FiaTreeNode("root");
+            tv.Nodes.Add(root);
 
             for (int i = 0; i < FIAList.Count; i++)
             {
@@ -118,17 +119,17 @@ namespace EasyMYP
                 string[] pathes = filename.Split('/');
                 FiaTreeNode tn = null;
 
-                for (int j = 0; j < tv.Nodes.Count && tn == null; j++)
+                for (int j = 0; j < root.Nodes.Count && tn == null; j++)
                 {
 
                     //Check if the level 0 node already exists
-                    if (tv.Nodes[j].Text == pathes[0])
+                    if (root.Nodes[j].Text == pathes[0])
                     {
                         if (pathes.Length > 1) //Check that this node has childs nodes
                         {
                             //we assign the correct icon
                             //we recursively go down the pathes.
-                            tn = ArchiveNodeAdd((FiaTreeNode)tv.Nodes[j], pathes, 1, fia);
+                            tn = ArchiveNodeAdd((FiaTreeNode)root.Nodes[j], pathes, 1, fia);
                         }
                     }
                 }
@@ -138,7 +139,7 @@ namespace EasyMYP
                 {
                     //We create the level 0 node
                     tn = new FiaTreeNode(pathes[0]);
-                    tv.Nodes.Add(tn); // add it to the treview
+                    root.Nodes.Add(tn); // add it to the treview
                     if (pathes.Length > 1) //Check that this node has childs nodes
                     {
                         //we assign the correct icon
@@ -198,7 +199,7 @@ namespace EasyMYP
                 parentNode.Nodes.Add(childNode); //we add the node to the parent node
 
                 //We keep going deeper
-                childNode = ArchiveNodeAdd(childNode, pathes, pathDepth + 1, fia);
+                ArchiveNodeAdd(childNode, pathes, pathDepth + 1, fia);
             }
 
             return childNode;
