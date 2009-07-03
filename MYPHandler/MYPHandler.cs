@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using nsHashDictionary;
+using System.Management;
 
 
 namespace MYPHandler
@@ -33,7 +34,7 @@ namespace MYPHandler
         private FileInArchiveState state = FileInArchiveState.UNCHANGED;
 
         #region Properties
-        public long Offset { get { return descriptor.startingPosition;  } }
+        public long Offset { get { return descriptor.startingPosition; } }
         public uint Size { get { return descriptor.uncompressedSize; } }
         public uint CompressedSize { get { return descriptor.compressedSize; } }
         public byte CompressionMethod { get { return descriptor.compressionMethod; } }
@@ -113,7 +114,7 @@ namespace MYPHandler
 
             filename += string.Format("{0:X8}", crc);
             filename += "_";
-            filename += string.Format("{0:X16}", BitConverter.ToInt64(file_hash,0));
+            filename += string.Format("{0:X16}", BitConverter.ToInt64(file_hash, 0));
 
             compressionMethod = buffer[32];
             isCompressed = (compressionMethod == 0) ? false : true;
@@ -122,7 +123,7 @@ namespace MYPHandler
         public static uint convertLittleEndianBufferToInt(byte[] intBuffer, long offset)
         {
             uint result = 0;
-            for (int i = 3; i >=0; i--)
+            for (int i = 3; i >= 0; i--)
             {
                 result = result << 8;
                 result += intBuffer[offset + i];
@@ -178,6 +179,14 @@ namespace MYPHandler
         long numberOfFilesFound = 0; //total number of files found in the archive
         long error_FileEntryNumber = 0; //number of errors in the file table entry
         string extractionPath = "";
+
+        //Memory Stuff
+        double totalMemory = 0;
+        double programMemory = 1000000000;
+        ManagementScope oMs = new ManagementScope();
+        ObjectQuery oQuery = new ObjectQuery("SELECT Capacity FROM Win32_PhysicalMemory");
+        ManagementObjectSearcher oSearcher;
+        ManagementObjectCollection oReturnCollection;
         #endregion
 
         #region Properties
@@ -257,6 +266,21 @@ namespace MYPHandler
             tableStart = FileInArchiveDescriptor.convertLittleEndianBufferToInt(buffer, 0);
             tableStart += ((long)FileInArchiveDescriptor.convertLittleEndianBufferToInt(buffer, 4)) << 32;
             GetFileNumber();
+
+            //get the total memory available
+            #region System Memory Management
+            oSearcher = new ManagementObjectSearcher(oMs, oQuery);
+            oReturnCollection = oSearcher.Get();
+
+            foreach (ManagementObject oReturn in oReturnCollection)
+            {
+                totalMemory += Convert.ToDouble(oReturn["Capacity"]);
+            }
+            if (totalMemory <= programMemory)
+            {
+                programMemory = totalMemory / 2; //Security
+            }
+            #endregion
         }
 
         /// <summary>
@@ -286,7 +310,7 @@ namespace MYPHandler
         public void ScanFileTable()
         {
             GetFileTable();
-            TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.Scanning,0));
+            TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.Scanning, 0));
         }
         /// <summary>
         /// Parse the source file and reads the file table entries
@@ -318,7 +342,7 @@ namespace MYPHandler
                 endOfTableAddress = tableStart + 12 + (long)FileInArchiveDescriptor.fileDescriptorSize * (long)numberOfFileInTable; // calculates the end address
 
                 tableStart = FileInArchiveDescriptor.convertLittleEndianBufferToInt(bufferTableHeader, 4); //find the next filetable
-                tableStart += (long)FileInArchiveDescriptor.convertLittleEndianBufferToInt(bufferTableHeader, 8) <<32; //mostly 0
+                tableStart += (long)FileInArchiveDescriptor.convertLittleEndianBufferToInt(bufferTableHeader, 8) << 32; //mostly 0
 
                 #region File Table Read
                 while (currentReadingPosition < endOfTableAddress)
@@ -407,7 +431,7 @@ namespace MYPHandler
                                     unCompressedSize += myArchFile.descriptor.uncompressedSize;
                                     /// \todo Speed: we should do something here to avoid passing an event for each and every file....
                                     TriggerFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.NewFile, myArchFile));
-                                }   
+                                }
                                 else
                                 {
                                     TriggerFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.UpdateFile, null));

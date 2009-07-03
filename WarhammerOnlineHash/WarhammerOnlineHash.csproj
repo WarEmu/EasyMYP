@@ -49,6 +49,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="WarhammerHash1.cs.old" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WarhammerHash1.cs" />
   </ItemGroup>
