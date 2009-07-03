@@ -120,6 +120,8 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
+            this.contextMenuStripFileSystemTreeView = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItemExtract = new System.Windows.Forms.ToolStripMenuItem();
             this.findStrip2 = new EasyMYP.FindStrip();
             this.mainMenu.SuspendLayout();
             this.panel_information.SuspendLayout();
@@ -138,6 +140,7 @@ namespace EasyMYP
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel_output.SuspendLayout();
+            this.contextMenuStripFileSystemTreeView.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             this.SuspendLayout();
             // 
@@ -814,6 +817,7 @@ namespace EasyMYP
             this.treeView_Archive.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_Archive.ContextMenuStrip = this.contextMenuStripFileSystemTreeView;
             this.treeView_Archive.ImageIndex = 0;
             this.treeView_Archive.ImageList = this.treeViewIconList;
             this.treeView_Archive.Location = new System.Drawing.Point(3, 3);
@@ -1000,6 +1004,20 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
+            // contextMenuStripFileSystemTreeView
+            // 
+            this.contextMenuStripFileSystemTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemExtract});
+            this.contextMenuStripFileSystemTreeView.Name = "contextMenuStrip1";
+            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(121, 26);
+            this.contextMenuStripFileSystemTreeView.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripFileSystemTreeView_ItemClicked);
+            // 
+            // toolStripMenuItemExtract
+            // 
+            this.toolStripMenuItemExtract.Name = "toolStripMenuItemExtract";
+            this.toolStripMenuItemExtract.Size = new System.Drawing.Size(120, 22);
+            this.toolStripMenuItemExtract.Text = "Extract";
+            // 
             // findStrip2
             // 
             this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
@@ -1047,6 +1065,7 @@ namespace EasyMYP
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.panel_output.ResumeLayout(false);
+            this.contextMenuStripFileSystemTreeView.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1146,6 +1165,8 @@ namespace EasyMYP
         private System.Windows.Forms.Button testPatternButton;
         private System.Windows.Forms.Panel panel_output;
         private System.Windows.Forms.ImageList treeViewIconList;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripFileSystemTreeView;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExtract;
     }
 }
 

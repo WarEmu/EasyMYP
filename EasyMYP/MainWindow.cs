@@ -163,7 +163,7 @@ namespace EasyMYP
                 statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
                 statusPB.Value = 0;
                 statusPB.Visible = true;
-                label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString();
+                label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString("#,#");
 
                 MypFileHandler.Pattern = Pattern.Text;
                 t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
@@ -376,29 +376,15 @@ namespace EasyMYP
         /// <param name="e"></param>
         private void extractSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MypFileHandler != null)
+            //Retrieve the selected file list
+            List<FileInArchive> fileList = new List<FileInArchive>();
+            foreach (DataGridViewRow theRow in fileInArchiveDataGridView.SelectedRows)
             {
-                // operation lock is put by 'extract Files'
-                if (extractionPath == null)
-                {
-                    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        extractionPath = folderBrowserDialog1.SelectedPath;
-                        MypFileHandler.ExtractionPath = extractionPath;
-
-                    }
-                    else
-                        return;
-                }
-
-                List<FileInArchive> fileList = new List<FileInArchive>();
-                foreach (DataGridViewRow theRow in fileInArchiveDataGridView.SelectedRows)
-                {
-                    if (theRow.DataBoundItem != null)
-                        fileList.Add((MYPHandler.FileInArchive)theRow.DataBoundItem);
-                }
-                ExtractFiles(fileList);
+                if (theRow.DataBoundItem != null)
+                    fileList.Add((MYPHandler.FileInArchive)theRow.DataBoundItem);
             }
+
+            ExtractFileList(fileList);
         }
 
         private void ExtractFiles(List<FileInArchive> fileList)
@@ -542,11 +528,10 @@ namespace EasyMYP
         #endregion
         #endregion
 
-        #region UI_FileListing
+        #region UI_FileListing & TreeView
         private void FileListing_Add(FileInArchive file)
         {
             fileInArchiveBindingSource.Add(file);
-
         }
 
         private void Update_TreeView()
@@ -625,11 +610,11 @@ namespace EasyMYP
         /// </summary>
         private void Update_OnFileTableEvent()
         {
-            label_NumOfFiles_Value.Text = MypFileHandler.NumberOfFilesFound.ToString();
-            label_NumOfNamedFiles_Value.Text = MypFileHandler.NumberOfFileNamesFound.ToString();
-            label_UncompressedSize_Value.Text = MypFileHandler.UnCompressedSize.ToString();
-            label_ModifiedFiles_Value.Text = MypFileHandler.archiveModifiedFileList.Count.ToString();
-            label_NewFiles_Value.Text = MypFileHandler.archiveNewFileList.Count.ToString();
+            label_NumOfFiles_Value.Text = MypFileHandler.NumberOfFilesFound.ToString("#,#");
+            label_NumOfNamedFiles_Value.Text = MypFileHandler.NumberOfFileNamesFound.ToString("#,#");
+            label_UncompressedSize_Value.Text = MypFileHandler.UnCompressedSize.ToString("#,#");
+            label_ModifiedFiles_Value.Text = MypFileHandler.archiveModifiedFileList.Count.ToString("#,#");
+            label_NewFiles_Value.Text = MypFileHandler.archiveNewFileList.Count.ToString("#,#");
 
             if (MypFileHandler.NumberOfFilesFound == MypFileHandler.TotalNumberOfFiles)
             {
@@ -887,11 +872,6 @@ namespace EasyMYP
             }
         }
 
-        private void fileInArchiveDataGridView_DragDrop(object sender, DragEventArgs e)
-        {
-
-        }
-
         private void treeView_FileSystem_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             TreeViewManager.SystemNodeMouseClick(sender, e);
@@ -899,6 +879,11 @@ namespace EasyMYP
 
 
         #region Drag & Drop region
+        private void fileInArchiveDataGridView_DragDrop(object sender, DragEventArgs e)
+        {
+
+        }
+
         private void treeView_Archive_ItemDrag(object sender, ItemDragEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -920,7 +905,46 @@ namespace EasyMYP
             if (e.Button == MouseButtons.Left)
             {
                 ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Node).fiaList, DragDropEffects.Copy);
-            }            
+            }
         }
+
+        private void contextMenuStripFileSystemTreeView_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Text == "Extract")
+            {
+                if (treeView_Archive.SelectedNode != null)
+                {
+                    ExtractFileList(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList);
+                }
+            }
+        }
+
+        private void ExtractFileList(List<FileInArchive> fileList)
+        {
+            if (fileList.Count > 0)
+            {
+                if (MypFileHandler != null)
+                {
+                    // operation lock is put by 'extract Files'
+                    if (extractionPath == null)
+                    {
+                        if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                        {
+                            extractionPath = folderBrowserDialog1.SelectedPath;
+                            MypFileHandler.ExtractionPath = extractionPath;
+                        }
+                        else
+                            return;
+                    }
+                    ExtractFiles(fileList);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select some files to extract", "Select Files", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
     }
 }
