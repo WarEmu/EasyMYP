@@ -164,11 +164,14 @@ namespace EasyMYP
                 statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
                 statusPB.Value = 0;
                 statusPB.Visible = true;
+
                 label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString("#,#");
 
                 MypFileHandler.Pattern = Pattern.Text;
                 t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
                 t_worker.Start();
+
+                //fileInArchiveDataGridView.Hide();
 
                 //Protected by isRunning
                 extractAllToolStripMenuItem.Enabled = true;
@@ -575,32 +578,43 @@ namespace EasyMYP
             }
         }
 
+        int modulus = 0; //an int to not invoke the winform update every time
         /// <summary>
         /// Treats an event in the UI thread
         /// </summary>
         /// <param name="e">event arguments</param>
         private void TreatFileTableEvent(MYPHandler.MYPFileTableEventArgs e)
         {
+            modulus++;
             if (e.Type == Event_FileTableType.FileError)
             {
                 label_ReadingErrors_Value.Text = MypFileHandler.Error_FileEntryNumber.ToString();
             }
             else if (e.Type == Event_FileTableType.NewFile)
             {
-                Update_OnFileTableEvent();
+                if (modulus % 1000 == 0)
+                {
+                    Update_OnFileTableEvent();
+                }
                 FileListing_Add(e.ArchFile);
             }
             else if (e.Type == Event_FileTableType.UpdateFile)
             {
-                Update_OnFileTableEvent();
+                if (modulus % 1000 == 0)
+                {
+                    Update_OnFileTableEvent();
+                }
             }
             else if (e.Type == Event_FileTableType.Finished)
             {
+                //Final update
+                Update_OnFileTableEvent();
                 if (MypFileHandler.archiveModifiedFileList.Count > 0 || MypFileHandler.archiveNewFileList.Count > 0)
                 {
                     hashDic.SaveHashList();
                 }
                 fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
+                //fileInArchiveDataGridView.Show();
                 operationRunning = false;
                 Update_TreeView();
             }
@@ -777,7 +791,6 @@ namespace EasyMYP
         }
         #endregion
 
-
         #region Error Table Entry
         private void Error_TableEntry(FileInArchive file)
         {
@@ -950,6 +963,7 @@ namespace EasyMYP
                 // but we have to sort the whole tree => can take a very long time
                 // and freeze the window
                 //treeView_Archive.Sort();
+                treeView_Archive.BeginUpdate();
                 if (treeView_Archive.SelectedNode == null)
                 {
                     SortNodes(treeView_Archive.Nodes, false);
@@ -958,7 +972,7 @@ namespace EasyMYP
                 {
                     SortNodes(treeView_Archive.SelectedNode.Nodes, false);
                 }
-
+                treeView_Archive.EndUpdate();
             }
             else if (e.ClickedItem.Text == "Recursive Sort")
             {
@@ -966,6 +980,7 @@ namespace EasyMYP
                 // but we have to sort the whole tree => can take a very long time
                 // and freeze the window
                 //treeView_Archive.Sort();
+                treeView_Archive.BeginUpdate();
                 if (treeView_Archive.SelectedNode == null)
                 {
                     SortNodes(treeView_Archive.Nodes, true);
@@ -974,6 +989,7 @@ namespace EasyMYP
                 {
                     SortNodes(treeView_Archive.SelectedNode.Nodes, true);
                 }
+                treeView_Archive.EndUpdate();
             }
         }
 
