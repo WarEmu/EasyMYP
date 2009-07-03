@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -900,11 +901,25 @@ namespace EasyMYP
 
         #endregion
 
+        #region TreeView Management
+
         private void treeView_Archive_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Node).fiaList, DragDropEffects.Copy);
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                treeView_Archive.SelectedNode = e.Node;
+            }
+        }
+
+        private void treeView_Archive_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (treeView_Archive.SelectedNode != null)
+            {
+                treeView_Archive.SelectedNode = null;
             }
         }
 
@@ -916,6 +931,71 @@ namespace EasyMYP
                 {
                     ExtractFileList(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList);
                 }
+                else
+                {
+                    List<FileInArchive> fiaList = new List<FileInArchive>();
+                    for (int i = 0; i < treeView_Archive.Nodes.Count; i++)
+                    {
+                        fiaList.AddRange(((FiaTreeNode)treeView_Archive.Nodes[i]).fiaList);
+                    }
+                    ExtractFileList(fiaList);
+                }
+            }
+            else if (e.ClickedItem.Text == "Sort")
+            {
+                // This is quite problematic since we can't just sort a node
+                // but we have to sort the whole tree => can take a very long time
+                // and freeze the window
+                //treeView_Archive.Sort();
+                if (treeView_Archive.SelectedNode == null)
+                {
+                    SortNodes(treeView_Archive.Nodes, false);
+                }
+                else
+                {
+                    SortNodes(treeView_Archive.SelectedNode.Nodes, false);
+                }
+
+            }
+            else if (e.ClickedItem.Text == "Recursive Sort")
+            {
+                // This is quite problematic since we can't just sort a node
+                // but we have to sort the whole tree => can take a very long time
+                // and freeze the window
+                //treeView_Archive.Sort();
+                if (treeView_Archive.SelectedNode == null)
+                {
+                    SortNodes(treeView_Archive.Nodes, true);
+                }
+                else
+                {
+                    SortNodes(treeView_Archive.SelectedNode.Nodes, true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the node in a node collection
+        /// </summary>
+        /// <param name="nodeCollection"></param>
+        private void SortNodes(TreeNodeCollection nodeCollection, bool recursive)
+        {
+            ArrayList list = new ArrayList(nodeCollection.Count);
+            foreach (TreeNode node in nodeCollection)
+            {
+                if (recursive && node.Nodes.Count > 0)
+                {
+                    SortNodes(node.Nodes, recursive);
+                }
+                list.Add(node);
+            }
+            NodeSorter ns = new NodeSorter();
+            list.Sort(ns);
+
+            nodeCollection.Clear();
+            foreach (TreeNode node in list)
+            {
+                nodeCollection.Add(node);
             }
         }
 
@@ -944,6 +1024,10 @@ namespace EasyMYP
                 MessageBox.Show("Please select some files to extract", "Select Files", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
+
+        #endregion
 
 
     }

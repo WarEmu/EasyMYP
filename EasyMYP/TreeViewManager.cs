@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -201,6 +202,29 @@ namespace EasyMYP
             }
 
             return childNode;
+        }
+    }
+
+    // Create a node sorter that implements the IComparer interface.
+    public class NodeSorter : IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            TreeNode tx = x as TreeNode;
+            TreeNode ty = y as TreeNode;
+
+            if (tx.Nodes.Count == 0 && ty.Nodes.Count > 0)
+            {
+                //If the first node is a file and the second a folder, we switch
+                return 1;
+            }
+            else if (ty.Nodes.Count == 0 && tx.Nodes.Count > 0)
+            {
+                //If the first node is a folder and the second a file, we do not switch
+                return -1;
+            }
+            //else
+            return string.Compare(tx.Text, ty.Text);
         }
     }
 }
