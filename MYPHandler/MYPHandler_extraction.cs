@@ -61,11 +61,25 @@ namespace MYPHandler
             List<FileInArchive> fileList = (List<FileInArchive>)obj;
             numOfFileInExtractionList = fileList.Count; //needed since the events are launched in the save buffer now
 
+            //If we are using more than one disk, then we multi thread
+            //Otherwise having 2 threads doing the reading and the writting is bad
+            if (mypPath[0] == extractionPath[0])
+            {
+                multithreadExtraction = false;
+            }
+            else
+            {
+                multithreadExtraction = true;
+            }
+
             if (multithreadExtraction)
             {
                 boList.Active = true;
                 Thread t_BOwriter = new Thread(new ThreadStart(ThreadWrite));
                 t_BOwriter.Start();
+                //Multi threading the writes is useless even when we have lots of small files.
+                //Thread t_BOwriter2 = new Thread(new ThreadStart(ThreadWrite));
+                //t_BOwriter2.Start();
             }
 
             for (int i = 0; i < fileList.Count; i++)
@@ -82,7 +96,6 @@ namespace MYPHandler
                 boList.Active = false;
             }
         }
-
 
         protected PerformanceCounter ramCounter = new PerformanceCounter("Process", "Private Bytes", Process.GetCurrentProcess().ProcessName);
 
@@ -107,11 +120,11 @@ namespace MYPHandler
         {
             error_ExtractionNumber = 0;
 
+            #region MultiThreading Stuff
             if (multithreadExtraction)
             {
-                archfilesBufferMem = (archFile.descriptor.uncompressedSize + archFile.descriptor.compressedSize) * 2;
-
                 //Some stuff to free the memory
+                //This is in case we explode the memory
                 usedRam = getUsedRAM();
                 if (usedRam > programMemory)
                 {
@@ -119,7 +132,7 @@ namespace MYPHandler
                     garbageRuns++;
                     //We empty the file list until we get under 1000
                     //Redundant with the check done when adding a file
-                    while (boList.Count > 1000)
+                    while (boList.Count > 100)
                     {
                         Thread.Sleep(1000);
                     }
@@ -127,6 +140,7 @@ namespace MYPHandler
                     usedRam = getUsedRAM();
                 }
             }
+            #endregion
 
             archFile.data = new byte[archFile.descriptor.compressedSize];
             archiveStream.Seek((long)(archFile.descriptor.startingPosition + archFile.descriptor.fileHeaderSize), SeekOrigin.Begin);
@@ -138,7 +152,7 @@ namespace MYPHandler
 
             TreatExtractedFile(archFile);
 
-            archFile.data = null;
+            archFile.data = null; //nullify it because it has either been treated or copied
         }
 
         /// <summary>
@@ -148,30 +162,30 @@ namespace MYPHandler
         /// <param name="archFile"></param>
         private void TreatExtractedFile(FileInArchive archFile)
         {
-            MemoryStream inputMS = new MemoryStream(archFile.data, 0, archFile.data.Length);
-            MemoryStream outputMS = new MemoryStream();
-
-            byte[] output_buffer = new byte[archFile.descriptor.uncompressedSize];
-
             try
             {
                 if (archFile.descriptor.compressionMethod == 1) //ZLib compression
                 {
                     try
                     {
+                        //Create the output_buffer, useless to create it if no compression
+                        byte[] output_buffer = new byte[archFile.descriptor.uncompressedSize];
+
                         ICSharpCode.SharpZipLib.Zip.Compression.Inflater inf = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater();
                         inf.SetInput(archFile.data);
                         inf.Inflate(output_buffer);
 
-                        if (multithreadExtraction)
+                        if (!multithreadExtraction)
                         {
-                            boList.AddBufferItemToQueue(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
+                            //Treat directly the write
+                            SaveBufferToFile(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
                         }
                         else
                         {
-                            SaveBufferToFile(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
+                            boList.AddBufferItemToQueue(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
                         }
-                        //TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtracted, numExtractedFiles++));
+                        //Clear the buffer (useless in CSharp)
+                        output_buffer = null;
                     }
                     catch (Exception e)
                     {
@@ -180,15 +194,15 @@ namespace MYPHandler
                 }
                 else if (archFile.descriptor.compressionMethod == 0) //No compression
                 {
-                    if (multithreadExtraction)
+                    if (!multithreadExtraction)
                     {
-                        boList.AddBufferItemToQueue(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
+                        //Treat directly the write
+                        SaveBufferToFile(archFile.data, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
                     }
                     else
                     {
-                        SaveBufferToFile(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
+                        boList.AddBufferItemToQueue(archFile.data, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
                     }
-                    //TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtracted, numExtractedFiles++));
                 }
                 else
                 {
@@ -199,12 +213,6 @@ namespace MYPHandler
             {
                 TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.UnknownError, error_ExtractionNumber++));
             }
-
-            output_buffer = null;
-            inputMS.Flush();
-            outputMS.Flush();
-            inputMS.Close();
-            outputMS.Close();
         }
 
         /// <summary>
@@ -216,9 +224,6 @@ namespace MYPHandler
         /// <param name="ext">extension</param>
         private void SaveBufferToFile(byte[] buffer, bool trueFileName, string filename, string ext)
         {
-            TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtracted, numExtractedFiles++));
-
-            //byte[] outbuffer = buffer;
             string test = "";
 
             // Well this should not really be here but more around extension guession function.
@@ -275,27 +280,53 @@ namespace MYPHandler
             outputFS.Write(buffer, 0, (int)buffer.Length);
             outputFS.Close();
             buffer = null;
+
+            TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtracted, numExtractedFiles++));
         }
 
+        BufferObjectList boList;
         private void ThreadWrite()
         {
             List<BufferObject> bol;
-            while (boList.Active == true)
+            //BufferObject bo;
+            while (boList != null && boList.Active == true)
             {
-                bol = boList.RemoveBufferItemFromQueue();
+                //To reduce locks we get a list of files
+                bol = boList.RemoveBufferItemListFromQueue();
                 for (int i = 0; i < bol.Count; i++)
                 {
                     SaveBufferToFile(bol[i].buffer, bol[i].trueFileName, bol[i].filename, bol[i].ext);
                 }
-                if (bol.Count <= 100)
+                bol.Clear();
+
+                //Full throttle test code, we handle stuff as fast as possible
+                //bo = boList.RemoveBufferItemFromQueue();
+                //if (bo != null)
+                //{
+                //    SaveBufferToFile(bo.buffer, bo.trueFileName, bo.filename, bo.ext);
+                //}
+                //else
+                //{
+                //    Thread.Sleep(10);
+                //}
+
+                //we clean the memory after the writes
+                if (boList != null && boList.Collect)
                 {
-                    Thread.Sleep(1000);
+                    boList.RunCollect();
                 }
             }
             TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.ExtractionFinished, numOfFileInExtractionList - error_ExtractionNumber));
+
+            bol = null;
+            if (boList != null)
+            {
+                boList.Clear();
+            }
+
+            GC.Collect();            // final GC collection to clean up everything
         }
 
-        BufferObjectList boList;
         #endregion
     }
 
@@ -307,6 +338,7 @@ namespace MYPHandler
         int smallbuffersize = maxTmpListSize;
         int bigbuffersize = 2500;
         bool peak = false;
+        bool collect = false;
 
         bool active = false;
         public bool Active
@@ -315,6 +347,10 @@ namespace MYPHandler
             set { active = value; }
         }
         public int Count { get { return bufferObjectList.Count; } }
+        public bool Peak { get { return peak; } }
+        public int BigBufferSize { get { return bigbuffersize; } }
+        public int SmallBufferSize { get { return smallbuffersize; } }
+        public bool Collect { get { return collect; } }
 
         public BufferObjectList()
         {
@@ -341,27 +377,76 @@ namespace MYPHandler
             }
         }
 
-        List<BufferObject> tmpList = new List<BufferObject>();
-        public static int maxTmpListSize = 666;
-        public List<BufferObject> RemoveBufferItemFromQueue()
+        public static int maxTmpListSize = 100;
+        public List<BufferObject> RemoveBufferItemListFromQueue()
         {
-            tmpList.Clear();
+            List<BufferObject> tmpList = new List<BufferObject>();
+            // Not a while loop just so that write gaps are actually small.
+            if (bufferObjectList.Count <= maxTmpListSize && active)
+            {
+                Thread.Sleep(100);
+            }
+
             lock (lock_bufferobject)
             {
+                //bufferObjectList.CopyTo(0, tmpList, 0, Math.Min(maxTmpListSize, bufferObjectList.Count));
                 for (int i = 0; i < maxTmpListSize && i < bufferObjectList.Count; i++)
                 {
-                    tmpList.Add(bufferObjectList[0]);
-                    buffersize -= bufferObjectList[0].buffer.Length;
-                    bufferObjectList.RemoveAt(0);
+                    tmpList.Add(bufferObjectList[i]);
+                    buffersize -= bufferObjectList[i].buffer.Length;
+                    //bufferObjectList.RemoveAt(0);
                 }
+                bufferObjectList.RemoveRange(0, tmpList.Count);
 
                 if (peak && bufferObjectList.Count < smallbuffersize)
                 {
                     peak = false;
-                    //GC.Collect();
+                    collect = true;
                 }
             }
             return tmpList;
+        }
+
+
+        public BufferObject RemoveBufferItemFromQueue()
+        {
+            BufferObject tmpBO = null;
+            // Not a while loop just so that write gaps are actually small.
+            // And just enough sleep to not be processor hogging
+            if (bufferObjectList.Count < 1 && active)
+            {
+                Thread.Sleep(10);
+            }
+
+            lock (lock_bufferobject)
+            {
+                if (bufferObjectList.Count > 0)
+                {
+                    tmpBO = bufferObjectList[0];
+                    buffersize -= tmpBO.buffer.Length;
+                    bufferObjectList.RemoveAt(0);
+                }
+                if (peak && bufferObjectList.Count < smallbuffersize)
+                {
+                    collect = true;
+                    peak = false;
+                }
+            }
+            return tmpBO;
+        }
+
+        public void RunCollect()
+        {
+            lock (lock_bufferobject)
+            {
+                collect = false;
+                GC.Collect();
+            }
+        }
+
+        public void Clear()
+        {
+            bufferObjectList.Clear();
         }
     }
 
@@ -372,17 +457,14 @@ namespace MYPHandler
         public string filename;
         public string ext;
 
-        private bool disposed = false;
-
         public BufferObject(byte[] buffer, bool trueFileName, string filename, string ext)
         {
             this.buffer = new byte[buffer.Length];
             buffer.CopyTo(this.buffer, 0); //just to make sure we are working on a copy
+
             this.trueFileName = trueFileName;
             this.filename = filename;
             this.ext = ext;
         }
-
-
     }
 }
