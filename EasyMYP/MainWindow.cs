@@ -37,10 +37,11 @@ namespace EasyMYP
         HashCreator hashCreator;
         //List<FileInArchive> FIAList = new List<FileInArchive>();
         AvancementBar avBar;
-        string extractionPath = null;
+        //string extractionPath = null;
         bool operationRunning = false;
 
         List<String> scanFiles = new List<string>();
+
         #endregion
 
         public MainWindow()
@@ -157,9 +158,9 @@ namespace EasyMYP
                     , FileTableEventHandler, ExtractionEventHandler
                     , hashDic);
 
-                if (extractionPath != null)
+                if (EasyMypConfig.ExtractionPath != null)
                 {
-                    MypFileHandler.ExtractionPath = extractionPath;
+                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
                 }
 
                 statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
@@ -366,12 +367,11 @@ namespace EasyMYP
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                extractionPath = folderBrowserDialog1.SelectedPath;
-                UpdateConfiguration("ExtractionPath", extractionPath);
+                EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
 
                 if (MypFileHandler != null)
                 {
-                    MypFileHandler.ExtractionPath = extractionPath;
+                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
                 }
             }
         }
@@ -396,6 +396,18 @@ namespace EasyMYP
 
         private void ExtractFiles(List<FileInArchive> fileList)
         {
+            //Check if an extraction path is set
+            if (EasyMypConfig.ExtractionPath == null)
+            {
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                }
+                else
+                    return;
+            }
+
             if (MypFileHandler != null)
             {
                 if (!SetOperationRunning()) return; //reset in event
@@ -414,16 +426,17 @@ namespace EasyMYP
             //TODO: if extraction path is not set put an alert up ?
             if (MypFileHandler != null)
             {
-                if (extractionPath == null)
-                {
-                    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        extractionPath = folderBrowserDialog1.SelectedPath;
-                        MypFileHandler.ExtractionPath = extractionPath;
-                    }
-                    else
-                        return;
-                }
+                //Redundant with the check done in ExtractFiles
+                //if (EasyMypConfig.ExtractionPath == null)
+                //{
+                //    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                //    {
+                //        EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                //        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                //    }
+                //    else
+                //        return;
+                //}
                 ExtractFiles(MypFileHandler.archiveFileList); // set the operation flag
             }
         }
@@ -432,12 +445,12 @@ namespace EasyMYP
         {
             if (MypFileHandler != null)
             {
-                if (extractionPath == null)
+                if (EasyMypConfig.ExtractionPath == null)
                 {
                     if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                     {
-                        extractionPath = folderBrowserDialog1.SelectedPath;
-                        MypFileHandler.ExtractionPath = extractionPath;
+                        EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
                     }
                     else
                         return;
@@ -466,28 +479,28 @@ namespace EasyMYP
 
         private void buttonExtractNewFiles_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-            {
-                extractionPath = folderBrowserDialog1.SelectedPath;
-                MypFileHandler.ExtractionPath = extractionPath;
-                if (MypFileHandler != null)
-                {
-                    ExtractFiles(MypFileHandler.archiveNewFileList); //set operation flag
-                }
-            }
+            //if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            //{
+            //    EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+            //    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+            //    if (MypFileHandler != null)
+            //    {
+            ExtractFiles(MypFileHandler.archiveNewFileList); //set operation flag
+            //    }
+            //}
         }
 
         private void buttonExtractModifiedFiles_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-            {
-                extractionPath = folderBrowserDialog1.SelectedPath;
-                MypFileHandler.ExtractionPath = extractionPath;
-                if (MypFileHandler != null)
-                {
-                    ExtractFiles(MypFileHandler.archiveModifiedFileList); //set operation flag
-                }
-            }
+            //if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            //{
+            //    EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+            //    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+            //    if (MypFileHandler != null)
+            //    {
+            ExtractFiles(MypFileHandler.archiveModifiedFileList); //set operation flag
+            //    }
+            //}
         }
 
         private void generatePatternButton_Click(object sender, EventArgs e)
@@ -1029,16 +1042,16 @@ namespace EasyMYP
                 if (MypFileHandler != null)
                 {
                     // operation lock is put by 'extract Files'
-                    if (extractionPath == null)
-                    {
-                        if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                        {
-                            extractionPath = folderBrowserDialog1.SelectedPath;
-                            MypFileHandler.ExtractionPath = extractionPath;
-                        }
-                        else
-                            return;
-                    }
+                    //if (EasyMypConfig.ExtractionPath == null)
+                    //{
+                    //    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+                    //    {
+                    //        EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
+                    //        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                    //    }
+                    //    else
+                    //        return;
+                    //}
                     ExtractFiles(fileList);
                 }
             }
@@ -1052,46 +1065,13 @@ namespace EasyMYP
 
         #endregion
 
-
-
-
-        #region Configuration Helpers
-
-        public void UpdateConfiguration(string key, string value)
+        private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            // Check to see if the key already exists, if so we remove it
-            for (int i = 0; i < ConfigurationManager.AppSettings.Keys.Count; i++)
+            Preferences pref = new Preferences();
+            if (pref.ShowDialog() == DialogResult.OK)
             {
-                if (ConfigurationManager.AppSettings.Keys.Get(i) == key)
-                {
-                    config.AppSettings.Settings.Remove(key);
-                    break;
-                }
             }
-            // Add the new key value
-            config.AppSettings.Settings.Add(key, value);
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
         }
 
-        public void RemoveConfigurationKey(string key)
-        {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            // Check to see if the key already exists, if so we remove it
-            for (int i = 0; i < ConfigurationManager.AppSettings.Keys.Count; i++)
-            {
-                if (ConfigurationManager.AppSettings.Keys.Get(i) == key)
-                {
-                    config.AppSettings.Settings.Remove(key);
-                    break;
-                }
-            }
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
-        }
-
-        #endregion
     }
 }

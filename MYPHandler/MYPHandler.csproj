@@ -39,9 +39,11 @@
       <HintPath>.\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="MYPEvent.cs" />
     <Compile Include="MYPHandler_extraction.cs" />
     <Compile Include="MYPHandler.cs" />

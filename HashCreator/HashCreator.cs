@@ -160,7 +160,7 @@ namespace nsHashCreator
             if (patternList.Count > 0)
             {
                 List<Thread> threadList = new List<Thread>();
-                for (int i = 0; i < System.Environment.ProcessorCount; i++)
+                for (int i = 0; i < System.Environment.ProcessorCount && i < HashCreatorConfig.MaxOperationThread; i++)
                 {
                     Thread pat1 = new Thread(new ThreadStart(TreatPattern));
                     pat1.Start();
@@ -396,7 +396,7 @@ namespace nsHashCreator
             parseDirList = dirs.GetEnumerator();
 
             List<Thread> threadList = new List<Thread>();   // launches as many threads as processors
-            for (int i = 0; i < System.Environment.ProcessorCount; i++)
+            for (int i = 0; i < System.Environment.ProcessorCount && i < HashCreatorConfig.MaxOperationThread; i++)
             {
                 Thread t = new Thread(new ParameterizedThreadStart(calc));
                 t.Start(new ThreadParam(dirs, files, exts, 0, dirs.Count / 2, outputFileRoot));
@@ -497,7 +497,7 @@ namespace nsHashCreator
                 extensionList.Add("");
             }
 
-            string directoryName; 
+            string directoryName;
             // get the directory name from the pool
             // Also allows for a cleaner exit if necessary through the Stop method
             while ((directoryName = GetDirectoryFromPoolManager()) != null)

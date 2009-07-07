@@ -49,8 +49,8 @@ namespace MYPHandler
             Extract(archiveFileList);
         }
 
-        bool multithreadExtraction = true;
         int numOfFileInExtractionList = 0;
+
         /// <summary>
         /// Extracts a file, a list of file or search + extract a file in case of a string
         /// </summary>
@@ -82,14 +82,10 @@ namespace MYPHandler
             //Otherwise having 2 threads doing the reading and the writting is bad
             if (mypPath[0] == extractionPath[0])
             {
-                multithreadExtraction = false;
-            }
-            else
-            {
-                multithreadExtraction = true;
+                MypHandlerConfig.MultithreadedExtraction = false;
             }
 
-            if (multithreadExtraction)
+            if (MypHandlerConfig.MultithreadedExtraction)
             {
                 boList.Active = true;
                 Thread t_BOwriter = new Thread(new ThreadStart(ThreadWrite));
@@ -104,7 +100,7 @@ namespace MYPHandler
                 ExtractFile(fileList[i]);
             }
 
-            if (!multithreadExtraction)
+            if (!MypHandlerConfig.MultithreadedExtraction)
             {
                 TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.ExtractionFinished, fileList.Count - error_ExtractionNumber));
             }
@@ -114,19 +110,20 @@ namespace MYPHandler
             }
         }
 
+        /// <summary>
+        /// Used in order to know how much RAM we are using and actually protect agains
+        /// OutOfMemory exceptions
+        /// </summary>
         protected PerformanceCounter ramCounter = new PerformanceCounter("Process", "Private Bytes", Process.GetCurrentProcess().ProcessName);
-
         float getUsedRAM()
         {
             return ramCounter.NextValue();
         }
 
         int garbageRuns = 0;
-        long archfilesBufferMem;
-        long oldWorkingSet, newWorkingSet;
+        //long archfilesBufferMem;
+        //long oldWorkingSet, newWorkingSet;
         float usedRam, oldUsedRam;
-
-        System.Diagnostics.Process curProcess = System.Diagnostics.Process.GetCurrentProcess();
 
         /// <summary>
         /// Extracts input file from the myp archive
@@ -137,7 +134,7 @@ namespace MYPHandler
             error_ExtractionNumber = 0;
 
             #region MultiThreading Stuff
-            if (multithreadExtraction)
+            if (MypHandlerConfig.MultithreadedExtraction)
             {
                 //Some stuff to free the memory
                 //This is in case we explode the memory
@@ -191,7 +188,7 @@ namespace MYPHandler
                         inf.SetInput(archFile.data);
                         inf.Inflate(output_buffer);
 
-                        if (!multithreadExtraction)
+                        if (!MypHandlerConfig.MultithreadedExtraction)
                         {
                             //Treat directly the write
                             SaveBufferToFile(output_buffer, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
@@ -203,14 +200,14 @@ namespace MYPHandler
                         //Clear the buffer (useless in CSharp)
                         output_buffer = null;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtractionError, error_ExtractionNumber++));
                     }
                 }
                 else if (archFile.descriptor.compressionMethod == 0) //No compression
                 {
-                    if (!multithreadExtraction)
+                    if (!MypHandlerConfig.MultithreadedExtraction)
                     {
                         //Treat directly the write
                         SaveBufferToFile(archFile.data, archFile.descriptor.foundFileName, archFile.descriptor.filename, archFile.descriptor.extension);
@@ -225,7 +222,7 @@ namespace MYPHandler
                     TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.UnknownCompressionMethod, error_ExtractionNumber++));
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.UnknownError, error_ExtractionNumber++));
             }
@@ -300,7 +297,13 @@ namespace MYPHandler
             TriggerExtractionEvent(new MYPFileEventArgs(Event_ExtractionType.FileExtracted, numExtractedFiles++));
         }
 
-        BufferObjectList boList;
+
+        BufferObjectList boList; //Used in order to multi thread the read/write operations of the extraction
+
+        /// <summary>
+        /// The function / thread that writes data to the disk, used when multi threading
+        /// the read / write operations
+        /// </summary>
         private void ThreadWrite()
         {
             List<BufferObject> bol;
@@ -346,6 +349,10 @@ namespace MYPHandler
         #endregion
     }
 
+    /// <summary>
+    /// Used to store a list of buffer objects
+    /// Mainly used so that reading and writting when extracting files can be multi threaded
+    /// </summary>
     public class BufferObjectList
     {
         List<BufferObject> bufferObjectList = new List<BufferObject>();
@@ -466,6 +473,9 @@ namespace MYPHandler
         }
     }
 
+    /// <summary>
+    /// Used to store data from files in a temporary object
+    /// </summary>
     public class BufferObject
     {
         public byte[] buffer;

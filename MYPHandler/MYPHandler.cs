@@ -413,7 +413,7 @@ namespace MYPHandler
                                     {
                                         TreatHeader(myArchFile);
                                     }
-                                    catch (Exception e)
+                                    catch (Exception )
                                     {
                                         Error_FileTableEntry(myArchFile);
                                     }
@@ -437,7 +437,7 @@ namespace MYPHandler
                                     TriggerFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.UpdateFile, null));
                                 }
                             }
-                            catch (Exception e)
+                            catch (Exception )
                             {
                                 Error_FileTableEntry(myArchFile);
                             }
@@ -477,7 +477,7 @@ namespace MYPHandler
                     inf.SetInput(archFile.data_start_200);
                     inf.Inflate(output_buffer);
                 }
-                catch (Exception e)
+                catch (Exception )
                 {
                     Error_FileTableEntry(archFile);
                 }
@@ -695,7 +695,7 @@ namespace MYPHandler
 
                     output_buffer = outputMS.GetBuffer();
                 }
-                catch (Exception e)
+                catch (Exception )
                 {
 
                 }
@@ -727,7 +727,7 @@ namespace MYPHandler
             {
                 archiveStream = new FileStream(fullMypFileName, FileMode.Open, FileAccess.ReadWrite);
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 throw new Exception("You need to stop application currently using the following file: " + fullMypFileName);
             }

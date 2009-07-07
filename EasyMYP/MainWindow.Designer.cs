@@ -77,6 +77,15 @@ namespace EasyMYP
             this.label2 = new System.Windows.Forms.Label();
             this.statusPB = new System.Windows.Forms.ProgressBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.treeView_Archive = new System.Windows.Forms.TreeView();
+            this.contextMenuStripFileSystemTreeView = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItemExtract = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemSort = new System.Windows.Forms.ToolStripMenuItem();
+            this.recursiveSortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
+            this.treeView_FileSystem = new System.Windows.Forms.TreeView();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.findStrip2 = new EasyMYP.FindStrip();
             this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
@@ -102,15 +111,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.treeView_Archive = new System.Windows.Forms.TreeView();
-            this.contextMenuStripFileSystemTreeView = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItemExtract = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemSort = new System.Windows.Forms.ToolStripMenuItem();
-            this.recursiveSortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
-            this.treeView_FileSystem = new System.Windows.Forms.TreeView();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label_ModifiedFiles_Text = new System.Windows.Forms.Label();
@@ -125,21 +125,23 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             this.panel_information.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.tabControl1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
+            this.contextMenuStripFileSystemTreeView.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).BeginInit();
             this.fileInArchiveBindingNavigator.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).BeginInit();
-            this.tabPage2.SuspendLayout();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
-            this.contextMenuStripFileSystemTreeView.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -152,6 +154,7 @@ namespace EasyMYP
             this.fileToolStripMenuItem,
             this.fileToolStripMenuItem1,
             this.toolsToolStripMenuItem,
+            this.optionsToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
@@ -548,6 +551,106 @@ namespace EasyMYP
             this.tabControl1.Size = new System.Drawing.Size(902, 374);
             this.tabControl1.TabIndex = 31;
             // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.splitContainer1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(894, 348);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Archive Tree View";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(3, 3);
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.treeView_Archive);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.treeView_FileSystem);
+            this.splitContainer1.Size = new System.Drawing.Size(888, 342);
+            this.splitContainer1.SplitterDistance = 435;
+            this.splitContainer1.TabIndex = 0;
+            // 
+            // treeView_Archive
+            // 
+            this.treeView_Archive.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_Archive.ContextMenuStrip = this.contextMenuStripFileSystemTreeView;
+            this.treeView_Archive.ImageIndex = 0;
+            this.treeView_Archive.ImageList = this.treeViewIconList;
+            this.treeView_Archive.Location = new System.Drawing.Point(3, 3);
+            this.treeView_Archive.Name = "treeView_Archive";
+            this.treeView_Archive.SelectedImageIndex = 0;
+            this.treeView_Archive.Size = new System.Drawing.Size(428, 333);
+            this.treeView_Archive.TabIndex = 0;
+            this.treeView_Archive.MouseClick += new System.Windows.Forms.MouseEventHandler(this.treeView_Archive_MouseClick);
+            this.treeView_Archive.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_Archive_NodeMouseClick);
+            this.treeView_Archive.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_Archive_ItemDrag);
+            // 
+            // contextMenuStripFileSystemTreeView
+            // 
+            this.contextMenuStripFileSystemTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemExtract,
+            this.toolStripMenuItemSort,
+            this.recursiveSortToolStripMenuItem});
+            this.contextMenuStripFileSystemTreeView.Name = "contextMenuStrip1";
+            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(156, 70);
+            this.contextMenuStripFileSystemTreeView.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripFileSystemTreeView_ItemClicked);
+            // 
+            // toolStripMenuItemExtract
+            // 
+            this.toolStripMenuItemExtract.Name = "toolStripMenuItemExtract";
+            this.toolStripMenuItemExtract.Size = new System.Drawing.Size(155, 22);
+            this.toolStripMenuItemExtract.Text = "Extract";
+            // 
+            // toolStripMenuItemSort
+            // 
+            this.toolStripMenuItemSort.Name = "toolStripMenuItemSort";
+            this.toolStripMenuItemSort.Size = new System.Drawing.Size(155, 22);
+            this.toolStripMenuItemSort.Text = "Sort";
+            // 
+            // recursiveSortToolStripMenuItem
+            // 
+            this.recursiveSortToolStripMenuItem.Name = "recursiveSortToolStripMenuItem";
+            this.recursiveSortToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.recursiveSortToolStripMenuItem.Text = "Recursive Sort";
+            // 
+            // treeViewIconList
+            // 
+            this.treeViewIconList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewIconList.ImageStream")));
+            this.treeViewIconList.TransparentColor = System.Drawing.Color.Transparent;
+            this.treeViewIconList.Images.SetKeyName(0, "hdisk.ico");
+            this.treeViewIconList.Images.SetKeyName(1, "Folder.ico");
+            this.treeViewIconList.Images.SetKeyName(2, "avi.ico");
+            this.treeViewIconList.Images.SetKeyName(3, "PDFFile_8.ico");
+            this.treeViewIconList.Images.SetKeyName(4, "textdoc.ico");
+            this.treeViewIconList.Images.SetKeyName(5, "Zip File.ico");
+            // 
+            // treeView_FileSystem
+            // 
+            this.treeView_FileSystem.AllowDrop = true;
+            this.treeView_FileSystem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_FileSystem.ImageIndex = 0;
+            this.treeView_FileSystem.ImageList = this.treeViewIconList;
+            this.treeView_FileSystem.Location = new System.Drawing.Point(3, 3);
+            this.treeView_FileSystem.Name = "treeView_FileSystem";
+            this.treeView_FileSystem.SelectedImageIndex = 0;
+            this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
+            this.treeView_FileSystem.TabIndex = 0;
+            this.treeView_FileSystem.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragDrop);
+            this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
+            // 
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.findStrip2);
@@ -797,106 +900,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn4.ReadOnly = true;
             this.dataGridViewTextBoxColumn4.Width = 125;
             // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.splitContainer1);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(894, 348);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Archive Tree View";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(3, 3);
-            this.splitContainer1.Name = "splitContainer1";
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.treeView_Archive);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.treeView_FileSystem);
-            this.splitContainer1.Size = new System.Drawing.Size(888, 342);
-            this.splitContainer1.SplitterDistance = 435;
-            this.splitContainer1.TabIndex = 0;
-            // 
-            // treeView_Archive
-            // 
-            this.treeView_Archive.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView_Archive.ContextMenuStrip = this.contextMenuStripFileSystemTreeView;
-            this.treeView_Archive.ImageIndex = 0;
-            this.treeView_Archive.ImageList = this.treeViewIconList;
-            this.treeView_Archive.Location = new System.Drawing.Point(3, 3);
-            this.treeView_Archive.Name = "treeView_Archive";
-            this.treeView_Archive.SelectedImageIndex = 0;
-            this.treeView_Archive.Size = new System.Drawing.Size(428, 333);
-            this.treeView_Archive.TabIndex = 0;
-            this.treeView_Archive.MouseClick += new System.Windows.Forms.MouseEventHandler(this.treeView_Archive_MouseClick);
-            this.treeView_Archive.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_Archive_NodeMouseClick);
-            this.treeView_Archive.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_Archive_ItemDrag);
-            // 
-            // contextMenuStripFileSystemTreeView
-            // 
-            this.contextMenuStripFileSystemTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItemExtract,
-            this.toolStripMenuItemSort,
-            this.recursiveSortToolStripMenuItem});
-            this.contextMenuStripFileSystemTreeView.Name = "contextMenuStrip1";
-            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(156, 70);
-            this.contextMenuStripFileSystemTreeView.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripFileSystemTreeView_ItemClicked);
-            // 
-            // toolStripMenuItemExtract
-            // 
-            this.toolStripMenuItemExtract.Name = "toolStripMenuItemExtract";
-            this.toolStripMenuItemExtract.Size = new System.Drawing.Size(155, 22);
-            this.toolStripMenuItemExtract.Text = "Extract";
-            // 
-            // toolStripMenuItemSort
-            // 
-            this.toolStripMenuItemSort.Name = "toolStripMenuItemSort";
-            this.toolStripMenuItemSort.Size = new System.Drawing.Size(155, 22);
-            this.toolStripMenuItemSort.Text = "Sort";
-            // 
-            // recursiveSortToolStripMenuItem
-            // 
-            this.recursiveSortToolStripMenuItem.Name = "recursiveSortToolStripMenuItem";
-            this.recursiveSortToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.recursiveSortToolStripMenuItem.Text = "Recursive Sort";
-            // 
-            // treeViewIconList
-            // 
-            this.treeViewIconList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeViewIconList.ImageStream")));
-            this.treeViewIconList.TransparentColor = System.Drawing.Color.Transparent;
-            this.treeViewIconList.Images.SetKeyName(0, "hdisk.ico");
-            this.treeViewIconList.Images.SetKeyName(1, "Folder.ico");
-            this.treeViewIconList.Images.SetKeyName(2, "avi.ico");
-            this.treeViewIconList.Images.SetKeyName(3, "PDFFile_8.ico");
-            this.treeViewIconList.Images.SetKeyName(4, "textdoc.ico");
-            this.treeViewIconList.Images.SetKeyName(5, "Zip File.ico");
-            // 
-            // treeView_FileSystem
-            // 
-            this.treeView_FileSystem.AllowDrop = true;
-            this.treeView_FileSystem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView_FileSystem.ImageIndex = 0;
-            this.treeView_FileSystem.ImageList = this.treeViewIconList;
-            this.treeView_FileSystem.Location = new System.Drawing.Point(3, 3);
-            this.treeView_FileSystem.Name = "treeView_FileSystem";
-            this.treeView_FileSystem.SelectedImageIndex = 0;
-            this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
-            this.treeView_FileSystem.TabIndex = 0;
-            this.treeView_FileSystem.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragDrop);
-            this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
-            // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.groupBox1);
@@ -1046,6 +1049,21 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.preferencesToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // preferencesToolStripMenuItem
+            // 
+            this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
+            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.preferencesToolStripMenuItem.Text = "Preferences";
+            this.preferencesToolStripMenuItem.Click += new System.EventHandler(this.preferencesToolStripMenuItem_Click);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1065,6 +1083,11 @@ namespace EasyMYP
             this.panel_status.ResumeLayout(false);
             this.panel_status.PerformLayout();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.ResumeLayout(false);
+            this.contextMenuStripFileSystemTreeView.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
@@ -1073,11 +1096,6 @@ namespace EasyMYP
             this.fileInArchiveBindingNavigator.ResumeLayout(false);
             this.fileInArchiveBindingNavigator.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveDataGridView)).EndInit();
-            this.tabPage2.ResumeLayout(false);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.ResumeLayout(false);
-            this.contextMenuStripFileSystemTreeView.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -1186,6 +1204,8 @@ namespace EasyMYP
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExtract;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSort;
         private System.Windows.Forms.ToolStripMenuItem recursiveSortToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem preferencesToolStripMenuItem;
     }
 }
 
