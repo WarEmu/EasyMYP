@@ -46,19 +46,36 @@ namespace MYPHandler
         /// </summary>
         public void ExtractAll()
         {
-            ExtractFileList(archiveFileList);
+            Extract(archiveFileList);
         }
 
         bool multithreadExtraction = true;
         int numOfFileInExtractionList = 0;
         /// <summary>
-        /// Extracts all file from the myp archive
+        /// Extracts a file, a list of file or search + extract a file in case of a string
         /// </summary>
-        public void ExtractFileList(object obj)
+        public void Extract(object obj)
         {
             boList = new BufferObjectList();
             numExtractedFiles = 0;
-            List<FileInArchive> fileList = (List<FileInArchive>)obj;
+            List<FileInArchive> fileList = new List<FileInArchive>();
+            if (obj.GetType() == typeof(List<FileInArchive>))
+            {
+                fileList = (List<FileInArchive>)obj;
+            }
+            else if (obj.GetType() == typeof(FileInArchive))
+            {
+                fileList.Add((FileInArchive)obj);
+            }
+            else if (obj.GetType() == typeof(string))
+            {
+                FileInArchive tmpFIA = this.SearchForFile((string)obj);
+                if (tmpFIA == null)
+                {
+                    return;
+                }
+                fileList.Add(tmpFIA);
+            }
             numOfFileInExtractionList = fileList.Count; //needed since the events are launched in the save buffer now
 
             //If we are using more than one disk, then we multi thread
@@ -113,10 +130,9 @@ namespace MYPHandler
 
         /// <summary>
         /// Extracts input file from the myp archive
-        /// (this is temporary, it will soon be hidden so that the input parameter is a string)
         /// </summary>
         /// <param name="archFile">file to extract</param>
-        public void ExtractFile(FileInArchive archFile)
+        private void ExtractFile(FileInArchive archFile)
         {
             error_ExtractionNumber = 0;
 

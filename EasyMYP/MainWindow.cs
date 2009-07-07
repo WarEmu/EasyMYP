@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using MYPHandler;
 using nsHashCreator;
 using nsHashDictionary;
+using System.Configuration;
 
 namespace EasyMYP
 {
@@ -366,6 +367,8 @@ namespace EasyMYP
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 extractionPath = folderBrowserDialog1.SelectedPath;
+                UpdateConfiguration("ExtractionPath", extractionPath);
+
                 if (MypFileHandler != null)
                 {
                     MypFileHandler.ExtractionPath = extractionPath;
@@ -401,7 +404,7 @@ namespace EasyMYP
                 statusPB.Maximum = fileList.Count;
                 statusPB.Visible = true;
 
-                t_worker = new Thread(new ParameterizedThreadStart(MypFileHandler.ExtractFileList));
+                t_worker = new Thread(new ParameterizedThreadStart(MypFileHandler.Extract));
                 t_worker.Start(fileList);
             }
         }
@@ -799,7 +802,6 @@ namespace EasyMYP
 
         #endregion
 
-        #endregion
 
         int oldColumn = -1;
         SortOrder oldSortOrder = SortOrder.None;
@@ -891,6 +893,8 @@ namespace EasyMYP
             TreeViewManager.SystemNodeMouseClick(sender, e);
         }
 
+
+        #endregion
 
         #region Drag & Drop region
         private void fileInArchiveDataGridView_DragDrop(object sender, DragEventArgs e)
@@ -1049,5 +1053,45 @@ namespace EasyMYP
         #endregion
 
 
+
+
+        #region Configuration Helpers
+
+        public void UpdateConfiguration(string key, string value)
+        {
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            // Check to see if the key already exists, if so we remove it
+            for (int i = 0; i < ConfigurationManager.AppSettings.Keys.Count; i++)
+            {
+                if (ConfigurationManager.AppSettings.Keys.Get(i) == key)
+                {
+                    config.AppSettings.Settings.Remove(key);
+                    break;
+                }
+            }
+            // Add the new key value
+            config.AppSettings.Settings.Add(key, value);
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        public void RemoveConfigurationKey(string key)
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            // Check to see if the key already exists, if so we remove it
+            for (int i = 0; i < ConfigurationManager.AppSettings.Keys.Count; i++)
+            {
+                if (ConfigurationManager.AppSettings.Keys.Get(i) == key)
+                {
+                    config.AppSettings.Settings.Remove(key);
+                    break;
+                }
+            }
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        #endregion
     }
 }
