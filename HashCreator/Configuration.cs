@@ -11,12 +11,13 @@ namespace nsHashCreator
 
         private static string maxOperationThread = "MaxOperationThread";
 
+        private static string maxCombinationPerPattern = "MaxCombinationPerPattern";
+
         #endregion
 
         #region Properties
         /// <summary>
-        /// Might be used in the future for multithreading the processing of the GetFileTable function
-        /// Otherwise not used at the moment (July 7th, 2009, Chryzo)
+        /// Sets the number of threads that can run simultaneously for brute forcing
         /// </summary>
         public static int MaxOperationThread
         {
@@ -31,6 +32,26 @@ namespace nsHashCreator
             set
             {
                 UpdateConfiguration(maxOperationThread, value.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Might be used in the future for multithreading the processing of the GetFileTable function
+        /// Otherwise not used at the moment (July 7th, 2009, Chryzo)
+        /// </summary>
+        public static int MaxCombinationPerPattern
+        {
+            get
+            {
+                if (ConfigurationManager.AppSettings[maxCombinationPerPattern] == null)
+                {
+                    return 9;
+                }
+                return Convert.ToInt32(ConfigurationManager.AppSettings[maxCombinationPerPattern]);
+            }
+            set
+            {
+                UpdateConfiguration(maxCombinationPerPattern, value.ToString());
             }
         }
 

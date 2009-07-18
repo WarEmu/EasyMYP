@@ -27,6 +27,7 @@ namespace EasyMYP
                 dropdownlist_MaxOperationThread.Items.Add(i + 1);
             }
             dropdownlist_MaxOperationThread.SelectedItem = nsHashCreator.HashCreatorConfig.MaxOperationThread;
+            dropdownlist_MaxCombinationPerPattern.SelectedItem = nsHashCreator.HashCreatorConfig.MaxCombinationPerPattern;
         }
 
         private void button_Save_Click(object sender, EventArgs e)
@@ -42,7 +43,10 @@ namespace EasyMYP
             {
                 nsHashCreator.HashCreatorConfig.MaxOperationThread = (int)dropdownlist_MaxOperationThread.SelectedItem;
             }
-
+            if (dropdownlist_MaxCombinationPerPattern.SelectedItem != null)
+            {
+                nsHashCreator.HashCreatorConfig.MaxCombinationPerPattern = (int)dropdownlist_MaxCombinationPerPattern.SelectedItem;
+            }
             DialogResult = DialogResult.OK;
             Close();
         }

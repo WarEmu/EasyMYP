@@ -217,16 +217,16 @@ namespace nsHashCreator
             string format = "";
             int occurence = spl_str.Length - 1;
 
-            if (occurence <= 9) //9 = max_int
+            if (occurence <=  HashCreatorConfig.MaxCombinationPerPattern) //9 = max_int
             {
-                int max = (int)Math.Pow(10, occurence);
+                long max = (long)Math.Pow(10, occurence);
 
                 for (int i = 0; i < occurence; i++)
                 {
                     format += "0";
                 }
 
-                for (int i = 0; i < max; i++)
+                for (long i = 0; i < max; i++)
                 {
                     string cur_i = i.ToString(format);
 

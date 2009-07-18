@@ -1,3 +1,4 @@
+====================================================================================================================================
 Table of Content
 0/ EasyMYP
 1/ License
@@ -11,8 +12,7 @@ Table of Content
 	3.3/ Testing filenames
 
 A/ Notices
-
-
+====================================================================================================================================
 0/ EasyMYP
 EasyMYP allows you to extract archives in the MYP format that Mythic uses for the archives of Warhammer Online. It may also be able to extract the UOP files (try at your own risk)
 This application was first created in order to retrieve the LUA scripts that Mythic uses in their interface and thus be able to create our own Mods. Though, it may have not been born if Mythic had respected their promises of involving the modding community very early one.
@@ -20,12 +20,12 @@ The main contributors who participated in the creation of this project are:
  - Nicoli_s
  - Chryzo
  - Hadrian Aurelius (who fortunately cleaned up the code)
-
+====================================================================================================================================
 1/ License
 The program is licensed under the GNU GPLv2 License that can be found here: 
  - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  - http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
-
+====================================================================================================================================
 2/ Installation (versions 1.2 and UP)
 	2.0/ Prerequisite
  - To make this program work you need .NET Framework 3.5. Use your prefered search engine to find the correct version for your system.
@@ -58,33 +58,51 @@ To update the dictionary follow these steps:
  - Get the latest version of the dictionary here: http://code.google.com/p/easymyp/downloads/list
  - Extract the dictionary archive into the Hash folder of the application
 And that is it!
-
+====================================================================================================================================
 3/ Dictionary & Filenames
 	3.1/ Dictionary
 The application uses a dictionary to be able to find the names of the files in the archives because the archives themselves do not actually store the filenames. This dictionary follows the following format:
 <<ph>>#<<sh>>#<<filename>>#<<CRC>>
 Where:
- - ph:			The primary hash
- - sh:			The secondary hash
+ - ph:		The primary hash
+ - sh:		The secondary hash
  - filename:	The filename
- - CRC:			The CRC32 associated with the files, used to know if the file was updated or not (bugged at the moment)
+ - CRC:		The CRC32 associated with the files, used to know if the file was updated or not (bugged at the moment)
 
 	3.2/ Filenames
 Now, the dictionary is not perfect and when you open archives you may find filenames with the following names:
 12345678_90ABCDEF12345678.ext
 Where:
  - First set of 8 chars:	The CRC of the file
- - _:						The character that separates the CRC from the hash
+ - _:			The character that separates the CRC from the hash
  - Second set of 8 chars:	The primary hash
  - Third set of 8 chars:	The secondary hash
- - .ext:					The estimated extension of the file, may be wrong
+ - .ext:			The estimated extension of the file, may be wrong
 
 So, if you think you know the realname of a file you can try adding it to the dictionary manually (we advise against it) by using the format described in section 3.1. Or you can see how the application allows you to do this in the next section (3.3)
 
 	3.3/ Testing filenames
 EasyMYP provides you with different ways to test / add filenames if you want. Here is a quick list of how you can do this:
-(THIS SECTION NEEDS TO BE WRITTEN)
+		3.3.1/ Dictionary -> Test Filename List
+In the Dictionary -> Test Filename List menu you can provide 3 informations for the application to start testing filenames:
+ - Directories:	Choose <<Known directories>> or a custom file with one directory name per line
+ - Files:		Choose <<Known files>> or a custome file with one filename without extension per line
+ - Extensions:	Choose <<Known extensions>> or a custome file with one extension per line
 
+Then you can launch the testing by using the <<Go!>> button
+
+		3.3.2/ Dictionary -> Testing Full Filename List
+In the Dictionary -> Test Full Filename List menu, you are asked for a file. This files need to contain the fullname of the files (relative to the WOL directory) you want to test. Enter one filename per line.
+
+		3.3.3/ File Changes (tab) -> Generate pattern file
+The application will find all the patterns that are present in the files. For exemple if you have a file named:
+ - data/Strings/english/maps/zone202/map_point_descs.txt
+it will generate the following pattern:
+ - data/Strings/english/maps/zone[0-9][0-9][0-9]/map_point_descs.txt
+This pattern will then be tested once you click on Test filenames from patterns.
+
+* There is a limitation for this pattern creation. It won't test if there is more than 9 numbers in the original filename name. Except if you change it in the preferences.
+====================================================================================================================================
 A/ Notices
  - The authors and contributors are in no way responsible for any misdeamenour the users may do with this application. 
  - The authors and contributors can not be responsible for users corrupting their files or getting banned from the game.

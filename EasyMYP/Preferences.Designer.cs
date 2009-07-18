@@ -29,16 +29,19 @@
         private void InitializeComponent()
         {
             this.groupBox_EasyMYPConfig = new System.Windows.Forms.GroupBox();
+            this.button_SetExtractionPath = new System.Windows.Forms.Button();
+            this.textBox_ExtractionPath = new System.Windows.Forms.TextBox();
             this.groupBox_HashCreator = new System.Windows.Forms.GroupBox();
+            this.label_MaxOperationThread = new System.Windows.Forms.Label();
+            this.dropdownlist_MaxOperationThread = new System.Windows.Forms.ComboBox();
             this.groupBox_MYPHandler = new System.Windows.Forms.GroupBox();
             this.checkBox_MultiThreadedExtraction = new System.Windows.Forms.CheckBox();
             this.button_Cancel = new System.Windows.Forms.Button();
             this.button_Save = new System.Windows.Forms.Button();
-            this.dropdownlist_MaxOperationThread = new System.Windows.Forms.ComboBox();
-            this.label_MaxOperationThread = new System.Windows.Forms.Label();
-            this.textBox_ExtractionPath = new System.Windows.Forms.TextBox();
-            this.button_SetExtractionPath = new System.Windows.Forms.Button();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.label_MaxCombinationPerPattern = new System.Windows.Forms.Label();
+            this.dropdownlist_MaxCombinationPerPattern = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupBox_EasyMYPConfig.SuspendLayout();
             this.groupBox_HashCreator.SuspendLayout();
             this.groupBox_MYPHandler.SuspendLayout();
@@ -57,10 +60,31 @@
             this.groupBox_EasyMYPConfig.TabStop = false;
             this.groupBox_EasyMYPConfig.Text = "Configuration - EasyMYP";
             // 
+            // button_SetExtractionPath
+            // 
+            this.button_SetExtractionPath.Location = new System.Drawing.Point(6, 17);
+            this.button_SetExtractionPath.Name = "button_SetExtractionPath";
+            this.button_SetExtractionPath.Size = new System.Drawing.Size(75, 23);
+            this.button_SetExtractionPath.TabIndex = 1;
+            this.button_SetExtractionPath.Text = "Set Extraction Path";
+            this.button_SetExtractionPath.UseVisualStyleBackColor = true;
+            this.button_SetExtractionPath.Click += new System.EventHandler(this.button_SetExtractionPath_Click);
+            // 
+            // textBox_ExtractionPath
+            // 
+            this.textBox_ExtractionPath.Enabled = false;
+            this.textBox_ExtractionPath.Location = new System.Drawing.Point(87, 19);
+            this.textBox_ExtractionPath.Name = "textBox_ExtractionPath";
+            this.textBox_ExtractionPath.Size = new System.Drawing.Size(316, 20);
+            this.textBox_ExtractionPath.TabIndex = 0;
+            // 
             // groupBox_HashCreator
             // 
             this.groupBox_HashCreator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox_HashCreator.Controls.Add(this.label1);
+            this.groupBox_HashCreator.Controls.Add(this.dropdownlist_MaxCombinationPerPattern);
+            this.groupBox_HashCreator.Controls.Add(this.label_MaxCombinationPerPattern);
             this.groupBox_HashCreator.Controls.Add(this.label_MaxOperationThread);
             this.groupBox_HashCreator.Controls.Add(this.dropdownlist_MaxOperationThread);
             this.groupBox_HashCreator.Location = new System.Drawing.Point(12, 118);
@@ -69,6 +93,23 @@
             this.groupBox_HashCreator.TabIndex = 1;
             this.groupBox_HashCreator.TabStop = false;
             this.groupBox_HashCreator.Text = "Configuration - Hash Creator";
+            // 
+            // label_MaxOperationThread
+            // 
+            this.label_MaxOperationThread.AutoSize = true;
+            this.label_MaxOperationThread.Location = new System.Drawing.Point(7, 19);
+            this.label_MaxOperationThread.Name = "label_MaxOperationThread";
+            this.label_MaxOperationThread.Size = new System.Drawing.Size(236, 13);
+            this.label_MaxOperationThread.TabIndex = 1;
+            this.label_MaxOperationThread.Text = "Maximum number of threads when brute forcing :";
+            // 
+            // dropdownlist_MaxOperationThread
+            // 
+            this.dropdownlist_MaxOperationThread.FormattingEnabled = true;
+            this.dropdownlist_MaxOperationThread.Location = new System.Drawing.Point(282, 16);
+            this.dropdownlist_MaxOperationThread.Name = "dropdownlist_MaxOperationThread";
+            this.dropdownlist_MaxOperationThread.Size = new System.Drawing.Size(121, 21);
+            this.dropdownlist_MaxOperationThread.TabIndex = 0;
             // 
             // groupBox_MYPHandler
             // 
@@ -112,40 +153,48 @@
             this.button_Save.UseVisualStyleBackColor = true;
             this.button_Save.Click += new System.EventHandler(this.button_Save_Click);
             // 
-            // dropdownlist_MaxOperationThread
+            // label_MaxCombinationPerPattern
             // 
-            this.dropdownlist_MaxOperationThread.FormattingEnabled = true;
-            this.dropdownlist_MaxOperationThread.Location = new System.Drawing.Point(282, 16);
-            this.dropdownlist_MaxOperationThread.Name = "dropdownlist_MaxOperationThread";
-            this.dropdownlist_MaxOperationThread.Size = new System.Drawing.Size(121, 21);
-            this.dropdownlist_MaxOperationThread.TabIndex = 0;
+            this.label_MaxCombinationPerPattern.AutoSize = true;
+            this.label_MaxCombinationPerPattern.Location = new System.Drawing.Point(6, 47);
+            this.label_MaxCombinationPerPattern.Name = "label_MaxCombinationPerPattern";
+            this.label_MaxCombinationPerPattern.Size = new System.Drawing.Size(200, 13);
+            this.label_MaxCombinationPerPattern.TabIndex = 2;
+            this.label_MaxCombinationPerPattern.Text = "Maximum combination to test per pattern:";
             // 
-            // label_MaxOperationThread
+            // dropdownlist_MaxCombinationPerPattern
             // 
-            this.label_MaxOperationThread.AutoSize = true;
-            this.label_MaxOperationThread.Location = new System.Drawing.Point(7, 19);
-            this.label_MaxOperationThread.Name = "label_MaxOperationThread";
-            this.label_MaxOperationThread.Size = new System.Drawing.Size(236, 13);
-            this.label_MaxOperationThread.TabIndex = 1;
-            this.label_MaxOperationThread.Text = "Maximum number of threads when brute forcing :";
+            this.dropdownlist_MaxCombinationPerPattern.FormattingEnabled = true;
+            this.dropdownlist_MaxCombinationPerPattern.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16"});
+            this.dropdownlist_MaxCombinationPerPattern.Location = new System.Drawing.Point(282, 44);
+            this.dropdownlist_MaxCombinationPerPattern.Name = "dropdownlist_MaxCombinationPerPattern";
+            this.dropdownlist_MaxCombinationPerPattern.Size = new System.Drawing.Size(121, 21);
+            this.dropdownlist_MaxCombinationPerPattern.TabIndex = 3;
             // 
-            // textBox_ExtractionPath
+            // label1
             // 
-            this.textBox_ExtractionPath.Enabled = false;
-            this.textBox_ExtractionPath.Location = new System.Drawing.Point(87, 19);
-            this.textBox_ExtractionPath.Name = "textBox_ExtractionPath";
-            this.textBox_ExtractionPath.Size = new System.Drawing.Size(316, 20);
-            this.textBox_ExtractionPath.TabIndex = 0;
-            // 
-            // button_SetExtractionPath
-            // 
-            this.button_SetExtractionPath.Location = new System.Drawing.Point(6, 17);
-            this.button_SetExtractionPath.Name = "button_SetExtractionPath";
-            this.button_SetExtractionPath.Size = new System.Drawing.Size(75, 23);
-            this.button_SetExtractionPath.TabIndex = 1;
-            this.button_SetExtractionPath.Text = "Set Extraction Path";
-            this.button_SetExtractionPath.UseVisualStyleBackColor = true;
-            this.button_SetExtractionPath.Click += new System.EventHandler(this.button_SetExtractionPath_Click);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(251, 47);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(25, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "10^";
             // 
             // Preferences
             // 
@@ -185,5 +234,8 @@
         private System.Windows.Forms.Button button_SetExtractionPath;
         private System.Windows.Forms.TextBox textBox_ExtractionPath;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.ComboBox dropdownlist_MaxCombinationPerPattern;
+        private System.Windows.Forms.Label label_MaxCombinationPerPattern;
+        private System.Windows.Forms.Label label1;
     }
 }
