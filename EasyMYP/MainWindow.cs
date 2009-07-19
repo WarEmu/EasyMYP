@@ -1126,5 +1126,10 @@ namespace EasyMYP
             About about = new About();
             about.Show();
         }
+
+        private void MainWindow_DragDrop(object sender, DragEventArgs e)
+        {
+
+        }
     }
 }
