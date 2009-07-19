@@ -527,6 +527,8 @@ namespace EasyMYP
                 if (openArchiveDialog.ShowDialog() != DialogResult.OK)
                     return;
 
+                testPatternButton.Enabled = false;
+
                 hashCreator.loadPatterns(openArchiveDialog.FileName);
 
                 //make a copy of the dictionary to avoid conflicts, with only unknown file name to speed up.
@@ -539,10 +541,56 @@ namespace EasyMYP
 
                 t_GeneratePat = new Thread(new ParameterizedThreadStart(hashCreator.Patterns));
                 t_GeneratePat.Start(patternDic);
+
+                
+                button_Pause.Enabled = true;
+                button_Stop.Enabled = true;
             }
             else
                 MessageBox.Show("Already testing! Please wait for completion", "Please wait", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
 
+        /// <summary>
+        /// Pauses the pattern test
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_Pause_Click(object sender, EventArgs e)
+        {
+            if (hashCreator != null && hashCreator.Active)
+            {
+                if (hashCreator.Paused)
+                {
+                    hashCreator.Resume();
+                    lblGeneratePat.Text = "Resuming ...";
+                    button_Pause.Text = "Pause";
+                }
+                else
+                {
+                    hashCreator.Pause();
+                    lblGeneratePat.Text = "Paused";
+                    button_Pause.Text = "Resume";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stops the pattern testing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_Stop_Click(object sender, EventArgs e)
+        {
+            if (hashCreator != null && hashCreator.Active)
+            {
+                hashCreator.Stop();
+                lblGeneratePat.Text = "Stopped";
+                button_Pause.Text = "Pause"; // Just in case it is set to resume :)
+
+                testPatternButton.Enabled = true;
+                button_Pause.Enabled = false;
+                button_Stop.Enabled = false;
+            }
         }
 
         #endregion
@@ -1078,6 +1126,5 @@ namespace EasyMYP
             About about = new About();
             about.Show();
         }
-
     }
 }

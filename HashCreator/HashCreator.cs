@@ -24,6 +24,8 @@ namespace nsHashCreator
         private HashDictionary patternTestHashDic;
         private HashSet<string> patternList = new HashSet<string>();
         private HashSet<string>.Enumerator patPlace;
+        List<Thread> threadList = null;
+
         private object lock_patternRead = new object();
         private object lock_fileName = new object();
         private object lock_fileExtension = new object();
@@ -36,8 +38,11 @@ namespace nsHashCreator
         private Dictionary<string, Boolean> foundNames;
 
         private bool active = false; // Indicates if the thread is active
+        private bool paused = false; // Indicates if the threads are paused
 
-        public void Stop() { active = false; }
+        public bool Active { get { return active; } }
+        public bool Paused { get { return paused; } }
+
         private void Start() { active = true; }
 
         //List<string> bruteList = new List<string>();
@@ -159,7 +164,7 @@ namespace nsHashCreator
 
             if (patternList.Count > 0)
             {
-                List<Thread> threadList = new List<Thread>();
+                threadList = new List<Thread>();
                 for (int i = 0; i < System.Environment.ProcessorCount && i < HashCreatorConfig.MaxOperationThread; i++)
                 {
                     Thread pat1 = new Thread(new ThreadStart(TreatPattern));
@@ -217,7 +222,7 @@ namespace nsHashCreator
             string format = "";
             int occurence = spl_str.Length - 1;
 
-            if (occurence <=  HashCreatorConfig.MaxCombinationPerPattern) //9 = max_int
+            if (occurence <= HashCreatorConfig.MaxCombinationPerPattern) //9 = max_int
             {
                 long max = (long)Math.Pow(10, occurence);
 
@@ -226,7 +231,7 @@ namespace nsHashCreator
                     format += "0";
                 }
 
-                for (long i = 0; i < max; i++)
+                for (long i = 0; i < max && active; i++)
                 {
                     string cur_i = i.ToString(format);
 
@@ -253,6 +258,39 @@ namespace nsHashCreator
             return result;
         }
 
+        public void Stop()
+        {
+            active = false;
+            Resume();
+        }
+
+        public void Pause()
+        {
+            paused = true;
+            if (threadList != null)
+            {
+                for (int i = 0; i < threadList.Count; i++)
+                {
+                    threadList[i].Suspend();
+                }
+            }
+        }
+
+        public void Resume()
+        {
+            paused = false;
+            if (threadList != null)
+            {
+                for (int i = 0; i < threadList.Count; i++)
+                {
+                    if (threadList[i].ThreadState == ThreadState.Suspended)
+                    {
+                        threadList[i].Resume();
+                    }
+                }
+            }
+        }
+
         //void AddBruteLine(string line)
         //{
         //    if (!bruteList.Contains(line))
@@ -267,7 +305,7 @@ namespace nsHashCreator
         {
             lock (lock_fileName)
             {
-                if (parseFileList.MoveNext() && active)
+                if (parseFileList.MoveNext())
                     return parseFileList.Current;
                 else
                     return null;
@@ -344,7 +382,13 @@ namespace nsHashCreator
                         if (file.Value == true)
                             swf.WriteLine(file.Key);
                         else
+                        {
+                            //this is a quick and dirty fix to get some more debug info
+                            // to be removed in the future !!!
+                            //warhash.Hash(file.Key, 0xDEADBEEF);
+                            //swnf.WriteLine(file.Key + " " + warhash.ph.ToString("X8") + " " + warhash.sh.ToString("X8"));
                             swnf.WriteLine(file.Key);
+                        }
 
                     swnf.Close();
                     swf.Close();
@@ -395,7 +439,7 @@ namespace nsHashCreator
 
             parseDirList = dirs.GetEnumerator();
 
-            List<Thread> threadList = new List<Thread>();   // launches as many threads as processors
+            threadList = new List<Thread>();   // launches as many threads as processors
             for (int i = 0; i < System.Environment.ProcessorCount && i < HashCreatorConfig.MaxOperationThread; i++)
             {
                 Thread t = new Thread(new ParameterizedThreadStart(calc));
