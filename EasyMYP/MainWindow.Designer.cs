@@ -115,13 +115,14 @@ namespace EasyMYP
             this.label_NewFiles_Text = new System.Windows.Forms.Label();
             this.label_NewFiles_Value = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button_Stop = new System.Windows.Forms.Button();
+            this.button_Pause = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.generatePatternButton = new System.Windows.Forms.Button();
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
-            this.button_Pause = new System.Windows.Forms.Button();
-            this.button_Stop = new System.Windows.Forms.Button();
+            this.findStrip2 = new EasyMYP.FindStrip();
             this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -129,7 +130,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.findStrip2 = new EasyMYP.FindStrip();
             this.mainMenu.SuspendLayout();
             this.panel_information.SuspendLayout();
             this.panel_status.SuspendLayout();
@@ -147,8 +147,8 @@ namespace EasyMYP
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel_output.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -674,7 +674,9 @@ namespace EasyMYP
             this.treeView_FileSystem.SelectedImageIndex = 0;
             this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
             this.treeView_FileSystem.TabIndex = 0;
+
             this.treeView_FileSystem.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragDrop);
+            this.treeView_FileSystem.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragEnter);
             this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
             // 
             // tabPage1
@@ -864,8 +866,6 @@ namespace EasyMYP
             this.fileInArchiveDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.fileInArchiveDataGridView.Size = new System.Drawing.Size(888, 288);
             this.fileInArchiveDataGridView.TabIndex = 18;
-            this.fileInArchiveDataGridView.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.fileInArchiveDataGridView_ColumnHeaderMouseClick);
-            this.fileInArchiveDataGridView.DragDrop += new System.Windows.Forms.DragEventHandler(this.fileInArchiveDataGridView_DragDrop);
             // 
             // tabPage3
             // 
@@ -965,6 +965,28 @@ namespace EasyMYP
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Numeric patterns";
             // 
+            // button_Stop
+            // 
+            this.button_Stop.Enabled = false;
+            this.button_Stop.Location = new System.Drawing.Point(89, 78);
+            this.button_Stop.Name = "button_Stop";
+            this.button_Stop.Size = new System.Drawing.Size(75, 23);
+            this.button_Stop.TabIndex = 33;
+            this.button_Stop.Text = "Stop";
+            this.button_Stop.UseVisualStyleBackColor = true;
+            this.button_Stop.Click += new System.EventHandler(this.button_Stop_Click);
+            // 
+            // button_Pause
+            // 
+            this.button_Pause.Enabled = false;
+            this.button_Pause.Location = new System.Drawing.Point(7, 78);
+            this.button_Pause.Name = "button_Pause";
+            this.button_Pause.Size = new System.Drawing.Size(75, 23);
+            this.button_Pause.TabIndex = 32;
+            this.button_Pause.Text = "Pause";
+            this.button_Pause.UseVisualStyleBackColor = true;
+            this.button_Pause.Click += new System.EventHandler(this.button_Pause_Click);
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -1018,27 +1040,16 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
-            // button_Pause
+            // findStrip2
             // 
-            this.button_Pause.Enabled = false;
-            this.button_Pause.Location = new System.Drawing.Point(7, 78);
-            this.button_Pause.Name = "button_Pause";
-            this.button_Pause.Size = new System.Drawing.Size(75, 23);
-            this.button_Pause.TabIndex = 32;
-            this.button_Pause.Text = "Pause";
-            this.button_Pause.UseVisualStyleBackColor = true;
-            this.button_Pause.Click += new System.EventHandler(this.button_Pause_Click);
-            // 
-            // button_Stop
-            // 
-            this.button_Stop.Enabled = false;
-            this.button_Stop.Location = new System.Drawing.Point(89, 78);
-            this.button_Stop.Name = "button_Stop";
-            this.button_Stop.Size = new System.Drawing.Size(75, 23);
-            this.button_Stop.TabIndex = 33;
-            this.button_Stop.Text = "Stop";
-            this.button_Stop.UseVisualStyleBackColor = true;
-            this.button_Stop.Click += new System.EventHandler(this.button_Stop_Click);
+            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
+            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
+            this.findStrip2.Location = new System.Drawing.Point(7, 32);
+            this.findStrip2.Name = "findStrip2";
+            this.findStrip2.Size = new System.Drawing.Size(379, 25);
+            this.findStrip2.TabIndex = 31;
+            this.findStrip2.Text = "findStrip2";
+            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
             // 
             // fileInArchiveBindingSource
             // 
@@ -1088,17 +1099,6 @@ namespace EasyMYP
             this.dataGridViewTextBoxColumn4.ReadOnly = true;
             this.dataGridViewTextBoxColumn4.Width = 125;
             // 
-            // findStrip2
-            // 
-            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
-            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
-            this.findStrip2.Location = new System.Drawing.Point(7, 32);
-            this.findStrip2.Name = "findStrip2";
-            this.findStrip2.Size = new System.Drawing.Size(379, 25);
-            this.findStrip2.TabIndex = 31;
-            this.findStrip2.Text = "findStrip2";
-            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
-            // 
             // MainWindow
             // 
             this.AllowDrop = true;
@@ -1112,8 +1112,11 @@ namespace EasyMYP
             this.MinimumSize = new System.Drawing.Size(930, 530);
             this.Name = "MainWindow";
             this.Text = "EasyMYP";
+
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragDrop);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
+
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragEnter);
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
             this.panel_information.ResumeLayout(false);
@@ -1138,8 +1141,8 @@ namespace EasyMYP
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.panel_output.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

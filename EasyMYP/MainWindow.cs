@@ -145,42 +145,46 @@ namespace EasyMYP
             openArchiveDialog.Filter = "MYP Archives|*.myp";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
-                if (!SetOperationRunning()) return; //reset in eventhandler
-                resetOverall();
-                fileInArchiveBindingSource.Clear(); //Clean the filelisting
-                fileInArchiveDataGridView.DataSource = null; // switched by when Event_FileTableType.Finished is received.
-
-                string filename = openArchiveDialog.FileName; //get filename selected
-                int filenameStartPosition = filename.LastIndexOf('\\');
-                label_File_Value.Text = filename.Substring(filenameStartPosition + 1, filename.Length - filenameStartPosition - 1);
-
-                MypFileHandler = new MYPHandler.MYPHandler(filename
-                    , FileTableEventHandler, ExtractionEventHandler
-                    , hashDic);
-
-                if (EasyMypConfig.ExtractionPath != null)
-                {
-                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
-                }
-
-                statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
-                statusPB.Value = 0;
-                statusPB.Visible = true;
-
-                label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString("#,#");
-
-                MypFileHandler.Pattern = Pattern.Text;
-                t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
-                t_worker.Start();
-
-                //fileInArchiveDataGridView.Hide();
-
-                //Protected by isRunning
-                extractAllToolStripMenuItem.Enabled = true;
-                extractFileListToolStripMenuItem.Enabled = true;
-                extractSelectedToolStripMenuItem.Enabled = true;
-                replaceSelectedToolStripMenuItem.Enabled = true;
+                OpenArchive(openArchiveDialog.FileName);
             }
+        }
+
+        private void OpenArchive(string filename)
+        {
+            if (!SetOperationRunning()) return; //reset in eventhandler
+            resetOverall();
+            fileInArchiveBindingSource.Clear(); //Clean the filelisting
+            fileInArchiveDataGridView.DataSource = null; // switched by when Event_FileTableType.Finished is received.
+
+            int filenameStartPosition = filename.LastIndexOf('\\');
+            label_File_Value.Text = filename.Substring(filenameStartPosition + 1, filename.Length - filenameStartPosition - 1);
+
+            MypFileHandler = new MYPHandler.MYPHandler(filename
+                , FileTableEventHandler, ExtractionEventHandler
+                , hashDic);
+
+            if (EasyMypConfig.ExtractionPath != null)
+            {
+                MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+            }
+
+            statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
+            statusPB.Value = 0;
+            statusPB.Visible = true;
+
+            label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString("#,#");
+
+            MypFileHandler.Pattern = Pattern.Text;
+            t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
+            t_worker.Start();
+
+            //fileInArchiveDataGridView.Hide();
+
+            //Protected by isRunning
+            extractAllToolStripMenuItem.Enabled = true;
+            extractFileListToolStripMenuItem.Enabled = true;
+            extractSelectedToolStripMenuItem.Enabled = true;
+            replaceSelectedToolStripMenuItem.Enabled = true;
         }
 
         private void closeArchiveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -542,7 +546,7 @@ namespace EasyMYP
                 t_GeneratePat = new Thread(new ParameterizedThreadStart(hashCreator.Patterns));
                 t_GeneratePat.Start(patternDic);
 
-                
+
                 button_Pause.Enabled = true;
                 button_Stop.Enabled = true;
             }
@@ -864,52 +868,11 @@ namespace EasyMYP
         #endregion
 
 
-        int oldColumn = -1;
-        SortOrder oldSortOrder = SortOrder.None;
+        //int oldColumn = -1;
+        //SortOrder oldSortOrder = SortOrder.None;
         private void fileInArchiveDataGridView_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            // Check which column is selected, otherwise set NewColumn to null.
-            DataGridViewColumn newColumn =
-                fileInArchiveDataGridView.Columns[e.ColumnIndex];
 
-            ListSortDirection direction;
-
-            // If oldColumn is null, then the DataGridView is not currently sorted.
-            if (oldColumn != -1)
-            {
-                // Sort the same column again, reversing the SortOrder.
-                if (oldColumn == e.ColumnIndex &&
-                    oldSortOrder == SortOrder.Ascending)
-                {
-                    direction = ListSortDirection.Descending;
-                }
-                else
-                {
-                    // Sort a new column and remove the old SortGlyph.
-                    direction = ListSortDirection.Ascending;
-                    newColumn.HeaderCell.SortGlyphDirection = SortOrder.None;
-                }
-            }
-            else
-            {
-                direction = ListSortDirection.Ascending;
-            }
-
-            fileInArchiveDataGridView.Sort(newColumn, direction);
-
-            oldColumn = e.ColumnIndex;
-            if (direction == ListSortDirection.Ascending)
-            {
-                oldSortOrder = SortOrder.Ascending;
-            }
-            else
-            {
-                oldSortOrder = SortOrder.Descending;
-            }
-
-            newColumn.HeaderCell.SortGlyphDirection =
-                direction == ListSortDirection.Ascending ?
-                SortOrder.Ascending : SortOrder.Descending;
         }
 
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
@@ -958,23 +921,86 @@ namespace EasyMYP
         #endregion
 
         #region Drag & Drop region
-        private void fileInArchiveDataGridView_DragDrop(object sender, DragEventArgs e)
+        private void MainWindow_DragDrop(object sender, DragEventArgs e)
         {
+            object data = null;
+            string filename = null;
+            if ((data = e.Data.GetData(DataFormats.FileDrop)) != null)
+            {
+                if (data.GetType() == typeof(string[]))
+                {
+                    string[] filenames = (string[])data;
+
+                    if (filenames.Length != 1)
+                    {
+                        MessageBox.Show("This program cannot open more than one file at a time", "Impossible Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    filename = filenames[0];
+                    if (File.Exists(filename) && filename.Substring(filename.LastIndexOf('.')) == ".myp")
+                    {
+                        OpenArchive(filename);
+                    }
+                }
+            }
 
         }
+        private void MainWindow_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Link;
+            else
+                e.Effect = DragDropEffects.None;
+
+        }
+
 
         private void treeView_Archive_ItemDrag(object sender, ItemDragEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Item).fiaList, DragDropEffects.Copy);
-
             }
         }
+
 
         private void treeView_FileSystem_DragDrop(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent(typeof(List<FileInArchive>))) return;
+
+            List<FileInArchive> list = (List<FileInArchive>)e.Data.GetData(typeof(List<FileInArchive>));
+
+            if (list.Count > 0)
+            {
+                if (sender.GetType() == typeof(TreeView))
+                {
+                    TreeView tv = (TreeView)sender;
+
+                    if (tv.SelectedNode != null)
+                    {
+                        string path = tv.SelectedNode.FullPath;
+
+                        //Check if an extraction path is set (TODO: fix this small issue :) )
+                        EasyMypConfig.ExtractionPath = path;
+                        if (MypFileHandler != null)
+                        {
+                            MypFileHandler.ExtractionPath = path;
+                        }
+
+                        ExtractFiles(list);
+                    }
+                }
+            }
+        }
+
+        private void treeView_FileSystem_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(List<FileInArchive>)))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+                e.Effect = DragDropEffects.None;
         }
 
         #endregion
@@ -1127,9 +1153,5 @@ namespace EasyMYP
             about.Show();
         }
 
-        private void MainWindow_DragDrop(object sender, DragEventArgs e)
-        {
-
-        }
     }
 }

@@ -66,7 +66,17 @@ namespace EasyMYP
         public static void SystemNodeMouseClick(object sender,
             TreeNodeMouseClickEventArgs e)
         {
-            CustomTreeNode newSelected = (CustomTreeNode)e.Node;
+            NodeMouseEvent(e.Node);
+        }
+
+        //public static void SystemNodeHover(TreeNode eventNode)
+        //{
+        //    NodeMouseEvent(eventNode);
+        //}
+
+        public static void NodeMouseEvent(TreeNode eventNode)
+        {
+            CustomTreeNode newSelected = (CustomTreeNode)eventNode;
             if (!newSelected.clicked)
             {
                 newSelected.clicked = true;
@@ -77,12 +87,15 @@ namespace EasyMYP
 
                     foreach (DirectoryInfo dir in info.GetDirectories())
                     {
-                        CustomTreeNode node;
-                        node = new CustomTreeNode(dir.Name);
-                        node.Tag = dir;
-                        node.ImageIndex = 1;
-                        node.SelectedImageIndex = 1;
-                        e.Node.Nodes.Add(node);
+                        if ((dir.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
+                        {
+                            CustomTreeNode node;
+                            node = new CustomTreeNode(dir.Name);
+                            node.Tag = dir;
+                            node.ImageIndex = 1;
+                            node.SelectedImageIndex = 1;
+                            eventNode.Nodes.Add(node);
+                        }
                     }
 
                     foreach (FileInfo file in info.GetFiles())
@@ -92,8 +105,10 @@ namespace EasyMYP
                         node.Tag = file;
                         node.ImageIndex = 4;
                         node.SelectedImageIndex = 4;
-                        e.Node.Nodes.Add(node);
+                        eventNode.Nodes.Add(node);
                     }
+
+                    newSelected.Expand();
                 }
             }
         }

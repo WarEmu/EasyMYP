@@ -51,8 +51,8 @@ namespace MYPHandler
     /// </summary>
     class FileTable
     {
-        public long offset;
-        public long num_of_files;
+        //public long offset;
+        //public long num_of_files;
 
         public List<FileInArchive> files = new List<FileInArchive>();
     }
