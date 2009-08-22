@@ -30,7 +30,9 @@ namespace EasyMYP
     public partial class MainWindow : Form
     {
         #region Attributes
-        MYPHandler.MYPHandler MypFileHandler; //The class that does all the job of reading, extracting and writting to myp files
+        MYPHandler.MYPHandler CurrentMypFH; //The class that does all the job of reading, extracting and writting to myp files
+        SortedList<string, MYPHandler.MYPHandler> MypFHList = new SortedList<string, MYPHandler.MYPHandler>();
+
         public Thread t_worker; //worker thread because it is best that way so not to freeze the gui
         HashDictionary hashDic = new HashDictionary(); //The class that contains the dictionnary
         HashDictionary patternDic;
@@ -44,6 +46,9 @@ namespace EasyMYP
 
         #endregion
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -56,9 +61,27 @@ namespace EasyMYP
             OnNewExtractedEvent = TreatExtractionEvent;
             OnNewFileTableEvent = TreatFileTableEvent;
             OnNewFilenameTestEvent = TreatFilenameTestEvent;
+            OnLabelsReset = LabelsTextReset;
+            OnLabelUpdate = _LabelUpdate;
+            OnMenuActivation = _MenuActivation;
+            OnProgressBarVisibilityUpdate = _ProgressBarVisibilityUpdate;
 
             // Populate the system tree view
             TreeViewManager.PopulateSystemTreeNode(treeView_FileSystem);
+        }
+
+        /// <summary>
+        /// Destructor
+        /// </summary>
+        ~MainWindow()
+        {
+            for (int i = 0; i < MypFHList.Count; i++)
+            {
+                if (MypFHList.Values[i] != null)
+                {
+                    MypFHList.Values[i].Dispose();
+                }
+            }
         }
 
         /// <summary>
@@ -73,7 +96,20 @@ namespace EasyMYP
                 return false;
             }
             operationRunning = true;
+            // Disable all the necessary menues
+            // TODO: add the context menues to the disabled list (need a delegate)
+            MenuStateSwitch(new EasyMYPMenuActivationEvent(false));
+
             return true;
+        }
+
+        private void OperationFinished()
+        {
+            operationRunning = false;
+
+            // Reenable all the necessary menues
+            // TODO: add the context menues to the reenabled list
+            MenuStateSwitch(new EasyMYPMenuActivationEvent(true));
         }
 
         void LoadDictionnary(bool merge, string fileToMerge)
@@ -103,42 +139,11 @@ namespace EasyMYP
             hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
             avBar.Dispose();
 
-            operationRunning = false;
+            OperationFinished(); //valid here because we are waiting for the dialog
         }
 
         #region Menu
         #region Archive Menu
-
-        public void resetOverall()
-        {
-            if (t_worker != null)
-                t_worker.Abort();
-
-            if (MypFileHandler != null)
-                MypFileHandler.Dispose();
-
-            operationRunning = false;
-
-            label_File_Value.Text = "";
-            label_NewFiles_Value.Text = "0";
-            label_ModifiedFiles_Value.Text = "0";
-            label_EstimatedNumOfFiles_Value.Text = "0";
-            label_NumOfFiles_Value.Text = "0";
-            label_NumOfNamedFiles_Value.Text = "0";
-            label_ReadingErrors_Value.Text = "0";
-            label_UncompressedSize_Value.Text = "0";
-            label_ExtractedFiles_Value.Text = "0";
-            label_ExtractionErrors_Value.Text = "0";
-            fileInArchiveBindingSource.Clear(); //Clean the filelisting
-
-            extractAllToolStripMenuItem.Enabled = false;
-            extractFileListToolStripMenuItem.Enabled = false;
-            extractSelectedToolStripMenuItem.Enabled = false;
-            replaceSelectedToolStripMenuItem.Enabled = false;
-
-            statusPB.Visible = false;
-        }
-
         private void openArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -152,44 +157,49 @@ namespace EasyMYP
         private void OpenArchive(string filename)
         {
             if (!SetOperationRunning()) return; //reset in eventhandler
-            resetOverall();
-            fileInArchiveBindingSource.Clear(); //Clean the filelisting
+            ResetOverall(); // Huge problem here, resetOverall sets the operationRunning thingy to false... bad!
+            //fileInArchiveBindingSource.Clear(); //Clean the filelisting
             fileInArchiveDataGridView.DataSource = null; // switched by when Event_FileTableType.Finished is received.
 
-            int filenameStartPosition = filename.LastIndexOf('\\');
-            label_File_Value.Text = filename.Substring(filenameStartPosition + 1, filename.Length - filenameStartPosition - 1);
+            LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_File_Value
+                , filename.Substring(filename.LastIndexOf('\\') + 1)));
 
-            MypFileHandler = new MYPHandler.MYPHandler(filename
-                , FileTableEventHandler, ExtractionEventHandler
-                , hashDic);
+            if (!MypFHList.Keys.Contains(filename))
+            {
+                //If we haven't open the file yet, we open it, set it as current, add it to the list
+                CurrentMypFH = new MYPHandler.MYPHandler(filename
+                    , FileTableEventHandler, ExtractionEventHandler
+                    , hashDic);
+                MypFHList.Add(filename, CurrentMypFH); //Beware here, the filename needs to be the full filename! Do not change it!
+            }
+            else
+            {
+                //Otherwise we load the old file
+                CurrentMypFH = MypFHList[filename];
+            }
 
             if (EasyMypConfig.ExtractionPath != null)
             {
-                MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                CurrentMypFH.ExtractionPath = EasyMypConfig.ExtractionPath;
             }
 
-            statusPB.Maximum = (int)MypFileHandler.TotalNumberOfFiles;
-            statusPB.Value = 0;
-            statusPB.Visible = true;
+            ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
+                , true, (int)CurrentMypFH.TotalNumberOfFiles, 0));
 
-            label_EstimatedNumOfFiles_Value.Text = MypFileHandler.TotalNumberOfFiles.ToString("#,#");
+            //statusPB.Visible = true;
 
-            MypFileHandler.Pattern = Pattern.Text;
-            t_worker = new Thread(new ThreadStart(MypFileHandler.GetFileTable));
+            LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_EstimatedNumOfFiles_Value
+                , CurrentMypFH.TotalNumberOfFiles.ToString("#,#")));
+
+            CurrentMypFH.Pattern = Pattern.Text;
+            t_worker = new Thread(new ThreadStart(CurrentMypFH.GetFileTable));
             t_worker.Start();
 
-            //fileInArchiveDataGridView.Hide();
-
-            //Protected by isRunning
-            extractAllToolStripMenuItem.Enabled = true;
-            extractFileListToolStripMenuItem.Enabled = true;
-            extractSelectedToolStripMenuItem.Enabled = true;
-            replaceSelectedToolStripMenuItem.Enabled = true;
         }
 
         private void closeArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            resetOverall();
+            ResetOverall();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -288,7 +298,8 @@ namespace EasyMYP
                     MessageBox.Show("No new filenames.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-            operationRunning = false;
+
+            OperationFinished();
         }
 
         /// <summary>
@@ -308,7 +319,7 @@ namespace EasyMYP
 
                 if (!SetOperationRunning()) return; //reset in event handler
 
-                resetOverall();
+                ResetOverall();
                 foreach (string file in mypfiles)
                 {
                     scanFiles.Add(file);
@@ -318,14 +329,24 @@ namespace EasyMYP
                 statusPB.Value = 0;
                 statusPB.Visible = true;
 
-                MypFileHandler = new MYPHandler.MYPHandler(scanFiles[0]
-                    , null, ExtractionEventHandler
-                    , hashDic);
+                if (!MypFHList.Keys.Contains(scanFiles[0]))
+                {
+                    //If we haven't open the file yet, we open it, set it as current, add it to the list
+                    CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
+                        , FileTableEventHandler, ExtractionEventHandler
+                        , hashDic);
+                    MypFHList.Add(scanFiles[0], CurrentMypFH);
+                }
+                else
+                {
+                    //Otherwise we load the old file
+                    CurrentMypFH = MypFHList[scanFiles[0]];
+                }
 
                 scanFiles.RemoveAt(0);
 
-                MypFileHandler.Pattern = Pattern.Text;
-                t_worker = new Thread(new ThreadStart(MypFileHandler.ScanFileTable));
+                CurrentMypFH.Pattern = Pattern.Text;
+                t_worker = new Thread(new ThreadStart(CurrentMypFH.ScanFileTable));
                 t_worker.Start();
             }
         }
@@ -348,7 +369,7 @@ namespace EasyMYP
                 hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
                 avBar.Dispose();
 
-                operationRunning = false;
+                OperationFinished();
             }
         }
 
@@ -373,9 +394,9 @@ namespace EasyMYP
             {
                 EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
 
-                if (MypFileHandler != null)
+                if (CurrentMypFH != null)
                 {
-                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                    CurrentMypFH.ExtractionPath = EasyMypConfig.ExtractionPath;
                 }
             }
         }
@@ -388,84 +409,161 @@ namespace EasyMYP
         private void extractSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //Retrieve the selected file list
-            List<FileInArchive> fileList = new List<FileInArchive>();
+            SortedList<string, List<FileInArchive>> multiFileList = new SortedList<string, List<FileInArchive>>();
+
             foreach (DataGridViewRow theRow in fileInArchiveDataGridView.SelectedRows)
             {
                 if (theRow.DataBoundItem != null)
-                    fileList.Add((MYPHandler.FileInArchive)theRow.DataBoundItem);
+                {
+                    MYPHandler.FileInArchive fiaFile = (MYPHandler.FileInArchive)theRow.DataBoundItem;
+                    if (!multiFileList.Keys.Contains(fiaFile.sourceFileName))
+                    {
+                        multiFileList.Add(fiaFile.sourceFileName, new List<FileInArchive>());
+                    }
+                    multiFileList[fiaFile.sourceFileName].Add(fiaFile);
+                }
             }
 
-            ExtractFileList(fileList);
+            Thread t_multiExtract = new Thread(new ParameterizedThreadStart(MultiListExtraction));
+            t_multiExtract.Start(multiFileList);
         }
 
-        private void ExtractFiles(List<FileInArchive> fileList)
+        private void MultiListExtraction(object obj)
+        {
+            SortedList<string, List<FileInArchive>> multiFileList = (SortedList<string, List<FileInArchive>>)obj;
+
+            for (int i = 0; i < multiFileList.Count; i++)
+            {
+                if (MypFHList.Keys.Contains(multiFileList.Keys[i]))
+                {
+                    if (MypFHList[multiFileList.Keys[i]] != null)
+                    {
+                        ExtractFiles(MypFHList[multiFileList.Keys[i]], multiFileList.Values[i]);
+                    }
+                    while (operationRunning)
+                    {
+                        Thread.Sleep(10);
+                    }
+                }
+            }
+        }
+
+        private void ExtractFiles(MYPHandler.MYPHandler mypHandler
+            , List<FileInArchive> fileList)
         {
             //Check if an extraction path is set
-            if (EasyMypConfig.ExtractionPath == null)
+            if (EasyMypConfig.ExtractionPath == null || mypHandler != null && mypHandler.ExtractionPath == "")
             {
                 if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                 {
                     EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-                    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                    mypHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
                 }
                 else
                     return;
             }
 
-            if (MypFileHandler != null)
+            if (mypHandler != null)
             {
                 if (!SetOperationRunning()) return; //reset in event
 
-                statusPB.Value = 0;
-                statusPB.Maximum = fileList.Count;
-                statusPB.Visible = true;
+                ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
+                    , true, fileList.Count, 0));
 
-                t_worker = new Thread(new ParameterizedThreadStart(MypFileHandler.Extract));
+                t_worker = new Thread(new ParameterizedThreadStart(mypHandler.Extract));
                 t_worker.Start(fileList);
             }
         }
 
+        /// <summary>
+        /// Extracts now all the files that were loaded!
+        /// Beware!
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void extractAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //TODO: if extraction path is not set put an alert up ?
-            if (MypFileHandler != null)
+            Thread t_Extract = new Thread(new ParameterizedThreadStart(ThreadedExtractFiles));
+            t_Extract.Start(ExtractionType.All);
+        }
+
+        /// <summary>
+        /// Extracts all the new possible files!
+        /// Beware!
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonExtractNewFiles_Click(object sender, EventArgs e)
+        {
+            Thread t_Extract = new Thread(new ParameterizedThreadStart(ThreadedExtractFiles));
+            t_Extract.Start(ExtractionType.New);
+        }
+
+        private void buttonExtractModifiedFiles_Click(object sender, EventArgs e)
+        {
+            Thread t_Extract = new Thread(new ParameterizedThreadStart(ThreadedExtractFiles));
+            t_Extract.Start(ExtractionType.Modified);
+        }
+
+        enum ExtractionType
+        {
+            All,
+            Modified,
+            New
+        }
+
+        private void ThreadedExtractFiles(object obj)
+        {
+            for (int i = 0; i < MypFHList.Count; i++)
             {
-                //Redundant with the check done in ExtractFiles
-                //if (EasyMypConfig.ExtractionPath == null)
-                //{
-                //    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                //    {
-                //        EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-                //        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
-                //    }
-                //    else
-                //        return;
-                //}
-                ExtractFiles(MypFileHandler.archiveFileList); // set the operation flag
+                if (MypFHList.Values[i] != null)
+                {
+                    if ((ExtractionType)obj == ExtractionType.All)
+                    {
+                        ExtractFiles(MypFHList.Values[i], MypFHList.Values[i].archiveFileList); // set the operation flag
+                    }
+                    else if ((ExtractionType)obj == ExtractionType.Modified)
+                    {
+                        ExtractFiles(MypFHList.Values[i], MypFHList.Values[i].archiveModifiedFileList); // set the operation flag
+                    }
+                    else
+                    {
+                        ExtractFiles(MypFHList.Values[i], MypFHList.Values[i].archiveNewFileList); // set the operation flag
+                    }
+                    while (operationRunning)
+                    {
+                        Thread.Sleep(10);
+                    }
+                }
             }
         }
 
         private void extractFileListToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MypFileHandler != null)
+            if (CurrentMypFH != null)
             {
                 if (EasyMypConfig.ExtractionPath == null)
                 {
                     if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                     {
                         EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-                        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
+                        CurrentMypFH.ExtractionPath = EasyMypConfig.ExtractionPath;
                     }
                     else
                         return;
                 }
-                MypFileHandler.DumpFileList();
+                CurrentMypFH.DumpFileList();
             }
         }
 
+        /// <summary>
+        /// Todo: Correct this section so that it replaces the file in the correct myp
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void replaceSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MypFileHandler != null)
+            if (CurrentMypFH != null)
             {
                 if (replaceFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -473,38 +571,12 @@ namespace EasyMYP
 
                     if (!SetOperationRunning()) return;
 
-                    MypFileHandler.ReplaceFile((MYPHandler.FileInArchive)fileInArchiveBindingSource.Current
+                    CurrentMypFH.ReplaceFile((MYPHandler.FileInArchive)fileInArchiveBindingSource.Current
                         , new FileStream(filename, FileMode.Open));
 
-                    operationRunning = false;
+                    OperationFinished();
                 }
             }
-        }
-
-        private void buttonExtractNewFiles_Click(object sender, EventArgs e)
-        {
-            //if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-            //{
-            //    EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-            //    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
-            //    if (MypFileHandler != null)
-            //    {
-            ExtractFiles(MypFileHandler.archiveNewFileList); //set operation flag
-            //    }
-            //}
-        }
-
-        private void buttonExtractModifiedFiles_Click(object sender, EventArgs e)
-        {
-            //if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-            //{
-            //    EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-            //    MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
-            //    if (MypFileHandler != null)
-            //    {
-            ExtractFiles(MypFileHandler.archiveModifiedFileList); //set operation flag
-            //    }
-            //}
         }
 
         private void generatePatternButton_Click(object sender, EventArgs e)
@@ -519,7 +591,7 @@ namespace EasyMYP
 
             hashCreator.SavePatterns(dlg.FileName);
 
-            operationRunning = false;
+            OperationFinished();
         }
 
         public Thread t_GeneratePat;
@@ -608,536 +680,13 @@ namespace EasyMYP
 
         private void Update_TreeView()
         {
-            TreeViewManager.PopulateArchiveTreeNode(
-                (SortableBindingList<FileInArchive>)fileInArchiveBindingSource.DataSource
+            TreeViewManager.PopulateArchiveTreeNode(CurrentMypFH.fullMypFileName
+                , CurrentMypFH.archiveFileList
                 , treeView_Archive);
         }
         #endregion
 
-        #region Delegates for cross threading
-        delegate void del_NewFileTableEvent(MYPHandler.MYPFileTableEventArgs e);
-        del_NewFileTableEvent OnNewFileTableEvent;
 
-        delegate void del_NewExtractedEvent(MYPHandler.MYPFileEventArgs e);
-        del_NewExtractedEvent OnNewExtractedEvent;
-
-        delegate void del_NewFilenameTestEvent(nsHashCreator.MYPFilenameTestEventArgs e);
-        del_NewFilenameTestEvent OnNewFilenameTestEvent;
-        #endregion
-
-        #region Event Treatment
-        #region New File
-        /// <summary>
-        /// Receive all events related to the file table entries
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">event args</param>
-        private void FileTableEventHandler(object sender, MYPHandler.MYPFileTableEventArgs e)
-        {
-            //Check if an invoke is required by selecting a random component
-            //that might be updated by this event
-            if (label_NumOfFiles_Value.InvokeRequired)
-            {
-                Invoke(OnNewFileTableEvent, e);
-            }
-            else
-            {
-                TreatFileTableEvent(e);
-            }
-        }
-
-        int modulus = 0; //an int to not invoke the winform update every time
-        /// <summary>
-        /// Treats an event in the UI thread
-        /// </summary>
-        /// <param name="e">event arguments</param>
-        private void TreatFileTableEvent(MYPHandler.MYPFileTableEventArgs e)
-        {
-            modulus++;
-            if (e.Type == Event_FileTableType.FileError)
-            {
-                label_ReadingErrors_Value.Text = MypFileHandler.Error_FileEntryNumber.ToString();
-            }
-            else if (e.Type == Event_FileTableType.NewFile)
-            {
-                if (modulus % 1000 == 0)
-                {
-                    Update_OnFileTableEvent();
-                }
-                FileListing_Add(e.ArchFile);
-            }
-            else if (e.Type == Event_FileTableType.UpdateFile)
-            {
-                if (modulus % 1000 == 0)
-                {
-                    Update_OnFileTableEvent();
-                }
-            }
-            else if (e.Type == Event_FileTableType.Finished)
-            {
-                //Final update
-                Update_OnFileTableEvent();
-                if (MypFileHandler.archiveModifiedFileList.Count > 0 || MypFileHandler.archiveNewFileList.Count > 0)
-                {
-                    hashDic.SaveHashList();
-                }
-                fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
-                //fileInArchiveDataGridView.Show();
-                operationRunning = false;
-                Update_TreeView();
-            }
-        }
-
-        /// <summary>
-        /// Updates all the labels regarding file table entries and progress bar
-        /// </summary>
-        private void Update_OnFileTableEvent()
-        {
-            label_NumOfFiles_Value.Text = MypFileHandler.NumberOfFilesFound.ToString("#,#");
-            label_NumOfNamedFiles_Value.Text = MypFileHandler.NumberOfFileNamesFound.ToString("#,#");
-            label_UncompressedSize_Value.Text = MypFileHandler.UnCompressedSize.ToString("#,#");
-            label_ModifiedFiles_Value.Text = MypFileHandler.archiveModifiedFileList.Count.ToString("#,#");
-            label_NewFiles_Value.Text = MypFileHandler.archiveNewFileList.Count.ToString("#,#");
-
-            if (MypFileHandler.NumberOfFilesFound == MypFileHandler.TotalNumberOfFiles)
-            {
-                statusPB.Visible = false;
-            }
-            else
-            {
-                statusPB.Value = (int)MypFileHandler.NumberOfFilesFound;
-            }
-        }
-
-        #endregion
-
-        #region Extraction Event Treatment
-        private void ExtractionEventHandler(object sender, MYPHandler.MYPFileEventArgs e)
-        {
-            if (label_ExtractionErrors_Text.InvokeRequired)
-            {
-                Invoke(OnNewExtractedEvent, e);
-            }
-            else
-            {
-                TreatExtractionEvent(e);
-            }
-        }
-
-        /// <summary>
-        /// Treat file extraction events in the UI thread
-        /// </summary>
-        /// <param name="e"></param>
-        private void TreatExtractionEvent(MYPHandler.MYPFileEventArgs e)
-        {
-            switch (e.State)
-            {
-                case Event_ExtractionType.ExtractionFinished:
-                    {
-                        statusPB.Visible = false;
-                        operationRunning = false;
-                        UpdateLabel_OnExtraction(e.Value);
-                        break;
-                    }
-                case Event_ExtractionType.FileExtractionError:
-                    {
-                        statusPB.Value = (int)e.Value;
-                        UpdateLabel_OnExtractionError(e.Value);
-                        break;
-                    }
-                case Event_ExtractionType.FileExtracted:
-                    {
-                        statusPB.Value = (int)e.Value;
-                        UpdateLabel_OnExtraction(e.Value);
-                        break;
-                    }
-                case Event_ExtractionType.Scanning:
-                    {
-                        statusPB.Value += 1;
-                        if (scanFiles.Count != 0)
-                        {
-                            MypFileHandler = new MYPHandler.MYPHandler(scanFiles[0]
-                                , null, ExtractionEventHandler
-                                , hashDic);
-
-                            scanFiles.RemoveAt(0);
-
-                            MypFileHandler.Pattern = Pattern.Text;
-                            t_worker = new Thread(new ThreadStart(MypFileHandler.ScanFileTable));
-                            t_worker.Start();
-                        }
-                        else
-                        {
-                            resetOverall();
-                            statusPB.Visible = false;
-                            operationRunning = false;
-                        }
-                        break;
-                    }
-            }
-        }
-
-        private void UpdateLabel_OnExtraction(long numExtracted)
-        {
-            label_ExtractedFiles_Value.Text = numExtracted.ToString();
-        }
-
-        private void UpdateLabel_OnExtractionError(long numError)
-        {
-            label_ExtractionErrors_Value.Text = numError.ToString();
-        }
-
-        #endregion
-
-        #region Filename Tests
-        /// <summary>
-        /// Receive all events related to the file table entries
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">event args</param>
-        private void FilenameTestEventHandler(object sender, nsHashCreator.MYPFilenameTestEventArgs e)
-        {
-            //Check if an invoke is required by selecting a random component
-            //that might be updated by this event
-            if (label_NumOfFiles_Value.InvokeRequired)
-            {
-                Invoke(OnNewFilenameTestEvent, e);
-            }
-            else
-            {
-                TreatFilenameTestEvent(e);
-            }
-        }
-
-        /// <summary>
-        /// Treats an event in the UI Thread. It calls the method corresponding to the event type
-        /// </summary>
-        /// <param name="e">event arguments</param>
-        private void TreatFilenameTestEvent(nsHashCreator.MYPFilenameTestEventArgs e)
-        {
-            switch (e.State)
-            {
-                case Event_FilenameTestType.TestFinished:
-                    {
-                        hashCreator.event_FilenameTest -= FilenameTestEventHandler;
-                        operationRunning = false;
-                        statusPB.Visible = false;
-                        if (e.Value != 0)
-                            MessageBox.Show("You just found " + e.Value + " new filenames.", "Newly found filenames!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        else
-                            MessageBox.Show("No new filenames.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        break;
-                    }
-                case Event_FilenameTestType.TestRunning:
-                    {
-                        statusPB.Value += (int)e.Value;
-                        break;
-                    }
-                case Event_FilenameTestType.PatternRunning:
-                    {
-                        lblGeneratePat.Text = e.Value.ToString() + " %";
-                        break;
-                    }
-                case Event_FilenameTestType.PatternFinished:
-                    {
-                        lblGeneratePat.Text = "Done";
-                        if (e.Value != 0)
-                        {
-                            patternDic.SaveHashList("Hash/PatternDic.txt");
-                            hashDic.MergeHashList("Hash/PatternDic.txt");
-                            MessageBox.Show("Pattern Matching just found " + e.Value + " new filenames.", "Newly found filenames!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        }
-                        else
-                            MessageBox.Show("No new filenames through Pattern matching.", "No new filenames", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        hashCreator.event_FilenameTest -= FilenameTestEventHandler;
-                        t_GeneratePat = null;
-                        break;
-                    }
-            }
-        }
-        #endregion
-
-        #region Error Table Entry
-        private void Error_TableEntry(FileInArchive file)
-        {
-
-        }
-
-        #endregion
-
-
-        //int oldColumn = -1;
-        //SortOrder oldSortOrder = SortOrder.None;
-        private void fileInArchiveDataGridView_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-
-        }
-
-        private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            if (MypFileHandler != null)
-                MypFileHandler.Dispose();
-            t_worker.Abort();
-
-            if (hashDic.needsSave == true)
-            {
-                avBar = new AvancementBar();
-                avBar.Text = "Saving hash list ...";
-                hashDic.HashEvent += avBar.UpdateDictionaryEventHandler;
-                t_worker = new Thread(new ThreadStart(hashDic.SaveHashList));
-                t_worker.Start();
-
-                avBar.ShowDialog();
-                hashDic.HashEvent -= avBar.UpdateDictionaryEventHandler;
-                avBar.Dispose();
-            }
-            Application.Exit();
-        }
-
-        private void findStrip_ItemFound(object sender, ItemFoundEventArgs e)
-        {
-            // If value found, select row
-            if (e.Index >= 0)
-            {
-                this.fileInArchiveDataGridView.ClearSelection();
-                this.fileInArchiveDataGridView.Rows[e.Index].Selected = true;
-
-                // Change current list data source item
-                // (to ensure currency across all controls
-                // bound to this BindingSource)
-                //this.fileInArchiveDataGridView.Po = e.Index;
-                this.fileInArchiveDataGridView.CurrentCell = this.fileInArchiveDataGridView.Rows[e.Index].Cells[0];
-            }
-        }
-
-        private void treeView_FileSystem_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            TreeViewManager.SystemNodeMouseClick(sender, e);
-        }
-
-
-        #endregion
-
-        #region Drag & Drop region
-        private void MainWindow_DragDrop(object sender, DragEventArgs e)
-        {
-            object data = null;
-            string filename = null;
-            if ((data = e.Data.GetData(DataFormats.FileDrop)) != null)
-            {
-                if (data.GetType() == typeof(string[]))
-                {
-                    string[] filenames = (string[])data;
-
-                    if (filenames.Length != 1)
-                    {
-                        MessageBox.Show("This program cannot open more than one file at a time", "Impossible Operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    filename = filenames[0];
-                    if (File.Exists(filename) && filename.Substring(filename.LastIndexOf('.')) == ".myp")
-                    {
-                        OpenArchive(filename);
-                    }
-                }
-            }
-
-        }
-        private void MainWindow_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Link;
-            else
-                e.Effect = DragDropEffects.None;
-
-        }
-
-
-        private void treeView_Archive_ItemDrag(object sender, ItemDragEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Item).fiaList, DragDropEffects.Copy);
-            }
-        }
-
-
-        private void treeView_FileSystem_DragDrop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(typeof(List<FileInArchive>))) return;
-
-            List<FileInArchive> list = (List<FileInArchive>)e.Data.GetData(typeof(List<FileInArchive>));
-
-            if (list.Count > 0)
-            {
-                if (sender.GetType() == typeof(TreeView))
-                {
-                    TreeView tv = (TreeView)sender;
-
-                    if (tv.SelectedNode != null)
-                    {
-                        string path = tv.SelectedNode.FullPath;
-
-                        //Check if an extraction path is set (TODO: fix this small issue :) )
-                        EasyMypConfig.ExtractionPath = path;
-                        if (MypFileHandler != null)
-                        {
-                            MypFileHandler.ExtractionPath = path;
-                        }
-
-                        ExtractFiles(list);
-                    }
-                }
-            }
-        }
-
-        private void treeView_FileSystem_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(typeof(List<FileInArchive>)))
-            {
-                e.Effect = DragDropEffects.Copy;
-            }
-            else
-                e.Effect = DragDropEffects.None;
-        }
-
-        #endregion
-
-        #region TreeView Management
-
-        private void treeView_Archive_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                ((TreeView)sender).DoDragDrop(((FiaTreeNode)e.Node).fiaList, DragDropEffects.Copy);
-            }
-            else if (e.Button == MouseButtons.Right)
-            {
-                treeView_Archive.SelectedNode = e.Node;
-            }
-        }
-
-        private void treeView_Archive_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (treeView_Archive.SelectedNode != null && e.Button == MouseButtons.Middle)
-            {
-                treeView_Archive.SelectedNode = null;
-            }
-        }
-
-        private void contextMenuStripFileSystemTreeView_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-            if (e.ClickedItem.Text == "Extract")
-            {
-                if (treeView_Archive.SelectedNode != null)
-                {
-                    ExtractFileList(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList);
-                }
-                //}
-                //else if (e.ClickedItem.Text == "Extract All")
-                //{
-                else
-                {
-                    List<FileInArchive> fiaList = new List<FileInArchive>();
-                    for (int i = 0; i < treeView_Archive.Nodes.Count; i++)
-                    {
-                        fiaList.AddRange(((FiaTreeNode)treeView_Archive.Nodes[i]).fiaList);
-                    }
-                    ExtractFileList(fiaList);
-                }
-            }
-            else if (e.ClickedItem.Text == "Sort")
-            {
-                // This is quite problematic since we can't just sort a node
-                // but we have to sort the whole tree => can take a very long time
-                // and freeze the window
-                //treeView_Archive.Sort();
-                treeView_Archive.BeginUpdate();
-                if (treeView_Archive.SelectedNode == null)
-                {
-                    SortNodes(treeView_Archive.Nodes, false);
-                }
-                else
-                {
-                    SortNodes(treeView_Archive.SelectedNode.Nodes, false);
-                }
-                treeView_Archive.EndUpdate();
-            }
-            else if (e.ClickedItem.Text == "Recursive Sort")
-            {
-                // This is quite problematic since we can't just sort a node
-                // but we have to sort the whole tree => can take a very long time
-                // and freeze the window
-                //treeView_Archive.Sort();
-                treeView_Archive.BeginUpdate();
-                if (treeView_Archive.SelectedNode == null)
-                {
-                    SortNodes(treeView_Archive.Nodes, true);
-                }
-                else
-                {
-                    SortNodes(treeView_Archive.SelectedNode.Nodes, true);
-                }
-                treeView_Archive.EndUpdate();
-            }
-        }
-
-        /// <summary>
-        /// Sorts the node in a node collection
-        /// </summary>
-        /// <param name="nodeCollection"></param>
-        private void SortNodes(TreeNodeCollection nodeCollection, bool recursive)
-        {
-            ArrayList list = new ArrayList(nodeCollection.Count);
-            foreach (TreeNode node in nodeCollection)
-            {
-                if (recursive && node.Nodes.Count > 0)
-                {
-                    SortNodes(node.Nodes, recursive);
-                }
-                list.Add(node);
-            }
-            NodeSorter ns = new NodeSorter();
-            list.Sort(ns);
-
-            nodeCollection.Clear();
-            foreach (TreeNode node in list)
-            {
-                nodeCollection.Add(node);
-            }
-        }
-
-        private void ExtractFileList(List<FileInArchive> fileList)
-        {
-            if (fileList.Count > 0)
-            {
-                if (MypFileHandler != null)
-                {
-                    // operation lock is put by 'extract Files'
-                    //if (EasyMypConfig.ExtractionPath == null)
-                    //{
-                    //    if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
-                    //    {
-                    //        EasyMypConfig.ExtractionPath = folderBrowserDialog1.SelectedPath;
-                    //        MypFileHandler.ExtractionPath = EasyMypConfig.ExtractionPath;
-                    //    }
-                    //    else
-                    //        return;
-                    //}
-                    ExtractFiles(fileList);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select some files to extract", "Select Files", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-
-
-        #endregion
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1153,5 +702,13 @@ namespace EasyMYP
             about.Show();
         }
 
+        private void treeView_Archive_MouseUp(object sender, MouseEventArgs e)
+        {
+            treeView_Archive.SelectedNode = treeView_Archive.GetNodeAt(treeView_Archive.PointToClient(Control.MousePosition));
+            if (treeView_Archive.SelectedNode != null)
+            {
+                ((TreeView)sender).DoDragDrop(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList, DragDropEffects.Copy);
+            }
+        }
     }
 }

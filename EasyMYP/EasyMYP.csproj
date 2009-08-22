@@ -82,6 +82,9 @@
     <Compile Include="MainWindow.Designer.cs">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="MainWindow_Delegates_Events.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MySettings.cs" />
     <Compile Include="Preferences.cs">
       <SubType>Form</SubType>

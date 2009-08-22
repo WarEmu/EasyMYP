@@ -31,6 +31,7 @@ namespace MYPHandler
         public byte[] metadata;
         public byte[] data;
         public byte[] data_start_200 = new byte[200];
+        public string sourceFileName = "";
         private FileInArchiveState state = FileInArchiveState.UNCHANGED;
 
         #region Properties
@@ -42,19 +43,6 @@ namespace MYPHandler
         public string Extension { get { return descriptor.extension; } }
         public FileInArchiveState State { get { return state; } set { state = value; } }
         #endregion
-    }
-
-    /// <summary>
-    /// An object that enables to create sub list of archive files depending on the file table
-    /// it was found in
-    /// (not used)
-    /// </summary>
-    class FileTable
-    {
-        //public long offset;
-        //public long num_of_files;
-
-        public List<FileInArchive> files = new List<FileInArchive>();
     }
 
     /// <summary>
@@ -166,7 +154,7 @@ namespace MYPHandler
         HashDictionary hashDictionary; //the dictionnary
         public FileStream archiveStream; //the stream to read data from
         string currentMypFileName; //the current filename of the myp file being read
-        string fullMypFileName;
+        public string fullMypFileName;
         string mypPath; //the path of the filename
         public List<FileInArchive> archiveFileList = new List<FileInArchive>(); //contains all the files information, but not the data because of memory limitation on a 32Bits system
         public List<FileInArchive> archiveNewFileList = new List<FileInArchive>();
@@ -352,6 +340,7 @@ namespace MYPHandler
 
                     myArchFile = new FileInArchive();
                     myArchFile.descriptor = new FileInArchiveDescriptor(bufferFileDesc);
+                    myArchFile.sourceFileName = fullMypFileName;
 
                     myArchFile.descriptor.fileTableEntryPosition = currentReadingPosition;
 
@@ -413,7 +402,7 @@ namespace MYPHandler
                                     {
                                         TreatHeader(myArchFile);
                                     }
-                                    catch (Exception )
+                                    catch (Exception)
                                     {
                                         Error_FileTableEntry(myArchFile);
                                     }
@@ -437,7 +426,7 @@ namespace MYPHandler
                                     TriggerFileTableEvent(new MYPFileTableEventArgs(Event_FileTableType.UpdateFile, null));
                                 }
                             }
-                            catch (Exception )
+                            catch (Exception)
                             {
                                 Error_FileTableEntry(myArchFile);
                             }
@@ -477,7 +466,7 @@ namespace MYPHandler
                     inf.SetInput(archFile.data_start_200);
                     inf.Inflate(output_buffer);
                 }
-                catch (Exception )
+                catch (Exception)
                 {
                     Error_FileTableEntry(archFile);
                 }
@@ -695,7 +684,7 @@ namespace MYPHandler
 
                     output_buffer = outputMS.GetBuffer();
                 }
-                catch (Exception )
+                catch (Exception)
                 {
 
                 }
@@ -727,7 +716,7 @@ namespace MYPHandler
             {
                 archiveStream = new FileStream(fullMypFileName, FileMode.Open, FileAccess.ReadWrite);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw new Exception("You need to stop application currently using the following file: " + fullMypFileName);
             }

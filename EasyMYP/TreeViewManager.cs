@@ -69,11 +69,6 @@ namespace EasyMYP
             NodeMouseEvent(e.Node);
         }
 
-        //public static void SystemNodeHover(TreeNode eventNode)
-        //{
-        //    NodeMouseEvent(eventNode);
-        //}
-
         public static void NodeMouseEvent(TreeNode eventNode)
         {
             CustomTreeNode newSelected = (CustomTreeNode)eventNode;
@@ -113,18 +108,17 @@ namespace EasyMYP
             }
         }
 
-        // not need
-        public static void ArchiveNodeMouseClick(object sender,
-            TreeNodeMouseClickEventArgs e)
-        {
-        }
-
-        public static void PopulateArchiveTreeNode(SortableBindingList<FileInArchive> FIAList, TreeView tv)
+        public static void ClearFIA(TreeView tv)
         {
             tv.Nodes.Clear(); // By changing the FileInArchive format, we would not need to clear this anymore
             // since we could actually store the source filename of the fileinarchive
             // thus allowing extraction even though we opened another file.
-            FiaTreeNode root = new FiaTreeNode("root");
+        }
+
+        public static void PopulateArchiveTreeNode(string sourceFileName, List<FileInArchive> FIAList, TreeView tv)
+        {
+            FiaTreeNode root = new FiaTreeNode(sourceFileName.Substring(sourceFileName.LastIndexOf('\\') + 1));
+            root.Tag = sourceFileName;
             tv.Nodes.Add(root);
 
             for (int i = 0; i < FIAList.Count; i++)
@@ -154,6 +148,7 @@ namespace EasyMYP
                 {
                     //We create the level 0 node
                     tn = new FiaTreeNode(pathes[0]);
+                    tn.Tag = sourceFileName;
                     root.Nodes.Add(tn); // add it to the treview
                     if (pathes.Length > 1) //Check that this node has childs nodes
                     {
