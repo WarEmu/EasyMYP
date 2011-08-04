@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
-using WarhammerOnlineHash;
+using HasherFunctions;
 using nsHashDictionary;
 
 namespace nsHashCreator
@@ -197,7 +197,7 @@ namespace nsHashCreator
         void TreatPattern()
         {
             string line;
-            WarHasher warhasher = new WarHasher();
+            Hasher warhasher = new Hasher();
             long foundInThread = 0;
             long i = 0;
             while ((line = getPattern()) != null)
@@ -215,7 +215,7 @@ namespace nsHashCreator
                 }
         }
 
-        long TreatPatternLine(string line, WarHasher warhash)
+        long TreatPatternLine(string line, Hasher warhash)
         {
             long result = 0;
             string[] spl_str = line.Replace("[0-9]", "|").Split('|');
@@ -245,7 +245,7 @@ namespace nsHashCreator
                     }
                     cur_str += spl_str[occurence];
 
-                    warhash.Hash(cur_str, 0xDEADBEEF);
+                    warhash.Hash(cur_str, 0xDEADBEEF, Hasher.HasherType.WAR);
                     // Thread-safe ???
                     if (patternTestHashDic.UpdateHash(warhash.ph, warhash.sh, cur_str, 0) == UpdateResults.NAME_UPDATED)
                         result++;
@@ -324,7 +324,7 @@ namespace nsHashCreator
             long result = 0;
             if (File.Exists(fullFileNameFile))
             {
-                WarHasher warhash = new WarHasher();
+                Hasher warhash = new Hasher();
 
                 //Read the file
                 FileStream fs = new FileStream(fullFileNameFile, FileMode.Open);
@@ -363,7 +363,7 @@ namespace nsHashCreator
                 while ((filename = GetFileName_ParseFilenames()) != null)
                 {
 
-                    warhash.Hash(filename, 0xDEADBEEF);
+                    warhash.Hash(filename, 0xDEADBEEF, Hasher.HasherType.WAR);
                     UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, filename, 0);
                     if (found == UpdateResults.NAME_UPDATED)
                         result++;
@@ -510,7 +510,7 @@ namespace nsHashCreator
         private void calc(object parameter)
         {
 
-            WarHasher warhash = new WarHasher();
+            Hasher warhash = new Hasher();
             HashSet<string> dirList = ((ThreadParam)parameter).dirList;
             HashSet<string> filenameList = ((ThreadParam)parameter).filenameList;
             HashSet<string> extensionList = ((ThreadParam)parameter).extensionList;
@@ -556,7 +556,7 @@ namespace nsHashCreator
                             cur_str += "." + extension;
 
                         cur_str = cur_str.Replace('\\', '/').ToLower();
-                        warhash.Hash(cur_str, 0xDEADBEEF);
+                        warhash.Hash(cur_str, 0xDEADBEEF, Hasher.HasherType.WAR);
                         // not that sure if UpdateHash is really Thread Safe...
                         UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
                         if (found == UpdateResults.NAME_UPDATED)
