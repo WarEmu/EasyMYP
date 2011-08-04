@@ -1,16 +1,34 @@
 
-namespace WarhammerOnlineHash
+namespace HasherFunctions
 {
-    public class WarHasher
+    public partial class Hasher
     {
+        public enum HasherType
+        {
+            WAR,
+            TOR
+        }
+
         uint edx = 0, eax, esi, ebx = 0;
         uint edi, ecx;
 
         public uint sh, ph;
 
-        string str_calculating = "";
+        //string str_calculating = "";
 
-        public void Hash(string s, uint seed)
+        public void Hash(string s, uint seed, HasherType typ)
+        {
+            if (typ == HasherType.TOR)
+            {
+                HashSWTOR(s, seed);
+            }
+            else
+            {
+                HashWAR(s, seed);
+            }
+        }
+
+        private void HashWAR(string s, uint seed)
         {
             eax = ecx = edx = ebx = esi = edi = 0;
             ebx = edi = esi = (uint)s.Length + seed;
