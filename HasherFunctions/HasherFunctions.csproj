@@ -8,7 +8,7 @@
     <ProjectGuid>{9DC94530-A111-4FF7-B88F-BD9A8AC3E035}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HasherFunctions</RootNamespace>
+    <RootNamespace>nsHasherFunctions</RootNamespace>
     <AssemblyName>WarhammerOnlineHash</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

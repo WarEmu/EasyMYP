@@ -1,5 +1,5 @@
 
-namespace HasherFunctions
+namespace nsHasherFunctions
 {
     public partial class Hasher
     {
@@ -15,10 +15,16 @@ namespace HasherFunctions
         public uint sh, ph;
 
         //string str_calculating = "";
+        private HasherType hasherType = HasherType.WAR;
 
-        public void Hash(string s, uint seed, HasherType typ)
+        public Hasher(HasherType typ)
         {
-            if (typ == HasherType.TOR)
+            hasherType = typ;
+        }
+
+        public void Hash(string s, uint seed)
+        {
+            if (hasherType == HasherType.TOR)
             {
                 HashSWTOR(s, seed);
             }
