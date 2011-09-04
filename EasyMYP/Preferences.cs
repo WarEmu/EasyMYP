@@ -45,7 +45,7 @@ namespace EasyMYP
             }
             if (dropdownlist_MaxCombinationPerPattern.SelectedItem != null)
             {
-                nsHashCreator.HashCreatorConfig.MaxCombinationPerPattern = (int)dropdownlist_MaxCombinationPerPattern.SelectedItem;
+                nsHashCreator.HashCreatorConfig.MaxCombinationPerPattern = int.Parse((string)dropdownlist_MaxCombinationPerPattern.SelectedItem);
             }
             DialogResult = DialogResult.OK;
             Close();

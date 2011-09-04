@@ -389,6 +389,128 @@ namespace nsHashCreator
 
                     foreach (KeyValuePair<string, Boolean> file in foundNames)
                         if (file.Value == true)
+                        {
+                            warhash.Hash(file.Key, 0xDEADBEEF);
+                            swf.WriteLine("{0}#{1}#{2}", warhash.ph, warhash.sh, file.Key);
+                        }
+                        else
+                        {
+                            //this is a quick and dirty fix to get some more debug info
+                            // to be removed in the future !!!
+                            warhash.Hash(file.Key, 0xDEADBEEF);
+                            swnf.WriteLine("{0}#{1}#{2}", warhash.ph, warhash.sh, file.Key);
+                            //swnf.WriteLine(file.Key);
+                        }
+
+                    swnf.Close();
+                    swf.Close();
+                    ofsFound.Close();
+                    ofsNotFound.Close();
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Tries all filenames (complete path) included in the fullFileNameFile file.
+        /// </summary>
+        /// <param name="fullFileNameFile"></param>
+        /// <returns> number of newly found filenames</returns>
+        public long ParseDirFilenames(string fileNameFile, string dirNameFile)
+        {
+            Start();
+            //hashDic.CreateHelpers();
+            long result = 0;
+            if (File.Exists(fileNameFile) && File.Exists(dirNameFile))
+            {
+                Hasher warhash = new Hasher(hasherType);
+
+                //Read the file
+                FileStream fs = new FileStream(fileNameFile, FileMode.Open);
+                StreamReader fs_reader = new StreamReader(fs);
+                FileStream ds = new FileStream(dirNameFile, FileMode.Open);
+                StreamReader ds_reader = new StreamReader(ds);
+
+                HashSet<string> fileList = new HashSet<string>();
+                HashSet<string> dirList = new HashSet<string>();
+                HashSet<string> fullFileList = new HashSet<string>();
+
+                string line;
+                while ((line = fs_reader.ReadLine()) != null)
+                    fileList.Add(line.ToLower().Replace('\\', '/'));
+
+                fs_reader.Close();
+                fs.Close();
+
+                while ((line = ds_reader.ReadLine()) != null)
+                    dirList.Add(line.ToLower().Replace('\\', '/'));
+
+                ds_reader.Close();
+                ds.Close();
+
+                // strip input file from duplicates.
+                File.Delete(fileNameFile);
+                fs = new FileStream(fileNameFile, FileMode.Create);
+                StreamWriter fs_writer = new StreamWriter(fs);
+
+                foreach (string file in fileList)
+                    fs_writer.WriteLine(file);
+
+                fs_writer.Close();
+                fs.Close();
+
+                // strip input dir file from duplicates.
+                File.Delete(dirNameFile);
+                ds = new FileStream(dirNameFile, FileMode.Create);
+                StreamWriter ds_writer = new StreamWriter(ds);
+
+                foreach (string dir in dirList)
+                    ds_writer.WriteLine(dir);
+
+                ds_writer.Close();
+                ds.Close();
+
+                //generate the whole dir / filename listing possible
+                foreach (string d in dirList)
+                {
+                    foreach (string f in fileList)
+                    {
+                        line = d + '/' + f;
+                        line = line.Replace("//","/");
+                        fullFileList.Add( line);
+                    }
+                }
+
+                foundNames = new Dictionary<string, bool>();
+
+                foreach (string fn in fullFileList)
+                {
+                    foundNames[fn] = false;
+                }
+
+                //Just in case someday we want to multi thread.
+                parseFileList = fullFileList.GetEnumerator();
+                string filename;
+                while ((filename = GetFileName_ParseFilenames()) != null)
+                {
+
+                    warhash.Hash(filename, 0xDEADBEEF);
+                    UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, filename, 0);
+                    if (found == UpdateResults.NAME_UPDATED)
+                        result++;
+                    if (found != UpdateResults.NOT_FOUND)
+                        foundNames[filename] = true;
+                }
+                if (active)
+                {
+                    string outputFileRoot = Path.GetDirectoryName(fileNameFile) + "/" + Path.GetFileNameWithoutExtension(fileNameFile);
+                    FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
+                    FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
+                    StreamWriter swf = new StreamWriter(ofsFound);
+                    StreamWriter swnf = new StreamWriter(ofsNotFound);
+
+                    foreach (KeyValuePair<string, Boolean> file in foundNames)
+                        if (file.Value == true)
                             swf.WriteLine(file.Key);
                         else
                         {

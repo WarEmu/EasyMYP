@@ -41,6 +41,7 @@ namespace EasyMYP
         AvancementBar avBar;
         //string extractionPath = null;
         bool operationRunning = false;
+        bool multipleFilesScan = false; // needed to avoir problems linked to scanFiles.Count() and it reaching 0
 
         List<String> scanFiles = new List<string>();
 
@@ -146,8 +147,8 @@ namespace EasyMYP
         #region Archive Menu
         private void openArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-            openArchiveDialog.Filter = "MYP Archives|*.myp";
+            multipleFilesScan = false;
+            openArchiveDialog.Filter = "MYP Archives|*.myp;*.tor";
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 OpenArchive(openArchiveDialog.FileName);
@@ -186,7 +187,7 @@ namespace EasyMYP
             ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
                 , true, (int)CurrentMypFH.TotalNumberOfFiles, 0));
 
-            //statusPB.Visible = true;
+            statusPB.Visible = true;
 
             LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_EstimatedNumOfFiles_Value
                 , CurrentMypFH.TotalNumberOfFiles.ToString("#,#")));
@@ -302,18 +303,84 @@ namespace EasyMYP
             OperationFinished();
         }
 
+        private void testDirFilenameListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!SetOperationRunning()) return;
+
+            openArchiveDialog.Filter = "File containing filenames to test|*.txt";
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
+                // supposed to be small enough to avoid threading.
+                long newlyFound = hashCreator.ParseDirFilenames(openArchiveDialog.FileName
+                    , Path.GetDirectoryName(openArchiveDialog.FileName) + '/' + "dirnames.txt");
+            }
+
+            OperationFinished();
+        }
+
         /// <summary>
         /// Parses all the myp files to extract all the possible hashes.
         /// </summary>
         /// 
         private void scanAllMypsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            multipleFilesScan = true;
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 string[] mypfiles = Directory.GetFiles(folderBrowserDialog1.SelectedPath, "*.myp");
                 if (mypfiles.Length == 0)
                 {
                     MessageBox.Show("No myp files found in folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (!SetOperationRunning()) return; //reset in event handler
+
+                ResetOverall();
+                foreach (string file in mypfiles)
+                {
+                    scanFiles.Add(file);
+                }
+
+                statusPB.Maximum = (int)mypfiles.Length;
+                statusPB.Value = 0;
+                statusPB.Visible = true;
+
+                if (!MypFHList.Keys.Contains(scanFiles[0]))
+                {
+                    //If we haven't open the file yet, we open it, set it as current, add it to the list
+                    CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
+                        , FileTableEventHandler, ExtractionEventHandler
+                        , hashDic);
+                    MypFHList.Add(scanFiles[0], CurrentMypFH);
+                }
+                else
+                {
+                    //Otherwise we load the old file
+                    CurrentMypFH = MypFHList[scanFiles[0]];
+                }
+
+                scanFiles.RemoveAt(0);
+
+                CurrentMypFH.Pattern = Pattern.Text;
+                t_worker = new Thread(new ThreadStart(CurrentMypFH.ScanFileTable));
+                t_worker.Start();
+            }
+        }
+
+        /// <summary>
+        /// Parses all the myp files to extract all the possible hashes.
+        /// </summary>
+        /// 
+        private void scanAllTorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            multipleFilesScan = true;
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string[] mypfiles = Directory.GetFiles(folderBrowserDialog1.SelectedPath, "*.tor");
+                if (mypfiles.Length == 0)
+                {
+                    MessageBox.Show("No tor files found in folder", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 

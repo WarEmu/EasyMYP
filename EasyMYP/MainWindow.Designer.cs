@@ -47,6 +47,7 @@ namespace EasyMYP
             this.testFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testFullFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scanAllMypsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scannAllTorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mergeDictionaryFile_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.dumpDirFileExtensionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -90,6 +91,7 @@ namespace EasyMYP
             this.treeViewIconList = new System.Windows.Forms.ImageList(this.components);
             this.treeView_FileSystem = new System.Windows.Forms.TreeView();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.findStrip2 = new EasyMYP.FindStrip();
             this.fileInArchiveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.fileInArchiveBindingNavigator = new System.Windows.Forms.BindingNavigator(this.components);
             this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
@@ -129,17 +131,19 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
-            this.findStrip2 = new EasyMYP.FindStrip();
+            this.testDirFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             this.panel_information.SuspendLayout();
             this.panel_status.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.contextMenuStripFileSystemTreeView.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).BeginInit();
             this.fileInArchiveBindingNavigator.SuspendLayout();
@@ -148,7 +152,6 @@ namespace EasyMYP
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel_output.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenu
@@ -179,26 +182,26 @@ namespace EasyMYP
             // openArchiveToolStripMenuItem
             // 
             this.openArchiveToolStripMenuItem.Name = "openArchiveToolStripMenuItem";
-            this.openArchiveToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.openArchiveToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.openArchiveToolStripMenuItem.Text = "&Open Archive ...";
             this.openArchiveToolStripMenuItem.Click += new System.EventHandler(this.openArchiveToolStripMenuItem_Click);
             // 
             // closeArchiveToolStripMenuItem
             // 
             this.closeArchiveToolStripMenuItem.Name = "closeArchiveToolStripMenuItem";
-            this.closeArchiveToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.closeArchiveToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.closeArchiveToolStripMenuItem.Text = "&Close Archive";
             this.closeArchiveToolStripMenuItem.Click += new System.EventHandler(this.closeArchiveToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(162, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(151, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -218,7 +221,7 @@ namespace EasyMYP
             // selectExtractionFolderToolStripMenuItem
             // 
             this.selectExtractionFolderToolStripMenuItem.Name = "selectExtractionFolderToolStripMenuItem";
-            this.selectExtractionFolderToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.selectExtractionFolderToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.selectExtractionFolderToolStripMenuItem.Text = "Select Extraction &Folder ...";
             this.selectExtractionFolderToolStripMenuItem.Click += new System.EventHandler(this.selectExtractionFolderToolStripMenuItem_Click);
             // 
@@ -226,7 +229,7 @@ namespace EasyMYP
             // 
             this.extractSelectedToolStripMenuItem.Enabled = false;
             this.extractSelectedToolStripMenuItem.Name = "extractSelectedToolStripMenuItem";
-            this.extractSelectedToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.extractSelectedToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.extractSelectedToolStripMenuItem.Text = "Extract &Selected";
             this.extractSelectedToolStripMenuItem.Click += new System.EventHandler(this.extractSelectedToolStripMenuItem_Click);
             // 
@@ -234,7 +237,7 @@ namespace EasyMYP
             // 
             this.extractAllToolStripMenuItem.Enabled = false;
             this.extractAllToolStripMenuItem.Name = "extractAllToolStripMenuItem";
-            this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.extractAllToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.extractAllToolStripMenuItem.Text = "Extract &All";
             this.extractAllToolStripMenuItem.Click += new System.EventHandler(this.extractAllToolStripMenuItem_Click);
             // 
@@ -242,20 +245,20 @@ namespace EasyMYP
             // 
             this.extractFileListToolStripMenuItem.Enabled = false;
             this.extractFileListToolStripMenuItem.Name = "extractFileListToolStripMenuItem";
-            this.extractFileListToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.extractFileListToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.extractFileListToolStripMenuItem.Text = "Extract File List";
             this.extractFileListToolStripMenuItem.Click += new System.EventHandler(this.extractFileListToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(211, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(200, 6);
             // 
             // replaceSelectedToolStripMenuItem
             // 
             this.replaceSelectedToolStripMenuItem.Enabled = false;
             this.replaceSelectedToolStripMenuItem.Name = "replaceSelectedToolStripMenuItem";
-            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.replaceSelectedToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.replaceSelectedToolStripMenuItem.Text = "&Replace Selected ...";
             this.replaceSelectedToolStripMenuItem.Click += new System.EventHandler(this.replaceSelectedToolStripMenuItem_Click);
             // 
@@ -264,7 +267,9 @@ namespace EasyMYP
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testFilenameListToolStripMenuItem,
             this.testFullFilenameListToolStripMenuItem,
+            this.testDirFilenameListToolStripMenuItem,
             this.scanAllMypsToolStripMenuItem,
+            this.scannAllTorsToolStripMenuItem,
             this.mergeDictionaryFile_ToolStripMenuItem,
             this.toolStripSeparator2,
             this.dumpDirFileExtensionsToolStripMenuItem,
@@ -276,47 +281,54 @@ namespace EasyMYP
             // testFilenameListToolStripMenuItem
             // 
             this.testFilenameListToolStripMenuItem.Name = "testFilenameListToolStripMenuItem";
-            this.testFilenameListToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.testFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.testFilenameListToolStripMenuItem.Text = "&Test Filename List ...";
             this.testFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testFilenameListToolStripMenuItem_Click);
             // 
             // testFullFilenameListToolStripMenuItem
             // 
             this.testFullFilenameListToolStripMenuItem.Name = "testFullFilenameListToolStripMenuItem";
-            this.testFullFilenameListToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.testFullFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.testFullFilenameListToolStripMenuItem.Text = "Test &Full Filename List ...";
             this.testFullFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testFullFilenameListToolStripMenuItem_Click);
             // 
             // scanAllMypsToolStripMenuItem
             // 
             this.scanAllMypsToolStripMenuItem.Name = "scanAllMypsToolStripMenuItem";
-            this.scanAllMypsToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.scanAllMypsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.scanAllMypsToolStripMenuItem.Text = "Scan &all Myps ...";
             this.scanAllMypsToolStripMenuItem.Click += new System.EventHandler(this.scanAllMypsToolStripMenuItem_Click);
+            // 
+            // scannAllTorsToolStripMenuItem
+            // 
+            this.scannAllTorsToolStripMenuItem.Name = "scannAllTorsToolStripMenuItem";
+            this.scannAllTorsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.scannAllTorsToolStripMenuItem.Text = "Scan all Tors ...";
+            this.scannAllTorsToolStripMenuItem.Click += new System.EventHandler(this.scanAllTorsToolStripMenuItem_Click);
             // 
             // mergeDictionaryFile_ToolStripMenuItem
             // 
             this.mergeDictionaryFile_ToolStripMenuItem.Name = "mergeDictionaryFile_ToolStripMenuItem";
-            this.mergeDictionaryFile_ToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.mergeDictionaryFile_ToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.mergeDictionaryFile_ToolStripMenuItem.Text = "&Merge Dictionary File ...";
             this.mergeDictionaryFile_ToolStripMenuItem.Click += new System.EventHandler(this.mergeDictionaryFile_ToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(207, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(196, 6);
             // 
             // dumpDirFileExtensionsToolStripMenuItem
             // 
             this.dumpDirFileExtensionsToolStripMenuItem.Name = "dumpDirFileExtensionsToolStripMenuItem";
-            this.dumpDirFileExtensionsToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.dumpDirFileExtensionsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.dumpDirFileExtensionsToolStripMenuItem.Text = "&Dump Dir, File, Extensions";
             this.dumpDirFileExtensionsToolStripMenuItem.Click += new System.EventHandler(this.dumpDirFileExtensionsToolStripMenuItem_Click);
             // 
             // statisticsToolStripMenuItem
             // 
             this.statisticsToolStripMenuItem.Name = "statisticsToolStripMenuItem";
-            this.statisticsToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.statisticsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.statisticsToolStripMenuItem.Text = "&Statistics ...";
             this.statisticsToolStripMenuItem.Click += new System.EventHandler(this.statisticsToolStripMenuItem_Click);
             // 
@@ -331,7 +343,7 @@ namespace EasyMYP
             // preferencesToolStripMenuItem
             // 
             this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
+            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.preferencesToolStripMenuItem.Text = "Preferences";
             this.preferencesToolStripMenuItem.Click += new System.EventHandler(this.preferencesToolStripMenuItem_Click);
             // 
@@ -348,13 +360,13 @@ namespace EasyMYP
             // 
             this.tryAgainToolStripMenuItem.Enabled = false;
             this.tryAgainToolStripMenuItem.Name = "tryAgainToolStripMenuItem";
-            this.tryAgainToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.tryAgainToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.tryAgainToolStripMenuItem.Text = "To Be Coded ...";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -618,8 +630,8 @@ namespace EasyMYP
             this.treeView_Archive.SelectedImageIndex = 0;
             this.treeView_Archive.Size = new System.Drawing.Size(428, 333);
             this.treeView_Archive.TabIndex = 0;
-            this.treeView_Archive.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_Archive_MouseUp);
             this.treeView_Archive.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_Archive_ItemDrag);
+            this.treeView_Archive.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_Archive_MouseUp);
             // 
             // contextMenuStripFileSystemTreeView
             // 
@@ -628,25 +640,25 @@ namespace EasyMYP
             this.toolStripMenuItemSort,
             this.recursiveSortToolStripMenuItem});
             this.contextMenuStripFileSystemTreeView.Name = "contextMenuStrip1";
-            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(156, 70);
+            this.contextMenuStripFileSystemTreeView.Size = new System.Drawing.Size(145, 70);
             this.contextMenuStripFileSystemTreeView.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripFileSystemTreeView_ItemClicked);
             // 
             // toolStripMenuItemExtract
             // 
             this.toolStripMenuItemExtract.Name = "toolStripMenuItemExtract";
-            this.toolStripMenuItemExtract.Size = new System.Drawing.Size(155, 22);
+            this.toolStripMenuItemExtract.Size = new System.Drawing.Size(144, 22);
             this.toolStripMenuItemExtract.Text = "Extract";
             // 
             // toolStripMenuItemSort
             // 
             this.toolStripMenuItemSort.Name = "toolStripMenuItemSort";
-            this.toolStripMenuItemSort.Size = new System.Drawing.Size(155, 22);
+            this.toolStripMenuItemSort.Size = new System.Drawing.Size(144, 22);
             this.toolStripMenuItemSort.Text = "Sort";
             // 
             // recursiveSortToolStripMenuItem
             // 
             this.recursiveSortToolStripMenuItem.Name = "recursiveSortToolStripMenuItem";
-            this.recursiveSortToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.recursiveSortToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
             this.recursiveSortToolStripMenuItem.Text = "Recursive Sort";
             // 
             // treeViewIconList
@@ -673,9 +685,9 @@ namespace EasyMYP
             this.treeView_FileSystem.SelectedImageIndex = 0;
             this.treeView_FileSystem.Size = new System.Drawing.Size(443, 333);
             this.treeView_FileSystem.TabIndex = 0;
+            this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
             this.treeView_FileSystem.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragDrop);
             this.treeView_FileSystem.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_FileSystem_DragEnter);
-            this.treeView_FileSystem.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_FileSystem_NodeMouseClick);
             // 
             // tabPage1
             // 
@@ -691,6 +703,17 @@ namespace EasyMYP
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Archive File List";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // findStrip2
+            // 
+            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
+            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
+            this.findStrip2.Location = new System.Drawing.Point(7, 32);
+            this.findStrip2.Name = "findStrip2";
+            this.findStrip2.Size = new System.Drawing.Size(379, 25);
+            this.findStrip2.TabIndex = 31;
+            this.findStrip2.Text = "findStrip2";
+            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
             // 
             // fileInArchiveBindingSource
             // 
@@ -723,7 +746,7 @@ namespace EasyMYP
             this.fileInArchiveBindingNavigator.MovePreviousItem = this.bindingNavigatorMovePreviousItem;
             this.fileInArchiveBindingNavigator.Name = "fileInArchiveBindingNavigator";
             this.fileInArchiveBindingNavigator.PositionItem = this.bindingNavigatorPositionItem;
-            this.fileInArchiveBindingNavigator.Size = new System.Drawing.Size(277, 25);
+            this.fileInArchiveBindingNavigator.Size = new System.Drawing.Size(279, 25);
             this.fileInArchiveBindingNavigator.TabIndex = 28;
             this.fileInArchiveBindingNavigator.Text = "bindingNavigator1";
             // 
@@ -740,8 +763,8 @@ namespace EasyMYP
             // bindingNavigatorCountItem
             // 
             this.bindingNavigatorCountItem.Name = "bindingNavigatorCountItem";
-            this.bindingNavigatorCountItem.Size = new System.Drawing.Size(36, 22);
-            this.bindingNavigatorCountItem.Text = "of {0}";
+            this.bindingNavigatorCountItem.Size = new System.Drawing.Size(38, 22);
+            this.bindingNavigatorCountItem.Text = "de {0}";
             this.bindingNavigatorCountItem.ToolTipText = "Total number of items";
             // 
             // bindingNavigatorDeleteItem
@@ -1086,16 +1109,12 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
-            // findStrip2
+            // testDirFilenameListToolStripMenuItem
             // 
-            this.findStrip2.BindingSource = this.fileInArchiveBindingSource;
-            this.findStrip2.Dock = System.Windows.Forms.DockStyle.None;
-            this.findStrip2.Location = new System.Drawing.Point(7, 32);
-            this.findStrip2.Name = "findStrip2";
-            this.findStrip2.Size = new System.Drawing.Size(379, 25);
-            this.findStrip2.TabIndex = 31;
-            this.findStrip2.Text = "findStrip2";
-            this.findStrip2.ItemFound += new EasyMYP.ItemFoundEventHandler(this.findStrip_ItemFound);
+            this.testDirFilenameListToolStripMenuItem.Name = "testDirFilenameListToolStripMenuItem";
+            this.testDirFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.testDirFilenameListToolStripMenuItem.Text = "Test Dir, Filename List ...";
+            this.testDirFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testDirFilenameListToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -1110,8 +1129,8 @@ namespace EasyMYP
             this.MinimumSize = new System.Drawing.Size(930, 530);
             this.Name = "MainWindow";
             this.Text = "EasyMYP";
-            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragDrop);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWindow_DragEnter);
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
@@ -1123,10 +1142,12 @@ namespace EasyMYP
             this.tabPage2.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.contextMenuStripFileSystemTreeView.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fileInArchiveBindingNavigator)).EndInit();
             this.fileInArchiveBindingNavigator.ResumeLayout(false);
@@ -1138,7 +1159,6 @@ namespace EasyMYP
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.panel_output.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.findStrip2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1246,6 +1266,8 @@ namespace EasyMYP
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.Button button_Stop;
         private System.Windows.Forms.Button button_Pause;
+        private System.Windows.Forms.ToolStripMenuItem scannAllTorsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testDirFilenameListToolStripMenuItem;
     }
 }
 

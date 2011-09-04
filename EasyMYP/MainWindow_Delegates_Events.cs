@@ -243,7 +243,7 @@ namespace EasyMYP
             }
             else if (e.Type == Event_FileTableType.NewFile)
             {
-                if (modulus % 1000 == 0)
+                if (modulus % 1000 == 0 && !multipleFilesScan)
                 {
                     Update_OnFileTableEvent();
                 }
@@ -259,15 +259,18 @@ namespace EasyMYP
             else if (e.Type == Event_FileTableType.Finished)
             {
                 //Final update
-                Update_OnFileTableEvent();
+                Update_OnFileTableEvent(); 
                 if (CurrentMypFH.archiveModifiedFileList.Count > 0 || CurrentMypFH.archiveNewFileList.Count > 0)
                 {
                     hashDic.SaveHashList();
                 }
-                fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
-                //fileInArchiveDataGridView.Show();
-                Update_TreeView();
-                OperationFinished();
+                if (!multipleFilesScan || scanFiles.Count == 0) // so that we only update the tree view and everything at the whole end, to take less time when multiple scans is running
+                {
+                    fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
+                    //fileInArchiveDataGridView.Show();
+                    Update_TreeView();
+                }
+                if (scanFiles.Count == 0) OperationFinished(); // Only if all the files have been scan is the operation finished !!!
             }
         }
 
@@ -284,11 +287,15 @@ namespace EasyMYP
 
             if (CurrentMypFH.NumberOfFilesFound == CurrentMypFH.TotalNumberOfFiles)
             {
-                statusPB.Visible = false;
+                if (!multipleFilesScan || multipleFilesScan && scanFiles.Count == 0)
+                    statusPB.Visible = false;
+                else
+                    statusPB.Value++; //since we haven't finished scanning all files, we update the progress bar
             }
             else
             {
-                statusPB.Value = (int)CurrentMypFH.NumberOfFilesFound;
+                if (!multipleFilesScan) // if we are scanning multiple files at once, we don't update the progress bar for every file
+                    statusPB.Value = (int)CurrentMypFH.NumberOfFilesFound;
             }
         }
 
@@ -335,7 +342,7 @@ namespace EasyMYP
                     }
                 case Event_ExtractionType.Scanning:
                     {
-                        statusPB.Value += 1;
+                        // statusPB.Value += 1; // handled in another place: Update_OnFileTableEvent
                         if (scanFiles.Count != 0)
                         {
                             CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]

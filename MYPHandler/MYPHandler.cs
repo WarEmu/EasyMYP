@@ -354,7 +354,7 @@ namespace MYPHandler
                         HashData ffn = null;
                         if (hashDictionary != null)
                         {
-                            ffn = hashDictionary.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
+                            // ffn = hashDictionary.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
                             if (ffn != null && ffn.filename != "")
                             {
                                 myArchFile.descriptor.foundFileName = true;
