@@ -69,17 +69,19 @@ namespace nsHashDictionary
     #endregion
     public class HashData
     {
+        public string archiveName;
         public string filename;
         public int crc;
         public uint ph;
         public uint sh;
 
-        public HashData(uint ph, uint sh, string filename, int crc)
+        public HashData(uint ph, uint sh, string filename, int crc, string archiveName)
         {
             this.ph = ph;
             this.sh = sh;
             this.filename = filename;
             this.crc = crc;
+            this.archiveName = archiveName;
         }
 
     }
@@ -88,20 +90,21 @@ namespace nsHashDictionary
     {
         NOT_FOUND,
         UPTODATE,
-        NAME_UPDATED
+        NAME_UPDATED,
+        ARCHIVE_UPDATED
     }
 
     public class HashDictionary
     {
 
         ///  \todo Speed: move that to an SortedDictionnary?
-        SortedList<long, HashData> hashList = new SortedList<long, HashData>();
+        SortedList<string, SortedList<long, HashData>> hashList = new SortedList<string, SortedList<long, HashData>>();
         //RedBlack hashtree = new RedBlack();
         HashSet<string> dirListing = new HashSet<string>();
         HashSet<string> fileListing = new HashSet<string>();
         HashSet<string> extListing = new HashSet<string>();
 
-        public SortedList<long, HashData> HashList { get { return hashList; } }
+        public SortedList<string, SortedList<long, HashData>> HashList { get { return hashList; } }
         public HashSet<string> DirListing { get { return dirListing; } }
         public HashSet<string> ExtListing { get { return extListing; } }
         public HashSet<string> FileListing { get { return fileListing; } }
@@ -112,6 +115,7 @@ namespace nsHashDictionary
         string fileListingFile = "Hash/fileList.txt";
         bool helpersCreated = false;
         public bool needsSave = false;
+        public static char hashSeparator = '?';
 
         #region Constructors
         /// <summary>
@@ -134,9 +138,9 @@ namespace nsHashDictionary
         #region HashList manipulation
 
 
-        public void AddHash(uint ph, uint sh)
+        public void AddHash(uint ph, uint sh, string archiveName)
         {
-            AddHash(ph, sh, "", 0);
+            AddHash(ph, sh, "", 0, archiveName);
         }
 
         /// <summary>
@@ -144,12 +148,12 @@ namespace nsHashDictionary
         /// </summary>
         /// <param name="ph">ph value</param>
         /// <param name="sh">sh value</param>
-        public void AddHash(uint ph, uint sh, string name, int crc)
+        public void AddHash(uint ph, uint sh, string name, int crc, string archiveName)
         {
             long sig = (((long)ph) << 32) + sh;
-            if (!hashList.ContainsKey(sig))
+            if (!hashList[archiveName].ContainsKey(sig))
             {
-                hashList.Add(sig, new HashData(ph, sh, name, crc));
+                hashList[archiveName].Add(sig, new HashData(ph, sh, name, crc, archiveName));
                 needsSave = true;
                 if (name.CompareTo("") != 0)
                 {
@@ -159,13 +163,37 @@ namespace nsHashDictionary
             }
             else
 
-                UpdateHash(ph, sh, name, crc);
+                UpdateHash(ph, sh, name, crc, archiveName);
         }
 
-        public void LoadHash(uint ph, uint sh, string name, int crc)
+        public void LoadHash(uint ph, uint sh, string name, int crc, string archiveName)
         {
             long sig = (((long)ph) << 32) + sh;
-            hashList.Add(sig, new HashData(ph, sh, name, crc));
+            if (!hashList.ContainsKey(archiveName))
+            {
+                hashList.Add(archiveName, new SortedList<long, HashData>());
+            }
+            hashList[archiveName].Add(sig, new HashData(ph, sh, name, crc, archiveName));
+        }
+
+        /// <summary>
+        /// Lookup in all the archives if a hash matches
+        /// Update hash with name if the hash can be found in the hash list
+        /// This is used for generation purposes
+        /// </summary>
+        /// <param name="ph">ph value</param>
+        /// <param name="sh">sh value</param>
+        /// <param name="name">equivalent of the hash as a string</param>
+        /// <returns>0=not found, 1=already up-to-date, 2= name updated, 3=archive updated</returns>
+        public UpdateResults UpdateHash(uint ph, uint sh, string name, int crc)
+        {
+            int i = 0;
+            UpdateResults result = UpdateResults.NOT_FOUND;
+            while (i < hashList.Count && (result = UpdateHash(ph, sh, name, crc, hashList.Keys[i])) == UpdateResults.NOT_FOUND)
+            {
+                i++;
+            }
+            return result;
         }
 
         /// <summary>
@@ -175,45 +203,55 @@ namespace nsHashDictionary
         /// <param name="ph">ph value</param>
         /// <param name="sh">sh value</param>
         /// <param name="name">equivalent of the hash as a string</param>
-        /// <returns>0=not found, 1=already up-to-date, 2= name updated</returns>
-        public UpdateResults UpdateHash(uint ph, uint sh, string name, int crc)
+        /// <param name="archiveName">the name of the archive in which to look / update</param>
+        /// <returns>0=not found, 1=already up-to-date, 2= name updated, 3=archive updated</returns>
+        public UpdateResults UpdateHash(uint ph, uint sh, string name, int crc, string archiveName)
         {
             long sig = (((long)ph) << 32) + sh;
             UpdateResults result = UpdateResults.NOT_FOUND;
             //if the list contains the sig, then we update
-            if (hashList.ContainsKey(sig))
+            if (hashList[archiveName].ContainsKey(sig))
             {
                 result = UpdateResults.UPTODATE;
-                if (name != "" && hashList[sig].filename != name)
+
+                if (name != "" && hashList[archiveName][sig].filename != name)
                 {
-                    hashList[sig].filename = name;
+                    // updates the filename if it has changed
+                    hashList[archiveName][sig].filename = name;
                     result = UpdateResults.NAME_UPDATED;
                     AddDirectory(name);
                     AddFileandExtension(name);
                     needsSave = true;
                 }
+                if (archiveName != hashList[archiveName][sig].archiveName)
+                {
+                    // updates the archivename if the file has switched archive
+                    hashList[archiveName][sig].archiveName = archiveName;
+                    result = UpdateResults.ARCHIVE_UPDATED;
+                    needsSave = true;
+                }
                 if (crc != 0)
                 {
-                    hashList[sig].crc = crc;
+                    hashList[archiveName][sig].crc = crc;
                     needsSave = true;
                 }
             }
             return result;
         }
 
-        public void UpdateCRC(uint ph, uint sh, int crc)
+        public void UpdateCRC(uint ph, uint sh, int crc, string archiveName)
         {
             long sig = ((long)ph << 32) + sh;
-            if (hashList.ContainsKey(sig))
+            if (hashList[archiveName].ContainsKey(sig))
             {
-                hashList[sig].crc = crc;
+                hashList[archiveName][sig].crc = crc;
                 needsSave = true;
             }
         }
 
         public void LoadHashList()
         {
-            LoadHashList(this.dictionaryFile,false);
+            LoadHashList(this.dictionaryFile, false);
         }
         public void MergeHashList(object obj)
         {
@@ -241,18 +279,19 @@ namespace nsHashDictionary
                 StreamReader reader = new StreamReader(fs);
 
                 string line;
-                int i=0;
+                int i = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
                     i++;
-                    string[] strsplt = line.Split('#');
-                    uint ph = Convert.ToUInt32(strsplt[0], 16);
-                    uint sh = Convert.ToUInt32(strsplt[1], 16);
-                    string filename = strsplt[2];
+                    string[] strsplt = line.Split(hashSeparator);
+                    string archiveName = strsplt[0];
+                    uint ph = Convert.ToUInt32(strsplt[1], 16);
+                    uint sh = Convert.ToUInt32(strsplt[2], 16);
+                    string filename = strsplt[3];
                     int crc;
-                    if (strsplt.Length > 3)
+                    if (strsplt.Length > 4)
                     {
-                        crc = Convert.ToInt32(strsplt[3], 16);
+                        crc = Convert.ToInt32(strsplt[4], 16);
                     }
                     else
                     {
@@ -260,10 +299,10 @@ namespace nsHashDictionary
                     }
 
                     if (merge)
-                        AddHash(ph, sh, filename, crc);
+                        AddHash(ph, sh, filename, crc, archiveName);
                     else
-                        LoadHash(ph, sh, filename, crc);
-                    if (i%200 == 0)
+                        LoadHash(ph, sh, filename, crc, archiveName);
+                    if (i % 200 == 0)
                         TriggerHashEvent(new DictionaryEventArgs(DictionaryState.Building, (float)reader.BaseStream.Position / (float)reader.BaseStream.Length));
                 }
 
@@ -285,7 +324,7 @@ namespace nsHashDictionary
         public void SaveHashList()
         {
 
-            string path =  System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
 
             DateTime centuryBegin = new DateTime(2001, 1, 1);
             DateTime currentDate = DateTime.Now;
@@ -309,12 +348,26 @@ namespace nsHashDictionary
             if (File.Exists(dicFile)) File.Move(dicFile, path + "/Hash/oldHashList_" + elapsedSpan.TotalSeconds.ToString() + ".txt");
             FileStream fs = new FileStream(dicFile, FileMode.OpenOrCreate);
             StreamWriter writer = new StreamWriter(fs);
+            SortedList<long, HashData> subHashList;
 
-            for (int i = 0; i < hashList.Count; i++)
+            for (int j = 0; j < hashList.Count; j++)
             {
-                writer.WriteLine("{0:X8}#{1:X8}#{2}#{3:X8}", (uint)(hashList.Keys[i] >> 32), (uint)(hashList.Keys[i] & 0xFFFFFFFF), hashList.Values[i].filename, hashList.Values[i].crc);
-                if (i%200 == 0)
-                    TriggerHashEvent(new DictionaryEventArgs(DictionaryState.Building, (float)i / (float)hashList.Count));
+                subHashList = hashList.Values[j];
+                for (int i = 0; i < subHashList.Count; i++)
+                {
+                    writer.WriteLine("{0:X8}" + hashSeparator
+                        + "{1:X8}" + hashSeparator
+                        + "{2:X8}" + hashSeparator
+                        + "{3}" + hashSeparator
+                        + "{4:X8}"
+                        , subHashList.Values[i].archiveName
+                        , (uint)(subHashList.Keys[i] >> 32)
+                        , (uint)(subHashList.Keys[i] & 0xFFFFFFFF)
+                        , subHashList.Values[i].filename, subHashList.Values[i].crc);
+
+                    if (i % 200 == 0)
+                        TriggerHashEvent(new DictionaryEventArgs(DictionaryState.Building, (float)i / (float)hashList.Count));
+                }
             }
 
             writer.Close();
@@ -329,12 +382,40 @@ namespace nsHashDictionary
         /// <param name="ph"></param>
         /// <param name="sh"></param>
         /// <returns>returns the HashData object or null</returns> 
-        public HashData SearchHashList(uint ph, uint sh)
+        public HashData SearchOtherArchive(uint ph, uint sh, string archiveName)
         {
             long sig = ((long)ph << 32) + sh;
-            if (hashList.ContainsKey(sig))
+            HashData result = null;
+            for (int i = 0; i < hashList.Count; i++)
             {
-                return hashList[sig];
+                if (hashList.Keys[i] != archiveName)
+                {
+                    if (hashList.Values[i].ContainsKey(sig))
+                    {
+                        result = hashList.Values[i][sig];
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Searches in all the archives hashlists
+        /// </summary>
+        /// <param name="ph"></param>
+        /// <param name="sh"></param>
+        /// <returns>returns the HashData object or null</returns> 
+        public HashData SearchHashList(uint ph, uint sh, string archiveName)
+        {
+            long sig = ((long)ph << 32) + sh;
+            if (!hashList.ContainsKey(archiveName))
+            {
+                hashList.Add(archiveName, new SortedList<long, HashData>());
+            }
+            if (hashList[archiveName].ContainsKey(sig))
+            {
+                return hashList[archiveName][sig];
             }
             return null;
         }
@@ -421,7 +502,7 @@ namespace nsHashDictionary
         }
  */
         #endregion
- 
+
         #region Generation Helpers
 
         /// <summary>
@@ -452,7 +533,7 @@ namespace nsHashDictionary
             }
             else
             {
-                if (file.IndexOf(' ') < 0 )
+                if (file.IndexOf(' ') < 0)
                 {
                     dirListing.Add(file);
                 }
@@ -470,7 +551,7 @@ namespace nsHashDictionary
 
             if (cur_fn.IndexOf('/') >= 0)
             {
-                cur_fn = cur_fn.Substring(cur_fn.LastIndexOf('/')+1);
+                cur_fn = cur_fn.Substring(cur_fn.LastIndexOf('/') + 1);
                 if (cur_fn.Contains("."))
                     cur_fn = cur_fn.Substring(0, cur_fn.LastIndexOf('.')); ;
             }
@@ -522,11 +603,16 @@ namespace nsHashDictionary
             if (!helpersCreated)
             {
                 int i = 0;
+                SortedList<long, HashData> subHashList;
 
-                for (i = 0; i < hashList.Count; i++)
+                for (int j = 0; j < hashList.Count; j++)
                 {
-                    AddDirectory(hashList.Values[i].filename);
-                    AddFileandExtension(hashList.Values[i].filename);
+                    subHashList = hashList.Values[j];
+                    for (i = 0; i < subHashList.Count; i++)
+                    {
+                        AddDirectory(subHashList.Values[i].filename);
+                        AddFileandExtension(subHashList.Values[i].filename);
+                    }
                 }
                 helpersCreated = true;
             }

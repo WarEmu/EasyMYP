@@ -354,7 +354,11 @@ namespace MYPHandler
                         HashData ffn = null;
                         if (hashDictionary != null)
                         {
-                            // ffn = hashDictionary.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh);
+                            ffn = hashDictionary.SearchHashList(myArchFile.descriptor.ph, myArchFile.descriptor.sh, currentMypFileName);
+                            if (ffn == null) // If we could not find the associated filename in the current archive, we look in the other archives hashes
+                            {
+                                // ffn = hashDictionary.SearchOtherArchive(myArchFile.descriptor.ph, myArchFile.descriptor.sh, currentMypFileName);
+                            }
                             if (ffn != null && ffn.filename != "")
                             {
                                 myArchFile.descriptor.foundFileName = true;
@@ -362,7 +366,7 @@ namespace MYPHandler
                                 if (myArchFile.descriptor.crc != ffn.crc)
                                 {
                                     myArchFile.State = FileInArchiveState.MODIFIED;
-                                    hashDictionary.UpdateCRC(myArchFile.descriptor.ph, myArchFile.descriptor.sh, myArchFile.descriptor.crc);
+                                    hashDictionary.UpdateCRC(myArchFile.descriptor.ph, myArchFile.descriptor.sh, myArchFile.descriptor.crc, currentMypFileName);
                                     archiveModifiedFileList.Add(myArchFile);
                                 }
                                 numberOfFileNamesFound++;
@@ -374,13 +378,13 @@ namespace MYPHandler
                                 if (ffn == null)
                                 {
                                     myArchFile.State = FileInArchiveState.NEW;
-                                    hashDictionary.AddHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh, "", myArchFile.descriptor.crc);
+                                    hashDictionary.AddHash(myArchFile.descriptor.ph, myArchFile.descriptor.sh, "", myArchFile.descriptor.crc, currentMypFileName);
                                     archiveNewFileList.Add(myArchFile);
                                 }
                                 else if (myArchFile.descriptor.crc != ffn.crc)
                                 {
                                     myArchFile.State = FileInArchiveState.MODIFIED;
-                                    hashDictionary.UpdateCRC(myArchFile.descriptor.ph, myArchFile.descriptor.sh, myArchFile.descriptor.crc);
+                                    hashDictionary.UpdateCRC(myArchFile.descriptor.ph, myArchFile.descriptor.sh, myArchFile.descriptor.crc, currentMypFileName);
                                     archiveModifiedFileList.Add(myArchFile);
                                 }
                                 //Retrieve header
@@ -472,6 +476,8 @@ namespace MYPHandler
                 }
 
                 archFile.descriptor.extension = GetExtension(output_buffer);
+                //In order to sort the filenames in folders in the treeView. Yeah I cheat!
+                //archFile.descriptor.filename = archFile.descriptor.extension + "/" + archFile.descriptor.filename;
             }
             else if (archFile.descriptor.compressionMethod == 0)
             {
@@ -511,6 +517,10 @@ namespace MYPHandler
             else if (header.IndexOf("PK") >= 0)
             {
                 ext = "zip";
+            }
+            else if (header.IndexOf("SCPT") >= 0)
+            {
+                ext = "scpt";
             }
             else if (header.IndexOf("<") >= 0)
             {
@@ -596,6 +606,14 @@ namespace MYPHandler
             {
                 ext = "png";
             }
+            else if (header.IndexOf("AMX") >= 0)
+            {
+                ext = "amx";
+            }
+            else if (header.IndexOf("SIDS") >= 0)
+            {
+                ext = "sids";
+            } //SIDS
             else if (commaNum >= 10)
             {
                 ext = "csv";

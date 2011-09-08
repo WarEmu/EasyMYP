@@ -74,7 +74,7 @@ namespace EasyMYP
 
         private void UpdateProgressBar(float value)
         {
-            progressBar.Value = (int)value;
+            progressBar.Value = (value > 100) ? 100 : (int)value; //DEBUG: to switch back to simple value
         }
     }
 }

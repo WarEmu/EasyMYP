@@ -123,8 +123,13 @@ namespace EasyMYP
 
             for (int i = 0; i < FIAList.Count; i++)
             {
+
                 FileInArchive fia = FIAList[i];
                 string filename = fia.Filename;
+                if (!filename.Contains('.'))
+                {
+                    filename = fia.Extension + "/" + filename;
+                }
                 string[] pathes = filename.Split('/');
                 FiaTreeNode tn = null;
 

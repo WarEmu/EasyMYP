@@ -264,12 +264,12 @@ namespace EasyMYP
                 {
                     hashDic.SaveHashList();
                 }
-                if (!multipleFilesScan || scanFiles.Count == 0) // so that we only update the tree view and everything at the whole end, to take less time when multiple scans is running
-                {
+                //if (!multipleFilesScan || scanFiles.Count == 0) // so that we only update the tree view and everything at the whole end, to take less time when multiple scans is running
+                //{
                     fileInArchiveDataGridView.DataSource = fileInArchiveBindingSource;
                     //fileInArchiveDataGridView.Show();
                     Update_TreeView();
-                }
+                //}
                 if (scanFiles.Count == 0) OperationFinished(); // Only if all the files have been scan is the operation finished !!!
             }
         }
@@ -349,6 +349,7 @@ namespace EasyMYP
                                 , FileTableEventHandler, ExtractionEventHandler
                                 , hashDic);
 
+                            MypFHList.Add(scanFiles[0], CurrentMypFH);
                             scanFiles.RemoveAt(0);
 
                             CurrentMypFH.Pattern = Pattern.Text;

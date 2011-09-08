@@ -9,6 +9,8 @@ using MYPHandler;
 using nsHashCreator;
 using nsHashDictionary;
 using System.Configuration;
+using System.Text.RegularExpressions;
+using nsHasherFunctions;
 
 namespace EasyMYP
 {
@@ -54,7 +56,8 @@ namespace EasyMYP
         {
             InitializeComponent();
             LoadDictionnary(false, "");
-            hashCreator = new HashCreator(hashDic);
+            // TODO: allow a change of the hashertype through an option or something.
+            hashCreator = new HashCreator(hashDic, Hasher.HasherType.TOR);
             fileInArchiveBindingSource.DataSource = new SortableBindingList<FileInArchive>();
 
             //Define functions that should be called to treat events
@@ -149,6 +152,7 @@ namespace EasyMYP
         {
             multipleFilesScan = false;
             openArchiveDialog.Filter = "MYP Archives|*.myp;*.tor";
+
             if (openArchiveDialog.ShowDialog() == DialogResult.OK)
             {
                 OpenArchive(openArchiveDialog.FileName);
@@ -318,6 +322,22 @@ namespace EasyMYP
             OperationFinished();
         }
 
+        private void testDirFilenameExtListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!SetOperationRunning()) return;
+
+            openArchiveDialog.Filter = "File containing filenames to test|*.txt";
+            if (openArchiveDialog.ShowDialog() == DialogResult.OK)
+            {
+                // supposed to be small enough to avoid threading.
+                long newlyFound = hashCreator.ParseDirFilenamesExt(openArchiveDialog.FileName
+                    , Path.GetDirectoryName(openArchiveDialog.FileName) + '/' + "dirnames.txt"
+                    , Path.GetDirectoryName(openArchiveDialog.FileName) + '/' + "extnames.txt");
+            }
+
+            OperationFinished();
+        }
+
         /// <summary>
         /// Parses all the myp files to extract all the possible hashes.
         /// </summary>
@@ -346,21 +366,20 @@ namespace EasyMYP
                 statusPB.Value = 0;
                 statusPB.Visible = true;
 
-                if (!MypFHList.Keys.Contains(scanFiles[0]))
+                for (int i = 0; i < scanFiles.Count; i++)
                 {
-                    //If we haven't open the file yet, we open it, set it as current, add it to the list
-                    CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
-                        , FileTableEventHandler, ExtractionEventHandler
-                        , hashDic);
-                    MypFHList.Add(scanFiles[0], CurrentMypFH);
-                }
-                else
-                {
-                    //Otherwise we load the old file
-                    CurrentMypFH = MypFHList[scanFiles[0]];
+                    if (MypFHList.ContainsKey(scanFiles[i]))
+                    {
+                        scanFiles.RemoveAt(i);
+                        i--;
+                    }
                 }
 
-                scanFiles.RemoveAt(0);
+                CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
+                        , FileTableEventHandler, ExtractionEventHandler
+                        , hashDic);
+                MypFHList.Add(scanFiles[0], CurrentMypFH);
+
 
                 CurrentMypFH.Pattern = Pattern.Text;
                 t_worker = new Thread(new ThreadStart(CurrentMypFH.ScanFileTable));
@@ -396,19 +415,33 @@ namespace EasyMYP
                 statusPB.Value = 0;
                 statusPB.Visible = true;
 
-                if (!MypFHList.Keys.Contains(scanFiles[0]))
+                //if (!MypFHList.Keys.Contains(scanFiles[0]))
+                //{
+                //    //If we haven't open the file yet, we open it, set it as current, add it to the list
+                //    CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
+                //        , FileTableEventHandler, ExtractionEventHandler
+                //        , hashDic);
+                //    MypFHList.Add(scanFiles[0], CurrentMypFH);
+                //}
+                //else
+                //{
+                //    //Otherwise we load the old file
+                //    CurrentMypFH = MypFHList[scanFiles[0]];
+                //}
+
+                for (int i = 0; i < scanFiles.Count; i++)
                 {
-                    //If we haven't open the file yet, we open it, set it as current, add it to the list
-                    CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
+                    if (MypFHList.ContainsKey(scanFiles[i]))
+                    {
+                        scanFiles.RemoveAt(i);
+                        i--;
+                    }
+                }
+
+                CurrentMypFH = new MYPHandler.MYPHandler(scanFiles[0]
                         , FileTableEventHandler, ExtractionEventHandler
                         , hashDic);
-                    MypFHList.Add(scanFiles[0], CurrentMypFH);
-                }
-                else
-                {
-                    //Otherwise we load the old file
-                    CurrentMypFH = MypFHList[scanFiles[0]];
-                }
+                MypFHList.Add(scanFiles[0], CurrentMypFH);
 
                 scanFiles.RemoveAt(0);
 
@@ -676,9 +709,16 @@ namespace EasyMYP
 
                 //make a copy of the dictionary to avoid conflicts, with only unknown file name to speed up.
                 patternDic = new HashDictionary("Hash/PatternDic.txt");
-                foreach (KeyValuePair<long, HashData> kvp in hashDic.HashList)
-                    if (kvp.Value.filename.CompareTo("") == 0)
-                        patternDic.LoadHash(kvp.Value.ph, kvp.Value.sh, kvp.Value.filename, kvp.Value.crc);
+                SortedList<long, HashData> subHashList;
+                for (int i = 0; i < hashDic.HashList.Count; i++)
+                {
+                    subHashList = hashDic.HashList.Values[i];
+                    foreach (KeyValuePair<long, HashData> kvp in subHashList)
+                    {
+                        if (kvp.Value.filename.CompareTo("") == 0)
+                            patternDic.LoadHash(kvp.Value.ph, kvp.Value.sh, kvp.Value.filename, kvp.Value.crc, kvp.Value.archiveName);
+                    }
+                }
 
                 hashCreator.event_FilenameTest += FilenameTestEventHandler; //reset in eventhandler
 
@@ -777,5 +817,117 @@ namespace EasyMYP
                 ((TreeView)sender).DoDragDrop(((FiaTreeNode)treeView_Archive.SelectedNode).fiaList, DragDropEffects.Copy);
             }
         }
+
+        /// <summary>
+        /// Thanks to Jorge Jules for the XML Parsing!
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void createSWTORDictToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Please select root folder of extracted assets ", "Creating Dictionary", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            //Grab root folder
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Thread t_Extract = new Thread(new ParameterizedThreadStart(createSWTORDict));
+                t_Extract.Start(folderBrowserDialog1.SelectedPath);
+            }
+        }
+
+        private void createSWTORDict(object searchfolder)
+        {
+            MessageBox.Show("Creating dictionary of all referenced filenames in .XML files from Folder " + (string)searchfolder, "Starting", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
+                , true, 1, 0));
+
+            //Find all files
+            string[] xmlFilePaths = Directory.GetFiles((string)searchfolder, "*.xml",
+                                                       SearchOption.AllDirectories);
+
+            //Total number of XML files to search
+            LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_EstimatedNumOfFiles_Value
+                , xmlFilePaths.LongLength.ToString("#,#")));
+
+            ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
+                , true, (int)xmlFilePaths.LongLength, 0));
+
+            //Create regex to find enclosed filenames
+            Regex reggie = new Regex(@">([A-Za-z0-9_\-.!#$%&'()+,;=@^`{}~/\\\[\]]+[/\\][A-Za-z0-9_\-.!#$%&'()+,;=@^`{}~/\\\[\]]+)<|""([A-Za-z0-9_\-.!#$%&'()+,;=@^`{}~/\\\[\]]+[/\\][A-Za-z0-9_\-.!#$%&'()+,;=@^`{}~/\\\[\]]+)""");
+
+            long FoundFileNames = 0;
+
+            //Save filename to test:
+            string filename = (string)searchfolder + "/" + "filenames.xml.txt";
+            if (File.Exists(filename)) File.Delete(filename);
+            FileStream fs = new FileStream(filename, FileMode.OpenOrCreate);
+            StreamWriter fs_writer = new StreamWriter(fs);
+
+            //each file
+            for (long itr = 0; itr < xmlFilePaths.LongLength; itr++)
+            {
+                //Update file being opened
+                LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_File_Value, xmlFilePaths[itr].Substring(xmlFilePaths[itr].LastIndexOf('\\') + 1)));
+
+                //open file
+                using (StreamReader xmlStream = new StreamReader(xmlFilePaths[itr]))
+                {
+
+                    string line;
+                    while ((line = xmlStream.ReadLine()) != null)
+                    {
+                        // Try to match each line against the Regex.
+                        MatchCollection maggie = reggie.Matches(line);
+
+                        if (maggie.Count > 0)
+                        {
+                            FoundFileNames += maggie.Count;
+
+                            foreach (Match result in maggie)
+                            {
+                                string orig = string.IsNullOrEmpty(result.Groups[1].Value) ? result.Groups[2].Value : result.Groups[1].Value;
+                                string lower = orig.ToLower();
+                                string slashes = orig.Replace('\\', '/');
+                                string lowerslashes = slashes.ToLower();
+
+                                //TORHasher.Hash(lowerslashes, 0xDEADBEEF);
+                                fs_writer.WriteLine(lower);
+                                fs_writer.WriteLine(slashes);
+                                fs_writer.WriteLine(lowerslashes);
+                                fs_writer.WriteLine(orig);
+                            }
+
+                            //Mark files found
+                            LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_NumOfNamedFiles_Value
+                                , FoundFileNames.ToString("#,#") + " (" + Math.Truncate(((double)xmlStream.BaseStream.Position / (double)xmlStream.BaseStream.Length) * 100).ToString() + "%)"));
+
+                        }
+                    }
+                }
+
+                //Mark file number
+                LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_NumOfFiles_Value
+                , (itr + 1).ToString("#,#")));
+
+                //Update progress
+                ProgressBarVisibilityUpdate(new EasyMYPProgressBarVisibilityEvent(statusPB
+                , true, (int)xmlFilePaths.LongLength, (int)itr + 1));
+
+            }
+
+            fs_writer.Close();
+            fs.Close();
+
+            //Mark files found
+            LabelTextUpdate(new EasyMYPUpdateLabelsEvent(label_NumOfNamedFiles_Value
+                , FoundFileNames.ToString("#,#") + " (100%)"));
+
+            hashDic.SaveHashList();
+
+            MessageBox.Show("Finished creating dictionary!", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        }
+
     }
 }

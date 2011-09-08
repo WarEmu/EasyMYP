@@ -46,12 +46,15 @@ namespace EasyMYP
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testFullFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testDirFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testDirFilenameExtListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scanAllMypsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scannAllTorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mergeDictionaryFile_ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.dumpDirFileExtensionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statisticsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.parseXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -131,7 +134,6 @@ namespace EasyMYP
             this.lblGeneratePat = new System.Windows.Forms.Label();
             this.testPatternButton = new System.Windows.Forms.Button();
             this.panel_output = new System.Windows.Forms.Panel();
-            this.testDirFilenameListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenu.SuspendLayout();
             this.panel_information.SuspendLayout();
             this.panel_status.SuspendLayout();
@@ -268,12 +270,14 @@ namespace EasyMYP
             this.testFilenameListToolStripMenuItem,
             this.testFullFilenameListToolStripMenuItem,
             this.testDirFilenameListToolStripMenuItem,
+            this.testDirFilenameExtListToolStripMenuItem,
             this.scanAllMypsToolStripMenuItem,
             this.scannAllTorsToolStripMenuItem,
             this.mergeDictionaryFile_ToolStripMenuItem,
             this.toolStripSeparator2,
             this.dumpDirFileExtensionsToolStripMenuItem,
-            this.statisticsToolStripMenuItem});
+            this.statisticsToolStripMenuItem,
+            this.parseXMLToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.toolsToolStripMenuItem.Text = "&Dictionary";
@@ -281,56 +285,77 @@ namespace EasyMYP
             // testFilenameListToolStripMenuItem
             // 
             this.testFilenameListToolStripMenuItem.Name = "testFilenameListToolStripMenuItem";
-            this.testFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.testFilenameListToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.testFilenameListToolStripMenuItem.Text = "&Test Filename List ...";
             this.testFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testFilenameListToolStripMenuItem_Click);
             // 
             // testFullFilenameListToolStripMenuItem
             // 
             this.testFullFilenameListToolStripMenuItem.Name = "testFullFilenameListToolStripMenuItem";
-            this.testFullFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.testFullFilenameListToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.testFullFilenameListToolStripMenuItem.Text = "Test &Full Filename List ...";
             this.testFullFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testFullFilenameListToolStripMenuItem_Click);
+            // 
+            // testDirFilenameListToolStripMenuItem
+            // 
+            this.testDirFilenameListToolStripMenuItem.Name = "testDirFilenameListToolStripMenuItem";
+            this.testDirFilenameListToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.testDirFilenameListToolStripMenuItem.Text = "Test Dir, Filename List ...";
+            this.testDirFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testDirFilenameListToolStripMenuItem_Click);
+            // 
+            // testDirFilenameExtListToolStripMenuItem
+            // 
+            this.testDirFilenameExtListToolStripMenuItem.Name = "testDirFilenameExtListToolStripMenuItem";
+            this.testDirFilenameExtListToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.testDirFilenameExtListToolStripMenuItem.Text = "Test Dir, Filename, Ext List";
+            this.testDirFilenameExtListToolStripMenuItem.Click += new System.EventHandler(this.testDirFilenameExtListToolStripMenuItem_Click);
             // 
             // scanAllMypsToolStripMenuItem
             // 
             this.scanAllMypsToolStripMenuItem.Name = "scanAllMypsToolStripMenuItem";
-            this.scanAllMypsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.scanAllMypsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.scanAllMypsToolStripMenuItem.Text = "Scan &all Myps ...";
             this.scanAllMypsToolStripMenuItem.Click += new System.EventHandler(this.scanAllMypsToolStripMenuItem_Click);
             // 
             // scannAllTorsToolStripMenuItem
             // 
             this.scannAllTorsToolStripMenuItem.Name = "scannAllTorsToolStripMenuItem";
-            this.scannAllTorsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.scannAllTorsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.scannAllTorsToolStripMenuItem.Text = "Scan all Tors ...";
             this.scannAllTorsToolStripMenuItem.Click += new System.EventHandler(this.scanAllTorsToolStripMenuItem_Click);
             // 
             // mergeDictionaryFile_ToolStripMenuItem
             // 
             this.mergeDictionaryFile_ToolStripMenuItem.Name = "mergeDictionaryFile_ToolStripMenuItem";
-            this.mergeDictionaryFile_ToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.mergeDictionaryFile_ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.mergeDictionaryFile_ToolStripMenuItem.Text = "&Merge Dictionary File ...";
             this.mergeDictionaryFile_ToolStripMenuItem.Click += new System.EventHandler(this.mergeDictionaryFile_ToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(196, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(199, 6);
             // 
             // dumpDirFileExtensionsToolStripMenuItem
             // 
             this.dumpDirFileExtensionsToolStripMenuItem.Name = "dumpDirFileExtensionsToolStripMenuItem";
-            this.dumpDirFileExtensionsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.dumpDirFileExtensionsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.dumpDirFileExtensionsToolStripMenuItem.Text = "&Dump Dir, File, Extensions";
             this.dumpDirFileExtensionsToolStripMenuItem.Click += new System.EventHandler(this.dumpDirFileExtensionsToolStripMenuItem_Click);
             // 
             // statisticsToolStripMenuItem
             // 
             this.statisticsToolStripMenuItem.Name = "statisticsToolStripMenuItem";
-            this.statisticsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.statisticsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.statisticsToolStripMenuItem.Text = "&Statistics ...";
             this.statisticsToolStripMenuItem.Click += new System.EventHandler(this.statisticsToolStripMenuItem_Click);
+            // 
+            // parseXMLToolStripMenuItem
+            // 
+            this.parseXMLToolStripMenuItem.Name = "parseXMLToolStripMenuItem";
+            this.parseXMLToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.parseXMLToolStripMenuItem.Text = "Parse XML";
+            this.parseXMLToolStripMenuItem.Click += new System.EventHandler(this.createSWTORDictToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -1109,13 +1134,6 @@ namespace EasyMYP
             this.panel_output.Size = new System.Drawing.Size(922, 479);
             this.panel_output.TabIndex = 27;
             // 
-            // testDirFilenameListToolStripMenuItem
-            // 
-            this.testDirFilenameListToolStripMenuItem.Name = "testDirFilenameListToolStripMenuItem";
-            this.testDirFilenameListToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.testDirFilenameListToolStripMenuItem.Text = "Test Dir, Filename List ...";
-            this.testDirFilenameListToolStripMenuItem.Click += new System.EventHandler(this.testDirFilenameListToolStripMenuItem_Click);
-            // 
             // MainWindow
             // 
             this.AllowDrop = true;
@@ -1268,6 +1286,8 @@ namespace EasyMYP
         private System.Windows.Forms.Button button_Pause;
         private System.Windows.Forms.ToolStripMenuItem scannAllTorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testDirFilenameListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem parseXMLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testDirFilenameExtListToolStripMenuItem;
     }
 }
 

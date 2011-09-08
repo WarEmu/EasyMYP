@@ -11,21 +11,25 @@ namespace EasyMYP
         {
             InitializeComponent();
         }
-        public DictionnaryStatistics(SortedList<long, HashData> hashlist)
+        public DictionnaryStatistics(SortedList<string, SortedList<long, HashData>> hashlist)
         {
-
+            SortedList<long, HashData> archiveKVP;
             InitializeComponent();
             long totalNumberOfEntries = hashlist.Count, totalFileNames = 0, seenFileNames = 0, seenNumberofEntries = 0;
-            foreach (KeyValuePair<long, HashData> kvp in hashlist)
+            for (int i = 0; i < hashlist.Count; i++)
             {
-                if (kvp.Value.filename.Length != 0)
+                archiveKVP = hashlist.Values[i];
+                foreach (KeyValuePair<long, HashData> kvp in archiveKVP)
                 {
-                    totalFileNames++;
+                    if (kvp.Value.filename.Length != 0)
+                    {
+                        totalFileNames++;
+                        if (kvp.Value.crc != 0)
+                            seenFileNames++;
+                    }
                     if (kvp.Value.crc != 0)
-                        seenFileNames++;
+                        seenNumberofEntries++;
                 }
-                if (kvp.Value.crc != 0)
-                    seenNumberofEntries++;
             }
 
             tneLabel.Text = totalNumberOfEntries.ToString();

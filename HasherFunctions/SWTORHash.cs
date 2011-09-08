@@ -1,9 +1,10 @@
+using System;
+using System.Text;
 
 namespace nsHasherFunctions
 {
     public partial class Hasher
     {
-
         private void HashSWTOR(string s, uint seed)
         {
 
@@ -349,4 +350,191 @@ namespace nsHasherFunctions
 
         }
     }
+
+    public class TorHasher
+    {
+        private uint _hashPartOne;
+        private uint _hashPartThree;
+        private uint _hashPartTwo;
+        private int _strReadPos;
+        private string _strToHash = "";
+
+        #region Utilities
+
+        private uint GetUInt32FromString(string str, int start)
+        {
+            byte[] strBytes = Encoding.ASCII.GetBytes(str);
+
+            return BitConverter.ToUInt32(strBytes, _strReadPos + start);
+        }
+
+        private ushort GetUInt16FromString(string str, int start)
+        {
+            byte[] strBytes = Encoding.ASCII.GetBytes(str);
+
+            return BitConverter.ToUInt16(strBytes, _strReadPos + start);
+        }
+
+        private byte GetUInt8FromString(string str, int start)
+        {
+            byte[] strBytes = Encoding.ASCII.GetBytes(str);
+
+            return strBytes[_strReadPos + start];
+        }
+
+        #endregion
+
+        private SwitchResult SwitchUseDwords(int val)
+        {
+            switch (val)
+            {
+                case 12:
+                    _hashPartOne += GetUInt32FromString(_strToHash, 8);
+                    goto case 8;
+
+                case 8:
+                    _hashPartTwo += GetUInt32FromString(_strToHash, 4);
+                    goto case 4;
+
+                case 4:
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 11:
+                    _hashPartOne += GetUInt32FromString(_strToHash, 0);
+                    _hashPartTwo += GetUInt32FromString(_strToHash, 4);
+                    _hashPartThree += (GetUInt32FromString(_strToHash, 8) & 0xffffff);
+                    break;
+
+                case 10:
+                    _hashPartOne += GetUInt16FromString(_strToHash, 8);
+                    _hashPartTwo += GetUInt32FromString(_strToHash, 4);
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 9:
+                    _hashPartOne += GetUInt8FromString(_strToHash, 8);
+                    _hashPartTwo += GetUInt32FromString(_strToHash, 4);
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 7:
+                    _hashPartTwo += (GetUInt32FromString(_strToHash, 4) & 0xffffff);
+                    _hashPartThree = GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 6:
+                    _hashPartTwo += GetUInt16FromString(_strToHash, 4);
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 5:
+                    _hashPartTwo += GetUInt8FromString(_strToHash, 4);
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0);
+                    break;
+
+                case 3:
+                    _hashPartThree += GetUInt32FromString(_strToHash, 0) & 0xffffff;
+                    break;
+
+                case 2:
+                    _hashPartThree += GetUInt16FromString(_strToHash, 0);
+                    break;
+
+                case 0:
+                    return SwitchResult.Final;
+
+                case 1:
+                    return SwitchResult.Continue;
+            }
+
+            return SwitchResult.Bitmath;
+        }
+
+        private void FirstBlockUseDwords(ref int len)
+        {
+            int numIterations = (len - 13) / 12 + 1;
+
+            while (numIterations-- > 0)
+            {
+                uint tmp1 = GetUInt32FromString(_strToHash, 0);
+                uint tmp2 = GetUInt32FromString(_strToHash, 4) + _hashPartTwo;
+                uint tmp3 = GetUInt32FromString(_strToHash, 8) + _hashPartOne;
+
+                uint v12 = 16 * tmp3 ^ (tmp3 >> 28) ^ (_hashPartThree + tmp1 - tmp3);
+                uint v13 = tmp2 + tmp3;
+                uint v16 = v13 + v12;
+                uint v17 = (v12 << 6) ^ (v12 >> 26) ^ (tmp2 - v12);
+                uint v18 = (v17 >> 24) ^ (v13 - v17);
+                uint v20 = v16 + v17;
+                uint v21 = (v17 << 8) ^ v18;
+                uint v22 = (v21 << 16) ^ (v21 >> 16) ^ (v16 - v21);
+                uint v23 = v20 + v21;
+                uint v24 = (v22 >> 13) ^ (v22 << 19) ^ (v20 - v22);
+
+                _hashPartThree = v23 + v22;
+                _hashPartOne = 16 * v24 ^ (v24 >> 28) ^ (v23 - v24);
+                _hashPartTwo = _hashPartThree + v24;
+
+                len -= 12;
+                _strReadPos += 12;
+            }
+        }
+
+        public void Hash(string stringToHash, ref uint hashOne, ref uint hashTwo)
+        {
+            stringToHash += '\0';
+
+            _strToHash = stringToHash;
+
+            int len = _strToHash.Length - 1;
+            _hashPartTwo = (uint)(hashOne + len + 0xdeadbeef);
+            _hashPartThree = (uint)(hashOne + len + 0xdeadbeef);
+            _hashPartOne = (hashTwo + _hashPartTwo);
+
+            if (len > 12)
+                FirstBlockUseDwords(ref len);
+
+            SwitchResult switchResult = SwitchUseDwords(len);
+
+            if (switchResult == SwitchResult.Final)
+            {
+                hashOne = _hashPartOne;
+                hashTwo = _hashPartTwo;
+
+                return;
+            }
+
+            if (switchResult == SwitchResult.Continue)
+                _hashPartThree += _strToHash[_strReadPos];
+
+            // Bitmath
+
+            uint v52 = (_hashPartTwo ^ _hashPartOne) - ((_hashPartTwo << 14) ^ (_hashPartTwo >> 18));
+            uint v53 = (_hashPartThree ^ v52) - ((v52 << 11) ^ (v52 >> 21));
+            uint v54 = (v53 ^ _hashPartTwo) -
+                       ((((_hashPartThree ^ v52) - ((v52 << 11) ^ (v52 >> 21))) >> 7) ^
+                        (((_hashPartThree ^ v52) - ((v52 << 11) ^ (v52 >> 21))) << 25));
+
+            uint v55 = (v54 ^ v52) - ((v54 << 16) ^ (v54 >> 16));
+            uint v56 = (v53 ^ v55) - (16 * v55 ^ (v55 >> 28));
+            _hashPartTwo = (v56 ^ v54) - ((v56 << 14) ^ (v56 >> 18));
+            _hashPartOne = (_hashPartTwo ^ v55) - ((_hashPartTwo >> 8) ^ (_hashPartTwo << 24));
+
+            hashOne = _hashPartOne;
+            hashTwo = _hashPartTwo;
+        }
+
+        #region Nested type: SwitchResult
+
+        private enum SwitchResult
+        {
+            Final,
+            Bitmath,
+            Continue
+        }
+
+        #endregion
+    }
+
 }

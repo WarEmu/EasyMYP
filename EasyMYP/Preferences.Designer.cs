@@ -32,6 +32,9 @@
             this.button_SetExtractionPath = new System.Windows.Forms.Button();
             this.textBox_ExtractionPath = new System.Windows.Forms.TextBox();
             this.groupBox_HashCreator = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.dropdownlist_MaxCombinationPerPattern = new System.Windows.Forms.ComboBox();
+            this.label_MaxCombinationPerPattern = new System.Windows.Forms.Label();
             this.label_MaxOperationThread = new System.Windows.Forms.Label();
             this.dropdownlist_MaxOperationThread = new System.Windows.Forms.ComboBox();
             this.groupBox_MYPHandler = new System.Windows.Forms.GroupBox();
@@ -39,9 +42,6 @@
             this.button_Cancel = new System.Windows.Forms.Button();
             this.button_Save = new System.Windows.Forms.Button();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.label_MaxCombinationPerPattern = new System.Windows.Forms.Label();
-            this.dropdownlist_MaxCombinationPerPattern = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.groupBox_EasyMYPConfig.SuspendLayout();
             this.groupBox_HashCreator.SuspendLayout();
             this.groupBox_MYPHandler.SuspendLayout();
@@ -93,6 +93,49 @@
             this.groupBox_HashCreator.TabIndex = 1;
             this.groupBox_HashCreator.TabStop = false;
             this.groupBox_HashCreator.Text = "Configuration - Hash Creator";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(251, 47);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(25, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "10^";
+            // 
+            // dropdownlist_MaxCombinationPerPattern
+            // 
+            this.dropdownlist_MaxCombinationPerPattern.FormattingEnabled = true;
+            this.dropdownlist_MaxCombinationPerPattern.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16"});
+            this.dropdownlist_MaxCombinationPerPattern.Location = new System.Drawing.Point(282, 44);
+            this.dropdownlist_MaxCombinationPerPattern.Name = "dropdownlist_MaxCombinationPerPattern";
+            this.dropdownlist_MaxCombinationPerPattern.Size = new System.Drawing.Size(121, 21);
+            this.dropdownlist_MaxCombinationPerPattern.TabIndex = 3;
+            // 
+            // label_MaxCombinationPerPattern
+            // 
+            this.label_MaxCombinationPerPattern.AutoSize = true;
+            this.label_MaxCombinationPerPattern.Location = new System.Drawing.Point(6, 47);
+            this.label_MaxCombinationPerPattern.Name = "label_MaxCombinationPerPattern";
+            this.label_MaxCombinationPerPattern.Size = new System.Drawing.Size(200, 13);
+            this.label_MaxCombinationPerPattern.TabIndex = 2;
+            this.label_MaxCombinationPerPattern.Text = "Maximum combination to test per pattern:";
             // 
             // label_MaxOperationThread
             // 
@@ -152,49 +195,6 @@
             this.button_Save.Text = "Save";
             this.button_Save.UseVisualStyleBackColor = true;
             this.button_Save.Click += new System.EventHandler(this.button_Save_Click);
-            // 
-            // label_MaxCombinationPerPattern
-            // 
-            this.label_MaxCombinationPerPattern.AutoSize = true;
-            this.label_MaxCombinationPerPattern.Location = new System.Drawing.Point(6, 47);
-            this.label_MaxCombinationPerPattern.Name = "label_MaxCombinationPerPattern";
-            this.label_MaxCombinationPerPattern.Size = new System.Drawing.Size(200, 13);
-            this.label_MaxCombinationPerPattern.TabIndex = 2;
-            this.label_MaxCombinationPerPattern.Text = "Maximum combination to test per pattern:";
-            // 
-            // dropdownlist_MaxCombinationPerPattern
-            // 
-            this.dropdownlist_MaxCombinationPerPattern.FormattingEnabled = true;
-            this.dropdownlist_MaxCombinationPerPattern.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-            "12",
-            "13",
-            "14",
-            "15",
-            "16"});
-            this.dropdownlist_MaxCombinationPerPattern.Location = new System.Drawing.Point(282, 44);
-            this.dropdownlist_MaxCombinationPerPattern.Name = "dropdownlist_MaxCombinationPerPattern";
-            this.dropdownlist_MaxCombinationPerPattern.Size = new System.Drawing.Size(121, 21);
-            this.dropdownlist_MaxCombinationPerPattern.TabIndex = 3;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(251, 47);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(25, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "10^";
             // 
             // Preferences
             // 

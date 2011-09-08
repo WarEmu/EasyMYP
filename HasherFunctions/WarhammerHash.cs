@@ -13,6 +13,7 @@ namespace nsHasherFunctions
         uint edi, ecx;
 
         public uint sh, ph;
+        TorHasher TORHasher = new TorHasher();
 
         //string str_calculating = "";
         private HasherType hasherType = HasherType.WAR;
@@ -26,6 +27,7 @@ namespace nsHasherFunctions
         {
             if (hasherType == HasherType.TOR)
             {
+                //TORHasher.Hash(s, ref ph, ref sh);
                 HashSWTOR(s, seed);
             }
             else

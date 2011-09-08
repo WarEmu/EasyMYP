@@ -44,6 +44,11 @@ namespace nsHashCreator
 
         public bool Active { get { return active; } }
         public bool Paused { get { return paused; } }
+        public Hasher.HasherType HasherType
+        {
+            get { return hasherType; }
+            set { hasherType = value; }
+        }
 
         private void Start() { active = true; }
 
@@ -63,16 +68,17 @@ namespace nsHashCreator
         #endregion
 
         public HashCreator(HashDictionary hasher, Hasher.HasherType hasherType)
-            : this(hasher)
         {
+            this.hashDic = hasher;
             this.hasherType = hasherType;
         }
 
-        public HashCreator(HashDictionary hasher)
-        {
-            this.hashDic = hasher;
-            this.hasherType = Hasher.HasherType.WAR;
-        }
+        //public HashCreator(HashDictionary hasher)
+        //{
+        //    this.hashDic = hasher;
+        //    this.hasherType = Hasher.HasherType.TOR;
+        //}
+
 
         /// <summary>
         /// Saves all the information possible to text files that can be used by the Hasher afterwards
@@ -110,31 +116,35 @@ namespace nsHashCreator
             Regex rFIZeroZero = new Regex(@"fi.0.0");
             Regex rSKZeroZero = new Regex(@"sk.0.0");
             Regex rMP3 = new Regex(@"\.mp3$");
+            SortedList<long, HashData> subHashList;
 
-
-            foreach (KeyValuePair<long, HashData> kvp in hashDic.HashList)
+            for (int i = 0; i < hashDic.HashList.Count; i++)
             {
-                string filename = kvp.Value.filename;
-                if (filename.Contains(".0.0"))
+                subHashList = hashDic.HashList.Values[i];
+                foreach (KeyValuePair<long, HashData> kvp in subHashList)
                 {
-                    filename = rZeroFGZeroZero.Replace(filename, "[ZeroFGZeroZero]");
-                    filename = rFGZeroZero.Replace(filename, "[FGZeroZero]");
-                    filename = rITZeroZero.Replace(filename, "[ITZeroZero]");
-                    filename = rFIZeroZero.Replace(filename, "[FIZeroZero]");
-                    filename = rSKZeroZero.Replace(filename, "[SKZeroZero]");
-                }
-                filename = rMP3.Replace(filename, "[dotMPTHREE]");
+                    string filename = kvp.Value.filename;
+                    if (filename.Contains(".0.0"))
+                    {
+                        filename = rZeroFGZeroZero.Replace(filename, "[ZeroFGZeroZero]");
+                        filename = rFGZeroZero.Replace(filename, "[FGZeroZero]");
+                        filename = rITZeroZero.Replace(filename, "[ITZeroZero]");
+                        filename = rFIZeroZero.Replace(filename, "[FIZeroZero]");
+                        filename = rSKZeroZero.Replace(filename, "[SKZeroZero]");
+                    }
+                    filename = rMP3.Replace(filename, "[dotMPTHREE]");
 
-                if (r.IsMatch(filename))
-                {
-                    filename = r.Replace(filename, "[0-9]");
-                    filename = filename.Replace("[ZeroFGZeroZero]", "/0.fg.0.0");
-                    filename = filename.Replace("[FGZeroZero]", "fg.0.0");
-                    filename = filename.Replace("[ITZeroZero]", "it.0.0");
-                    filename = filename.Replace("[FIZeroZero]", "fi.0.0");
-                    filename = filename.Replace("[SKZeroZero]", "sk.0.0");
-                    filename = filename.Replace("[dotMPTHREE]", ".mp3");
-                    patternList.Add(filename);
+                    if (r.IsMatch(filename))
+                    {
+                        filename = r.Replace(filename, "[0-9]");
+                        filename = filename.Replace("[ZeroFGZeroZero]", "/0.fg.0.0");
+                        filename = filename.Replace("[FGZeroZero]", "fg.0.0");
+                        filename = filename.Replace("[ITZeroZero]", "it.0.0");
+                        filename = filename.Replace("[FIZeroZero]", "fi.0.0");
+                        filename = filename.Replace("[SKZeroZero]", "sk.0.0");
+                        filename = filename.Replace("[dotMPTHREE]", ".mp3");
+                        patternList.Add(filename);
+                    }
                 }
             }
 
@@ -230,6 +240,7 @@ namespace nsHashCreator
             string[] spl_str = line.Replace("[0-9]", "|").Split('|');
             string format = "";
             int occurence = spl_str.Length - 1;
+            UpdateResults updResult = UpdateResults.NOT_FOUND;
 
             if (occurence <= HashCreatorConfig.MaxCombinationPerPattern) //9 = max_int
             {
@@ -256,7 +267,8 @@ namespace nsHashCreator
 
                     warhash.Hash(cur_str, 0xDEADBEEF);
                     // Thread-safe ???
-                    if (patternTestHashDic.UpdateHash(warhash.ph, warhash.sh, cur_str, 0) == UpdateResults.NAME_UPDATED)
+                    updResult = patternTestHashDic.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
+                    if (updResult == UpdateResults.NAME_UPDATED || updResult == UpdateResults.ARCHIVE_UPDATED)
                         result++;
 
                     //string brute_str = "";
@@ -374,7 +386,7 @@ namespace nsHashCreator
 
                     warhash.Hash(filename, 0xDEADBEEF);
                     UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, filename, 0);
-                    if (found == UpdateResults.NAME_UPDATED)
+                    if (found == UpdateResults.NAME_UPDATED || found == UpdateResults.ARCHIVE_UPDATED)
                         result++;
                     if (found != UpdateResults.NOT_FOUND)
                         foundNames[filename] = true;
@@ -391,15 +403,19 @@ namespace nsHashCreator
                         if (file.Value == true)
                         {
                             warhash.Hash(file.Key, 0xDEADBEEF);
-                            swf.WriteLine("{0}#{1}#{2}", warhash.ph, warhash.sh, file.Key);
+                            swf.WriteLine("{0:X8}" + HashDictionary.hashSeparator
+                                + "{1:X8}" + HashDictionary.hashSeparator
+                                + "{2}", warhash.ph, warhash.sh, file.Key);
                         }
                         else
                         {
                             //this is a quick and dirty fix to get some more debug info
                             // to be removed in the future !!!
                             warhash.Hash(file.Key, 0xDEADBEEF);
-                            swnf.WriteLine("{0}#{1}#{2}", warhash.ph, warhash.sh, file.Key);
-                            //swnf.WriteLine(file.Key);
+                            //swnf.WriteLine("{0:X8}" + HashDictionary.hashSeparator
+                            //    + "{1:X8}" + HashDictionary.hashSeparator
+                            //    + "{2}", warhash.ph, warhash.sh, file.Key);
+                            swnf.WriteLine(file.Key);
                         }
 
                     swnf.Close();
@@ -412,10 +428,11 @@ namespace nsHashCreator
         }
 
         /// <summary>
-        /// Tries all filenames (complete path) included in the fullFileNameFile file.
+        /// 
         /// </summary>
-        /// <param name="fullFileNameFile"></param>
-        /// <returns> number of newly found filenames</returns>
+        /// <param name="fileNameFile"></param>
+        /// <param name="dirNameFile"></param>
+        /// <returns></returns>
         public long ParseDirFilenames(string fileNameFile, string dirNameFile)
         {
             Start();
@@ -424,6 +441,14 @@ namespace nsHashCreator
             if (File.Exists(fileNameFile) && File.Exists(dirNameFile))
             {
                 Hasher warhash = new Hasher(hasherType);
+                UpdateResults found = UpdateResults.NOT_FOUND;
+
+                //fileoutput
+                string outputFileRoot = Path.GetDirectoryName(fileNameFile) + "/" + Path.GetFileNameWithoutExtension(fileNameFile);
+                FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
+                FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
+                StreamWriter swf = new StreamWriter(ofsFound);
+                StreamWriter swnf = new StreamWriter(ofsNotFound);
 
                 //Read the file
                 FileStream fs = new FileStream(fileNameFile, FileMode.Open);
@@ -437,13 +462,13 @@ namespace nsHashCreator
 
                 string line;
                 while ((line = fs_reader.ReadLine()) != null)
-                    fileList.Add(line.ToLower().Replace('\\', '/'));
+                    fileList.Add(line.ToLower().Replace('\\', '/').Replace("//", "/"));
 
                 fs_reader.Close();
                 fs.Close();
 
                 while ((line = ds_reader.ReadLine()) != null)
-                    dirList.Add(line.ToLower().Replace('\\', '/'));
+                    dirList.Add(line.ToLower().Replace('\\', '/').Replace("//", "/"));
 
                 ds_reader.Close();
                 ds.Close();
@@ -476,56 +501,171 @@ namespace nsHashCreator
                     foreach (string f in fileList)
                     {
                         line = d + '/' + f;
-                        line = line.Replace("//","/");
-                        fullFileList.Add( line);
+                        line = line.Replace("//", "/").Replace("//", "/");
+                        // fullFileList.Add(line);
+
+                        warhash.Hash(line, 0xDEADBEEF);
+                        found = hashDic.UpdateHash(warhash.ph, warhash.sh, line, 0);
+                        if (found == UpdateResults.NAME_UPDATED || found == UpdateResults.ARCHIVE_UPDATED)
+                        {
+                            result++;
+                            swf.WriteLine(line);
+                        }
+                        else if (found == UpdateResults.NOT_FOUND)
+                        {
+                            //swnf.WriteLine("{0:X8}" + HashDictionary.hashSeparator
+                            //    + "{1:X8}" + HashDictionary.hashSeparator
+                            //    + "{2}", warhash.ph, warhash.sh, file.Key);
+                            swnf.WriteLine(line);
+                        }
                     }
                 }
 
-                foundNames = new Dictionary<string, bool>();
+                swnf.Close();
+                swf.Close();
+                ofsFound.Close();
+                ofsNotFound.Close();
+            }
+            return result;
+        }
 
-                foreach (string fn in fullFileList)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileNameFile"></param>
+        /// <param name="dirNameFile"></param>
+        /// <param name="extNameFile"></param>
+        /// <returns></returns>
+        public long ParseDirFilenamesExt(string fileNameFile, string dirNameFile, string extNameFile)
+        {
+            Start();
+            //hashDic.CreateHelpers();
+            long result = 0;
+            if (File.Exists(fileNameFile) && File.Exists(dirNameFile))
+            {
+                Hasher warhash = new Hasher(hasherType);
+                UpdateResults found = UpdateResults.NOT_FOUND;
+
+                //fileoutput
+                string outputFileRoot = Path.GetDirectoryName(fileNameFile) + "/" + Path.GetFileNameWithoutExtension(fileNameFile);
+                FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
+                FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
+                StreamWriter swf = new StreamWriter(ofsFound);
+                StreamWriter swnf = new StreamWriter(ofsNotFound);
+
+                //Read the file
+                FileStream fs = new FileStream(fileNameFile, FileMode.Open);
+                StreamReader fs_reader = new StreamReader(fs);
+                FileStream ds = new FileStream(dirNameFile, FileMode.Open);
+                StreamReader ds_reader = new StreamReader(ds);
+                FileStream es = new FileStream(extNameFile, FileMode.Open);
+                StreamReader es_reader = new StreamReader(es);
+
+                HashSet<string> fileList = new HashSet<string>();
+                HashSet<string> dirList = new HashSet<string>();
+                HashSet<string> extList = new HashSet<string>();
+
+                string line;
+                while ((line = ds_reader.ReadLine()) != null)
+                    dirList.Add(line.ToLower().Replace('\\', '/').Replace("//", "/"));
+
+                ds_reader.Close();
+                ds.Close();
+
+                while ((line = es_reader.ReadLine()) != null)
+                    extList.Add(line.ToLower().Replace('\\', '/').Replace("//", "/"));
+
+                es_reader.Close();
+                es.Close();
+
+                string tempExt = "";
+                while ((line = fs_reader.ReadLine()) != null)
                 {
-                    foundNames[fn] = false;
+                    tempExt = "";
+                    if (line.Contains("."))
+                    {
+                        tempExt = line.Substring(line.LastIndexOf('.') + 1);
+                    }
+                    if (extList.Contains(tempExt))
+                    {
+                        line = line.Substring(0, line.LastIndexOf('.'));
+                    }
+                    else if (tempExt != "")
+                    {
+                        // extList.Add(tempExt);
+                    }
+                    fileList.Add(line.ToLower().Replace('\\', '/').Replace("//", "/"));
                 }
 
-                //Just in case someday we want to multi thread.
-                parseFileList = fullFileList.GetEnumerator();
-                string filename;
-                while ((filename = GetFileName_ParseFilenames()) != null)
-                {
+                fs_reader.Close();
+                fs.Close();
 
-                    warhash.Hash(filename, 0xDEADBEEF);
-                    UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, filename, 0);
-                    if (found == UpdateResults.NAME_UPDATED)
-                        result++;
-                    if (found != UpdateResults.NOT_FOUND)
-                        foundNames[filename] = true;
-                }
-                if (active)
-                {
-                    string outputFileRoot = Path.GetDirectoryName(fileNameFile) + "/" + Path.GetFileNameWithoutExtension(fileNameFile);
-                    FileStream ofsFound = new FileStream(outputFileRoot + "-found.txt", FileMode.Create);
-                    FileStream ofsNotFound = new FileStream(outputFileRoot + "-notfound.txt", FileMode.Create);
-                    StreamWriter swf = new StreamWriter(ofsFound);
-                    StreamWriter swnf = new StreamWriter(ofsNotFound);
+                // strip input file from duplicates.
+                File.Delete(fileNameFile);
+                fs = new FileStream(fileNameFile, FileMode.Create);
+                StreamWriter fs_writer = new StreamWriter(fs);
 
-                    foreach (KeyValuePair<string, Boolean> file in foundNames)
-                        if (file.Value == true)
-                            swf.WriteLine(file.Key);
-                        else
+                foreach (string file in fileList)
+                    fs_writer.WriteLine(file);
+
+                fs_writer.Close();
+                fs.Close();
+
+                // strip input dir file from duplicates.
+                File.Delete(dirNameFile);
+                ds = new FileStream(dirNameFile, FileMode.Create);
+                StreamWriter ds_writer = new StreamWriter(ds);
+
+                foreach (string dir in dirList)
+                    ds_writer.WriteLine(dir);
+
+                ds_writer.Close();
+                ds.Close();
+
+                // strip input ext file from duplicates.
+                File.Delete(extNameFile);
+                es = new FileStream(extNameFile, FileMode.Create);
+                StreamWriter es_writer = new StreamWriter(es);
+
+                foreach (string ext in extList)
+                    es_writer.WriteLine(ext);
+
+                es_writer.Close();
+                es.Close();
+
+                //generate the whole dir / filename listing possible
+                foreach (string d in dirList)
+                {
+                    foreach (string f in fileList)
+                    {
+                        foreach (string e in extList)
                         {
-                            //this is a quick and dirty fix to get some more debug info
-                            // to be removed in the future !!!
-                            warhash.Hash(file.Key, 0xDEADBEEF);
-                            swnf.WriteLine("{0}#{1}#{2}", warhash.ph, warhash.sh, file.Key);
-                            //swnf.WriteLine(file.Key);
-                        }
+                            line = d + '/' + f + "." + e;
+                            line = line.Replace("//", "/").Replace("//", "/");
+                            // fullFileList.Add(line);
 
-                    swnf.Close();
-                    swf.Close();
-                    ofsFound.Close();
-                    ofsNotFound.Close();
+                            warhash.Hash(line, 0xDEADBEEF);
+                            found = hashDic.UpdateHash(warhash.ph, warhash.sh, line, 0);
+                            if (found == UpdateResults.NAME_UPDATED || found == UpdateResults.ARCHIVE_UPDATED)
+                            {
+                                result++;
+                                swf.WriteLine(line);
+                            }
+                            else if (found == UpdateResults.NOT_FOUND)
+                            {
+                                //swnf.WriteLine("{0:X8}" + HashDictionary.hashSeparator
+                                //    + "{1:X8}" + HashDictionary.hashSeparator
+                                //    + "{2}", warhash.ph, warhash.sh, file.Key);
+                                //swnf.WriteLine(line);
+                            }
+                        }
+                    }
                 }
+
+                swnf.Close();
+                swf.Close();
+                ofsFound.Close();
+                ofsNotFound.Close();
             }
             return result;
         }
@@ -690,7 +830,7 @@ namespace nsHashCreator
                         warhash.Hash(cur_str, 0xDEADBEEF);
                         // not that sure if UpdateHash is really Thread Safe...
                         UpdateResults found = hashDic.UpdateHash(warhash.ph, warhash.sh, cur_str, 0);
-                        if (found == UpdateResults.NAME_UPDATED)
+                        if (found == UpdateResults.NAME_UPDATED || found == UpdateResults.ARCHIVE_UPDATED)
                         {
                             filenamesFoundinThread++;
                         }

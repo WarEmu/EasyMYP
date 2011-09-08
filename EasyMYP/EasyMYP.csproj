@@ -152,6 +152,10 @@
       <Project>{7D3858A9-1902-46B0-A121-C8B2F18806ED}</Project>
       <Name>HashDictionary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HasherFunctions\HasherFunctions.csproj">
+      <Project>{9DC94530-A111-4FF7-B88F-BD9A8AC3E035}</Project>
+      <Name>HasherFunctions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MYPHandler\MYPHandler.csproj">
       <Project>{9668509D-05D9-4651-8E4F-4142AF541AB2}</Project>
       <Name>MYPHandler</Name>
