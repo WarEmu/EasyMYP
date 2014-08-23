@@ -718,7 +718,7 @@ namespace nsHashCreator
                 threadList.Add(t);
             }
 
-            for (int i = 0; i < threadList.Count; )
+            for (int i = 0; i < threadList.Count; i++)
             {
                 threadList[i].Join();
             }
